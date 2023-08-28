@@ -273,6 +273,8 @@ def purchase(
                 plant_id=power_plant.plant_id,
                 timestamp=timestamp,
                 amount_mwh=amount_mwh,
+                # This should only be some amount of the total mmbtu
+                # (ratio of purchased to total generated)
                 fuel_consumed_mmbtu=consumption.amount_mmbtu,
                 price_usd=generation.sale_price_usd_per_mwh * amount_mwh,
                 energy_source=power_plant.energy_source
