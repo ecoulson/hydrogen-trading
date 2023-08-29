@@ -44,15 +44,12 @@ class SimulationResult:
         id: int = 0,
         revenue: float = 0,
         cost: float = 0,
-        cost_per_hour: float = 0,
-        emissions_per_hour: float = 0,
     ) -> None:
         self.id = id
         self.revenue = revenue
         self.cost = cost
 
 
-# TODO I think this only works for one time step rn
 def simulate(
     time_range: TimeRange,
     electrolyzer: Electrolyzer,
