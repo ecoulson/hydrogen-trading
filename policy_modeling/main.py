@@ -1,3 +1,4 @@
+import math
 from datetime import datetime
 from grid import PowerGrid
 from simulation import simulate
@@ -16,17 +17,17 @@ def main():
             hour=1
         ),
         end=datetime(
-            year=2024,
+            year=2023,
             month=7,
             day=1,
-            hour=1
+            hour=2
         ))
     electrolyzer = Electrolyzer(
         id=0,
         replacement_threshold=0.8,
         degredation_rate=0.02,
         capacity_mw=1,
-        production_method=ConstantProduction(conversion_rate=10000),
+        production_method=ConstantProduction(conversion_rate=20),
         capital_expenditure=1150,
         operation_expenditure=17/(365*24),
         replacement_cost=0.5
@@ -36,11 +37,30 @@ def main():
 
     result = simulate(simulation_time_range, electrolyzer, power_grid)
 
+    years = math.ceil((simulation_time_range.end -
+                       simulation_time_range.start).total_seconds() / (60 * 60 * 24 * 365))
+    average_emissions = sum(
+        map(lambda emission: emission.amount_emitted_kg, result.emissions)) / years
+    average_kg_hydrogen = sum(
+        map(lambda hydrogen: hydrogen.kg_hydrogen, result.hydrogen_produced)) / years
+
+    discount_rate = 0.0575
+    opex_sum = 0
+    hydrogen_sum = 0
+    for i in range(0, years):
+        opex_sum += (electrolyzer.operational_expenditure /
+                     (1 + math.pow(discount_rate, i)))
+        hydrogen_sum += (average_kg_hydrogen /
+                         (1 + math.pow(discount_rate, i)))
+
+    lcoh = (electrolyzer.capital_expenditure + opex_sum) / hydrogen_sum
+
     print(
         f"Ran from {simulation_time_range.start} to {simulation_time_range.end}")
-    print("Revenue $USD:", result.revenue)
-    print("Cost $USD:", result.cost)
-    print("Profit $USD:", result.revenue - result.cost)
+    print(f"Average emission (kg): {average_emissions}")
+    print(f"Average hydrogen produced (kg): {average_kg_hydrogen}")
+    print(f"Tax credit ($): {result.tax_credit.total_usd}")
+    print(f"LCOH $/kg: {lcoh}")
 
 
 def select_power_plants(selected_plant_ids: list[int]) -> list[PowerPlant]:
@@ -55,7 +75,7 @@ def load_power_plants_in_memory() -> list[PowerPlant]:
     powerplant = PowerPlant(
         plant_id=50098,
         energy_source=EnergySource.ENERGY_SOURCE_NATURAL_GAS,
-        heat_rate=0.1
+        heat_rate=0.2
     )
 
     consume(powerplant, 15_706.68,

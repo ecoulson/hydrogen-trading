@@ -14,6 +14,9 @@ from tax_credit import TaxCredit45V
 from time_range import TimeRange
 from transaction import EnergyTransaction
 
+HOUR_IN_SECONDS = 60 * 60
+YEARS_IN_SECONDS = 60 * 60 * 24 * 365
+
 
 class SimulationState:
     simulation_id: int
@@ -36,18 +39,21 @@ class SimulationState:
 
 class SimulationResult:
     id: int
-    revenue: float
-    cost: float
+    tax_credit: TaxCredit45V
+    emissions: list[EmissionEvent]
+    hydrogen_produced: list[HydrogenProduction]
 
     def __init__(
         self,
         id: int = 0,
-        revenue: float = 0,
-        cost: float = 0,
+        tax_credit: TaxCredit45V = TaxCredit45V(),
+        emissions: list[EmissionEvent] = [],
+        hydrogen_produced: list[HydrogenProduction] = []
     ) -> None:
         self.id = id
-        self.revenue = revenue
-        self.cost = cost
+        self.tax_credit = tax_credit
+        self.emissions = emissions
+        self.hydrogen_produced = hydrogen_produced
 
 
 def simulate(
@@ -57,13 +63,9 @@ def simulate(
 ) -> SimulationResult:
     simulation_id = 0
     simulation_state = SimulationState(simulation_id)
-    hour_in_seconds = 60 * 60
     current_timestamp = datetime.fromtimestamp(time_range.start.timestamp())
 
     while current_timestamp < time_range.end:
-        current_timestamp = datetime.fromtimestamp(
-            current_timestamp.timestamp() + hour_in_seconds)
-
         transactions = make_optimal_transactions(
             simulation_id,
             time_range.start,
@@ -81,16 +83,17 @@ def simulate(
         simulation_state.hydrogen_outputs.append(hydrogen_output)
         simulation_state.transactions += transactions
 
+        current_timestamp = datetime.fromtimestamp(
+            current_timestamp.timestamp() + HOUR_IN_SECONDS)
+
     tax_credit = calculate_tax_credit(
         simulation_state.emissions, simulation_state.hydrogen_outputs)
-    revenue = calculate_revenue(tax_credit)
-    costs = calculate_cost(time_range, electrolyzer,
-                           simulation_state.transactions)
 
     return SimulationResult(
         id=simulation_id,
-        revenue=revenue,
-        cost=costs
+        tax_credit=tax_credit,
+        hydrogen_produced=simulation_state.hydrogen_outputs,
+        emissions=simulation_state.emissions
     )
 
 
@@ -103,40 +106,4 @@ def make_optimal_transactions(
     return list(map(lambda power_plant:
                     purchase(
                         simulation_id, electrolyzer,
-                        power_plant, 0.2, timestamp), power_plants))
-
-
-def calculate_revenue(
-    tax_credit: TaxCredit45V,
-) -> float:
-    return tax_credit.total_usd
-
-
-def calculate_cost(
-    simulation_time_range: TimeRange,
-    electrolyzer: Electrolyzer,
-    transactions: list[EnergyTransaction],
-) -> float:
-    total_energy_consumed_mwh = sum(
-        map(lambda transaction: transaction.amount_mwh, transactions))
-    costs = electrolyzer.capital_expenditure
-
-    # calc opex
-    difference = simulation_time_range.end - simulation_time_range.start
-    hours = difference.total_seconds() / (60 * 60)
-    costs += electrolyzer.operational_expenditure * hours \
-        * total_energy_consumed_mwh
-
-    # calc repair costs
-    repair_cost = electrolyzer.replacement_cost \
-        * electrolyzer.capital_expenditure
-    years_per_repair = electrolyzer.replacement_threshold / \
-        electrolyzer.degradation_rate
-    num_repairs = math.floor(difference.total_seconds() /
-                             (60 * 60 * 24 * 365) / years_per_repair)
-    costs += repair_cost * num_repairs
-
-    for transcation in transactions:
-        costs += transcation.price_usd
-
-    return costs
+                        power_plant, 1, timestamp), power_plants))

@@ -31,7 +31,7 @@ def calculate_tax_credit(
     if 2.5 <= co2_per_h2 and co2_per_h2 < 4:
         credit.amount_usd_per_kg = TAX_CREDIT_45V_MAX_VALUE_USD * 0.2
     elif 1.5 <= co2_per_h2 and co2_per_h2 < 2.5:
-        credit.amount_usd_per_kg = TAX_CREDIT_45V_MAX_VALUE_USD * 0.2
+        credit.amount_usd_per_kg = TAX_CREDIT_45V_MAX_VALUE_USD * 0.25
     elif 0.45 <= co2_per_h2 and co2_per_h2 < 1.5:
         credit.amount_usd_per_kg = TAX_CREDIT_45V_MAX_VALUE_USD * 0.334
     elif co2_per_h2 < 0.45:
