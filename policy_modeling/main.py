@@ -1,16 +1,27 @@
 from datetime import datetime
-from model import Electrolyzer, PowerPlant, \
-    EnergySource, consume, ConsumptionUnit, \
-    generate, get_energy_source_portfolios, calculate_emitted_co2, \
-    ConstantProduction, purchase, calculate_hydrogen_produced, \
-    calculate_tax_credit
+from simulation import simulate
+from time_range import TimeRange
+from electrolyzer import Electrolyzer, ConstantProduction
+from power_plant import PowerPlant, ConsumptionUnit, consume, generate, \
+    EnergySource
 
 
 def main():
-    simulation_id = 0
+    simulation_time_range = TimeRange(
+        start=datetime(
+            year=2023,
+            month=7,
+            day=1
+        ),
+        end=datetime(
+            year=2023,
+            month=8,
+            day=1
+        ))
     powerplant = PowerPlant(
         plant_id=50098,
         energy_source=EnergySource.ENERGY_SOURCE_NATURAL_GAS,
+        heat_rate=12
     )
     electrolyzer = Electrolyzer(
         id=0,
@@ -18,16 +29,11 @@ def main():
         degredation_rate=0.02,
         capacity_kw=1000,
         production_method=ConstantProduction(conversion_rate=45),
-        capital_expenditure=1150,
-        operation_expenditure=17,
+        capital_expenditure=1150000,
+        operation_expenditure=17/(365*24),
         replacement_cost=0.5
     )
 
-    current_timestep = datetime(
-        year=2023,
-        month=7,
-        day=1
-    )
     consume(powerplant, 15_706.68,
             ConsumptionUnit.CONSUMPTION_UNIT_MMBTU, datetime(
                 year=2023,
@@ -38,7 +44,7 @@ def main():
         year=2023,
         month=7,
         day=1
-    ), sale_price=2)
+    ), sale_price=0.02)
     consume(powerplant, 15_706.68,
             ConsumptionUnit.CONSUMPTION_UNIT_MMBTU, datetime(
                 year=2023,
@@ -50,43 +56,12 @@ def main():
         month=8,
         day=1
     ), sale_price=2)
-    energy_transactions = [
-        purchase(simulation_id, electrolyzer,
-                 powerplant, 20000, current_timestep)
-    ]
-    portfolios = get_energy_source_portfolios(energy_transactions)
-    emissions = calculate_emitted_co2(electrolyzer, portfolios)
-    hydrogen_productions = calculate_hydrogen_produced(
-        electrolyzer, portfolios)
 
-    print("-==- ELECTROLYZER -==-")
-    print(electrolyzer.__dict__)
-    print("----------------------")
+    result = simulate(simulation_time_range, electrolyzer, [powerplant])
 
-    print("-==- TRANSACTIONS -==-")
-    for transaction in energy_transactions:
-        print(transaction.__dict__)
-    print("----------------------")
-
-    print("-==-  PORTFOLIOS  -==-")
-    for portfolio in portfolios:
-        print(portfolio.__dict__)
-    print("----------------------")
-
-    print("-==-  EMISSIONS   -==-")
-    for emission in emissions:
-        print(emission.__dict__)
-    print("----------------------")
-
-    print("-==-   HYDROGEN   -==-")
-    for hydrogen_production in hydrogen_productions:
-        print(hydrogen_production.__dict__)
-    print("----------------------")
-
-    tax_credit = calculate_tax_credit(emissions, hydrogen_productions)
-    print("-==- TAX CREDIT  -==-")
-    print(tax_credit.__dict__)
-    print("----------------------")
+    print("Revenue $USD:", result.revenue)
+    print("Cost $USD:", result.cost)
+    print("Profit $USD:", result.revenue - result.cost)
 
 
 main()
