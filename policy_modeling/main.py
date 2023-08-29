@@ -17,10 +17,10 @@ def main():
             hour=1
         ),
         end=datetime(
-            year=2023,
+            year=2024,
             month=7,
             day=1,
-            hour=2
+            hour=1
         ))
     electrolyzer = Electrolyzer(
         id=0,
@@ -37,30 +37,30 @@ def main():
 
     result = simulate(simulation_time_range, electrolyzer, power_grid)
 
-    years = math.ceil((simulation_time_range.end -
-                       simulation_time_range.start).total_seconds() / (60 * 60 * 24 * 365))
+    hours = math.ceil((simulation_time_range.end -
+                       simulation_time_range.start).total_seconds() / (60 * 60))
     average_emissions = sum(
-        map(lambda emission: emission.amount_emitted_kg, result.emissions)) / years
+        map(lambda emission: emission.amount_emitted_kg, result.emissions)) / hours
     average_kg_hydrogen = sum(
-        map(lambda hydrogen: hydrogen.kg_hydrogen, result.hydrogen_produced)) / years
+        map(lambda hydrogen: hydrogen.kg_hydrogen, result.hydrogen_produced)) / hours
 
     discount_rate = 0.0575
     opex_sum = 0
     hydrogen_sum = 0
-    for i in range(0, years):
+    for i in range(0, hours):
         opex_sum += (electrolyzer.operational_expenditure /
                      (1 + math.pow(discount_rate, i)))
-        hydrogen_sum += (average_kg_hydrogen /
+        hydrogen_sum += (result.hydrogen_produced[i].kg_hydrogen /
                          (1 + math.pow(discount_rate, i)))
 
     lcoh = (electrolyzer.capital_expenditure + opex_sum) / hydrogen_sum
 
     print(
         f"Ran from {simulation_time_range.start} to {simulation_time_range.end}")
-    print(f"Average emission (kg): {average_emissions}")
-    print(f"Average hydrogen produced (kg): {average_kg_hydrogen}")
+    print(f"Average emission (kg/hr): {average_emissions}")
+    print(f"Average hydrogen produced (kg/hr): {average_kg_hydrogen}")
     print(f"Tax credit ($): {result.tax_credit.total_usd}")
-    print(f"LCOH $/kg: {lcoh}")
+    print(f"LCOH $/(kg * hr): {lcoh}")
 
 
 def select_power_plants(selected_plant_ids: list[int]) -> list[PowerPlant]:
