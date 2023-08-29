@@ -5,10 +5,10 @@ class Production:
 
 
 class ConstantProduction(Production):
-    conversion_rate: float  # kWh / kg
+    conversion_rate: float  # kg / mwh
 
-    def calculate_production(self, input_kwh: float) -> float:
-        return input_kwh / self.conversion_rate
+    def calculate_production(self, input_mwh: float) -> float:
+        return input_mwh * self.conversion_rate
 
     def __init__(self, conversion_rate: float = 0) -> None:
         super().__init__()
@@ -19,7 +19,7 @@ class Electrolyzer:
     id: int
     replacement_threshold: float
     degradation_rate: float
-    capacity_kw: float
+    capacity_mw: float
     production_method: Production
     capital_expenditure: float
     operational_expenditure: float
@@ -30,7 +30,7 @@ class Electrolyzer:
         id: int = 0,
         replacement_threshold: float = 0,
         degredation_rate: float = 0,
-        capacity_kw: float = 0,
+        capacity_mw: float = 0,
         production_method: Production = Production(),
         capital_expenditure: float = 0,
         operation_expenditure: float = 0,
@@ -39,7 +39,7 @@ class Electrolyzer:
         self.id = id
         self.replacement_threshold = replacement_threshold
         self.degradation_rate = degredation_rate
-        self.capacity_kw = capacity_kw
+        self.capacity_mw = capacity_mw
         self.production_method = production_method
         self.capital_expenditure = capital_expenditure
         self.operational_expenditure = operation_expenditure

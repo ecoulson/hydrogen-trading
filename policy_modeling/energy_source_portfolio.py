@@ -4,6 +4,7 @@ from transaction import EnergyTransaction
 
 
 class EnergySourcePortfolio:
+    simulation_id: int
     timestamp: datetime
     total_electricity_mwh: float
     petroleum_mmbtu: float
@@ -19,6 +20,7 @@ class EnergySourcePortfolio:
 
     def __init__(
         self,
+        simulation_id: int = 0,
         timestamp: datetime = datetime.now(),
         total_electricity_mwh: float = 0,
         petroleum_mmbtu: float = 0,
@@ -32,6 +34,7 @@ class EnergySourcePortfolio:
         biomass_mmbtu: float = 0,
         hydropower_mmbtu: float = 0
     ):
+        self.simulation_id = simulation_id
         self.timestamp = timestamp
         self.total_electricity_mwh = total_electricity_mwh
         self.petroleum_mmbtu = petroleum_mmbtu
@@ -48,53 +51,23 @@ class EnergySourcePortfolio:
 
 # Check that power purchased doesn't exeed the amount generated at a given time
 def get_energy_source_portfolios(
+    simulation_id: int,
+    timestamp: datetime,
     transactions: list[EnergyTransaction],
-) -> list[EnergySourcePortfolio]:
-    portfolios_over_time: dict[datetime, EnergySourcePortfolio] = {}
-    portfolios: list[EnergySourcePortfolio] = []
+) -> EnergySourcePortfolio:
+    portfolio = EnergySourcePortfolio(simulation_id, timestamp)
 
     for transaction in transactions:
-        transaction_portfolio = portfolio_from_transaction(transaction)
-        if transaction.timestamp not in portfolios_over_time:
-            portfolios_over_time[transaction.timestamp] = transaction_portfolio
-        else:
-            portfolios_over_time[transaction.timestamp] = merge_portfolio(
-                transaction_portfolio,
-                portfolios_over_time[transaction.timestamp]
-            )
-
-    for timestamp in portfolios_over_time.keys():
-        portfolios.append(portfolios_over_time[timestamp])
-
-    return portfolios
-
-
-def portfolio_from_transaction(
-    transaction: EnergyTransaction
-) -> EnergySourcePortfolio:
-    portfolio = EnergySourcePortfolio(
-        timestamp=transaction.timestamp,
-        total_electricity_mwh=transaction.amount_mwh
-    )
-
-    match transaction.energy_source:
-        case EnergySource.ENERGY_SOURCE_NATURAL_GAS:
-            portfolio.natural_gas_mmbtu += transaction.fuel_consumed_mmbtu
+        portfolio = add_transaction(portfolio, transaction)
 
     return portfolio
 
 
-def merge_portfolio(
-    portfolio_a: EnergySourcePortfolio,
-    portfolio_b: EnergySourcePortfolio
+def add_transaction(
+    portfolio: EnergySourcePortfolio,
+    transaction: EnergyTransaction
 ) -> EnergySourcePortfolio:
-    if portfolio_a.timestamp != portfolio_b.timestamp:
-        raise Exception("Timestamps must match")
+    portfolio.total_electricity_mwh += transaction.amount_mwh
+    portfolio.natural_gas_mmbtu += transaction.fuel_consumed_mmbtu
 
-    merged_portfolio = EnergySourcePortfolio()
-    merged_portfolio.total_electricity_mwh = \
-        portfolio_b.total_electricity_mwh + portfolio_a.total_electricity_mwh
-    merged_portfolio.natural_gas_mmbtu = portfolio_b.natural_gas_mmbtu + \
-        portfolio_a.natural_gas_mmbtu
-
-    return merged_portfolio
+    return portfolio
