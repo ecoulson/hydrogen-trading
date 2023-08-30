@@ -17,6 +17,8 @@ class ExecuteSimulationRequest:
         self.simulation_time_range = simulation_time_range
         self.electrolyzer = electrolyzer
 
+    # Need something so much fucking better than this this is ridiculous
+    # why can't python just have decent libraries ffs
     @staticmethod
     def from_json(json):
         request = ExecuteSimulationRequest()
