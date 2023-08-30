@@ -1,6 +1,5 @@
 from datetime import datetime
-from power_plant import EnergySource
-from transaction import EnergyTransaction
+from logic.transaction import EnergyTransaction
 
 
 class EnergySourcePortfolio:

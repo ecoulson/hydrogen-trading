@@ -1,18 +1,15 @@
-import math
 from datetime import datetime
-from electrolyzer import Electrolyzer
-from energy_source_portfolio import get_energy_source_portfolios
-from emission import calculate_emitted_co2
-from hydrogen_production import calculate_hydrogen_produced
-from grid import PowerGrid
-from emission import EmissionEvent
-from hydrogen_production import HydrogenProduction
-from transaction import purchase
-from power_plant import PowerPlant
-from tax_credit import calculate_tax_credit
-from tax_credit import TaxCredit45V
-from time_range import TimeRange
-from transaction import EnergyTransaction
+from logic.electrolyzer import Electrolyzer
+from logic.energy_source_portfolio import get_energy_source_portfolios
+from logic.emission import calculate_emitted_co2, EmissionEvent
+from logic.hydrogen_production import calculate_hydrogen_produced
+from logic.grid import PowerGrid
+from logic.hydrogen_production import HydrogenProduction
+from logic.transaction import purchase
+from logic.power_plant import PowerPlant
+from logic.tax_credit import calculate_tax_credit, TaxCredit45V
+from logic.time_range import TimeRange
+from logic.transaction import EnergyTransaction
 
 HOUR_IN_SECONDS = 60 * 60
 YEARS_IN_SECONDS = 60 * 60 * 24 * 365

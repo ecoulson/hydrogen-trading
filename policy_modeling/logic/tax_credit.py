@@ -1,5 +1,5 @@
-from emission import EmissionEvent
-from hydrogen_production import HydrogenProduction
+from logic.emission import EmissionEvent
+from logic.hydrogen_production import HydrogenProduction
 
 TAX_CREDIT_45V_MAX_VALUE_USD = 3
 

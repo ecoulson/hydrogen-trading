@@ -1,6 +1,6 @@
 from datetime import datetime
-from electrolyzer import Electrolyzer
-from power_plant import EnergySource, PowerPlant
+from logic.electrolyzer import Electrolyzer
+from logic.power_plant import EnergySource, PowerPlant
 
 
 class EnergyTransaction:

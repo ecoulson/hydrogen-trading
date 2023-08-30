@@ -1,6 +1,6 @@
 from datetime import datetime
-from electrolyzer import Electrolyzer
-from energy_source_portfolio import EnergySourcePortfolio
+from logic.electrolyzer import Electrolyzer
+from logic.energy_source_portfolio import EnergySourcePortfolio
 
 NATURAL_GAS_MMBTU_TO_CO2 = 53.0703
 

@@ -1,4 +1,4 @@
-from power_plant import PowerPlant
+from logic.power_plant import PowerPlant
 
 
 class PowerGrid:
