@@ -19,6 +19,7 @@ class ExecuteSimulationRequest:
 
     # Need something so much fucking better than this this is ridiculous
     # why can't python just have decent libraries ffs
+    # https://www.blog.pythonlibrary.org/2014/02/14/python-101-how-to-change-a-dict-into-a-class/
     @staticmethod
     def from_json(json):
         request = ExecuteSimulationRequest()

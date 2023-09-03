@@ -1,0 +1,15 @@
+[package]
+name = "tax_credit_model"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rocket = { version = "=0.5.0-rc.3", features = ["json"] }
+tokio = { version = "1.29.1", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.4.2"
+serde_json = "1.0.104"
+chrono = "0.4.28"
+askama = "0.12.0"

@@ -31,6 +31,6 @@ def calculate_hydrogen_produced(
     production.production_timestamp = portfolio.timestamp
     production.kg_hydrogen = min(
         portfolio.total_electricity_mwh, electrolyzer.capacity_mw) * \
-        electrolyzer.production_method.calculate_production(
-            portfolio.total_electricity_mwh)
+        electrolyzer.production_method.calculate_production(min(
+            portfolio.total_electricity_mwh, electrolyzer.capacity_mw))
     return production

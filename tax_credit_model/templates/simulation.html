@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Create Simulation{% endblock %}
+
+{% block content %}
+<div>
+    <form hx-post="/create_electrolyzer">
+        <input name="replacement_threshold" />
+        <input name="degredation_rate" />
+        <input name="capacity_mw" />
+        <input name="capex" />
+        <input name="opex" />
+        <input name="replacement_cost" />
+        <input name="production_method.production_type" />
+        <input name="production_method.conversion_rate_constant" />
+        <button type="submit">
+            Create
+        </button>
+    </form>
+    <form hx-post="/execute_simulation">
+        <select disabled hx-get="/list_electrolyzers" hx-trigger="electrolyzer_created" name="electrolyzer_id">
+        </select>
+        <input name="timerange.start.seconds" />
+        <input name="timerange.start.nanos" />
+        <input name="timerange.end.seconds" />
+        <input name="timerange.end.nanos" />
+        <button type="submit">Execute Simulation</button>
+    </form>
+</div>
+{% endblock %}
