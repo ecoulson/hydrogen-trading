@@ -43,9 +43,8 @@ pub struct CreateElectrolzyerRequest {
     pub replacement_cost: f32,
 }
 
-#[derive(Template)]
-#[template(path = "create_electrolyzer_template.html")]
-#[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone, Copy)]
+#[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq, Clone, Copy)]
+#[template(path = "components/create_electrolyzer.html")]
 pub struct CreateElectrolyzerRespone {
     pub electrolyzer: Electrolyzer,
 }

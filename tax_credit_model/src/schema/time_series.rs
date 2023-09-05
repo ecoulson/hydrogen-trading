@@ -14,7 +14,7 @@ pub struct TimeSeriesEntry {
 }
 
 #[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq)]
-#[template(path = "time_series_chart.html")]
+#[template(path = "components/time_series_chart.html")]
 pub struct TimeSeriesChart {
     pub title: String,
     pub id: String,

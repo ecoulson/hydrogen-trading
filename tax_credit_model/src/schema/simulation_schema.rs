@@ -10,9 +10,8 @@ pub struct ExecuteSimulationRequest {
     pub simulation_time_range: TimeRange,
 }
 
-#[derive(Template)]
-#[template(path = "execute_simulation.html")]
-#[derive(Deserialize, Serialize, Default, Debug, PartialEq)]
+#[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq)]
+#[template(path = "components/execute_simulation.html")]
 pub struct ExecuteSimulationResponse {
     pub simulation_result: SimulationResult,
 }

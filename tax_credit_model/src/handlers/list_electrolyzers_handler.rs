@@ -7,7 +7,7 @@ use crate::{
 };
 
 #[derive(Template)]
-#[template(path = "list_electrolyzers_template.html")]
+#[template(path = "components/list_electrolyzers.html")]
 pub struct ListElectrolyzerTemplate {
     electrolyzers: Vec<Electrolyzer>,
 }
