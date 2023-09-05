@@ -8,41 +8,88 @@
 {% block title %}Tax Credit Policy Modeling{% endblock %}
 
 {% block content %}
-<div>
+<div class="container mx-auto flex">
+    <div class="w-1/4 bg-slate-400 px-4 py-2">
     <h1 class="text-3xl font-bold underline">Create Simulation</h1>
-    <form hx-post="/create_electrolyzer">
-        <label for="replacement_threshold">Replacement Threshold</label>
-        <input name="replacement_threshold" />
-        <label for="degredation_rate">Degredation Rate</label>
-        <input name="degredation_rate" />
-        <label for="cacpacity_mw">Capacity MW</label>
-        <input name="capacity_mw" />
-        <label for="capex">Capex</label>
-        <input name="capex" />
-        <label for="opex">Opex</label>
-        <input name="opex" />
-        <label for="replacement_cost">Replacement Cost</label>
-        <input name="replacement_cost" />
-        <label for="production_method.production_type">Production Type</label>
-        <input value="Constant" name="production_method.production_type" />
-        <label for="production_method.conversion_rate_constant">Production Rate</label>
-        <input name="production_method.conversion_rate_constant" />
-        <button type="submit">
-            Create
-        </button>
-    </form>
-    <form hx-post="/execute_simulation">
-        <select hx-swap="outerHTML" disabled hx-get="/list_electrolyzers" hx-trigger="electrolyzer_created from:body" name="electrolyzer_id">
-        </select>
-        <label for="simulation_time_range.start.seconds">Start Seconds</label>
-        <input name="simulation_time_range.start.seconds" />
-        <label for="simulation_time_range.start.nanos">Start Nanos</label>
-        <input name="simulation_time_range.start.nanos" />
-        <label for="simulation_time_range.end.seconds">Start Seconds</label>
-        <input name="simulation_time_range.end.seconds" />
-        <label for="simulation_time_range.end.nanos">Start Nanos</label>
-        <input name="simulation_time_range.end.nanos" />
-        <button type="submit">Execute Simulation</button>
-    </form>
+        <form hx-post="/create_electrolyzer">
+            <div class="p-4">
+                <label for="replacement_threshold" >Replacement Threshold</label>
+                <br/>
+                <input class="border" id="replacement_threshold" name="replacement_threshold" />
+            </div>
+            <div class="p-4">
+                <label for="degredation_rate">Degredation Rate</label>
+                <br/>
+                <input class="border"id="degredation_rate" name="degredation_rate" />
+            </div>
+            <div class="p-4">
+                <label for="cacpacity_mw">Capacity MW</label>
+                <br/>
+                <input class="border" id="capacity_mw" name="capacity_mw" />
+            </div>
+            <div class="p-4">
+                <label for="capex">Capex</label>
+                <br/>
+                <input class="border" id="capex" name="capex" />
+            </div>
+            <div class="p-4">
+                <label for="opex">Opex</label>
+                <br/>
+                <input class="border" id="opex" name="opex" />
+            </div>
+            <div class="p-4">
+                <label for="replacement_cost">Replacement Cost</label>
+                <br/>
+                <input class="border" id="replacement_cost" name="replacement_cost" />
+            </div>
+            <div class="p-4">
+                <label for="production_method.production_type">Production Type</label>
+                <br/>
+                <select class="border" id="Constant" value="Constant" name="production_method.production_type">
+                    <option>Constant</option>
+                </select>
+            </div>
+            <div class="p-4">
+                <label for="production_method.conversion_rate_constant">Production Rate</label>
+                <br/>
+                <input class="border" id="production_method.conversion_rate_constant" name="production_method.conversion_rate_constant" />
+            </div>
+            <button class="border px-4 py-2" type="submit">
+                Create
+            </button>
+        </form>
+    </div>
+    <div class="w-3/4 bg-slate-300 px-4 py-2">
+        <h1 class="text-3xl font-bold underline">Execute Simulation</h1>
+        <form hx-post="/execute_simulation">
+            <div class="p-4">
+                <label for="electrolyzer_id">Electrolyzer Id</label>
+                <br/>
+                <select id="electrolyzer_id" class="border" hx-swap="outerHTML" disabled hx-get="/list_electrolyzers" hx-trigger="electrolyzer_created from:body" name="electrolyzer_id">
+                </select>
+            </div>
+            <div class="p-4">
+                <label for="simulation_time_range.start.seconds">Start Seconds</label>
+                <br/>
+                <input class="border" id="simulation_time_range.start.seconds" name="simulation_time_range.start.seconds" />
+            </div>
+            <div class="p-4">
+                <label for="simulation_time_range.start.nanos">Start Nanos</label>
+                <br/>
+                <input class="border" id="simulation_time_range.start.nanos" name="simulation_time_range.start.nanos" />
+            </div>
+            <div class="p-4">
+                <label for="simulation_time_range.end.seconds">Start Seconds</label>
+                <br/>
+                <input class="border" id="simulation_time_range.end.seconds" name="simulation_time_range.end.seconds" />
+            </div>
+            <div class="p-4">
+                <label for="simulation_time_range.end.nanos">Start Nanos</label>
+                <br/>
+                <input class="border" id="simulation_time_range.end.nanos" name="simulation_time_range.end.nanos" />
+            </div>
+            <button class="border px-4 py-2" type="submit">Execute Simulation</button>
+        </form>
+    </div>
 </div>
 {% endblock %}
