@@ -1,7 +1,12 @@
-use crate::schema::{simulation_schema::{
-    EmissionEvent, EnergySourcePortfolio, EnergyTransaction, HydrogenProductionEvent, PowerGrid,
-    PowerPlant, SimulationResult, SimulationStatus, TaxCredit45V, TimeRange, Timestamp,
-}, electrolyzer::Electrolyzer};
+use crate::schema::{
+    electrolyzer::Electrolyzer,
+    simulation_schema::{
+        EmissionEvent, EnergySourcePortfolio, EnergyTransaction, HydrogenProductionEvent,
+        PowerGrid, PowerPlant, SimulationResult, SimulationStatus, TaxCredit45V, TimeRange,
+        Timestamp,
+    },
+    time_series::{TimeSeries, TimeSeriesChart, TimeSeriesEntry},
+};
 use chrono::{Datelike, Duration, TimeZone, Utc};
 
 const NATURAL_GAS_MMBTU_TO_CO2: f32 = 53.0703;
@@ -69,11 +74,60 @@ pub fn simulate(
 
     let tax_credit = calculate_tax_credit(&state);
 
+    let emission_time_series = TimeSeries {
+        label: String::from("Emissions"),
+        data_points: state
+            .emissions
+            .iter()
+            .map(|emission| {
+                let date_time = Utc
+                    .timestamp_opt(
+                        emission.emission_timestamp.seconds,
+                        emission.emission_timestamp.nanos,
+                    )
+                    .unwrap();
+
+                TimeSeriesEntry {
+                    date: date_time.to_rfc3339(),
+                    value: emission.amount_emitted_kg,
+                }
+            })
+            .collect(),
+    };
+    let hydrogen_production_time_series = TimeSeries {
+        label: String::from("Hydrogen Produced"),
+        data_points: state
+            .hydrogen_productions
+            .iter()
+            .map(|production| {
+                let date_time = Utc
+                    .timestamp_opt(
+                        production.production_timestamp.seconds,
+                        production.production_timestamp.nanos,
+                    )
+                    .unwrap();
+
+                TimeSeriesEntry {
+                    date: date_time.to_rfc3339(),
+                    value: production.kg_hydrogen,
+                }
+            })
+            .collect(),
+    };
+
     SimulationResult {
         status: SimulationStatus::Complete,
         tax_credit,
-        hydrogen_productions: state.hydrogen_productions,
-        emissions: state.emissions,
+        emissions: TimeSeriesChart {
+            id: String::from("emissions"),
+            title: String::from("Emission time series"),
+            time_series: emission_time_series,
+        },
+        hydrogen_productions: TimeSeriesChart {
+            id: String::from("hydrogen-productions"),
+            title: String::from("Hydrogen Production over time"),
+            time_series: hydrogen_production_time_series,
+        },
     }
 }
 

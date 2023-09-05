@@ -5,6 +5,7 @@ use crate::schema::electrolyzer::Electrolyzer;
 pub trait ElectrolyzerPersistanceClient: Send + Sync {
     fn get_electrolyzer(&self, id: usize) -> Result<Electrolyzer, String>;
     fn create_electrolyzer(&self, electrolyzer: &Electrolyzer) -> Result<Electrolyzer, String>;
+    fn list_electrolyzers(&self) -> Result<Vec<Electrolyzer>, String>;
 }
 
 pub struct InMemoryElectrolyzerPersistanceClient {
@@ -42,5 +43,15 @@ impl ElectrolyzerPersistanceClient for InMemoryElectrolyzerPersistanceClient {
         locked_map.insert(electrolyzer.id, electrolyzer);
 
         Ok(electrolyzer)
+    }
+
+    fn list_electrolyzers(&self) -> Result<Vec<Electrolyzer>, String> {
+        Ok(self
+            .electrolyzers_by_id
+            .lock()
+            .expect("Should obtain mutex")
+            .values()
+            .map(|value| value.clone())
+            .collect())
     }
 }

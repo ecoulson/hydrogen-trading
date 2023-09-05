@@ -1,0 +1,5 @@
+<select hx-get="/list_electrolyzers" hx-trigger="electrolyzer_created from:body" name="electrolyzer_id">
+    {% for electrolyzer in electrolyzers %}
+    <option>{{ electrolyzer.id }}</option>
+    {% endfor %}
+</select>

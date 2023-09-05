@@ -7,15 +7,14 @@ use crate::{
     schema::simulation_schema::{ExecuteSimulationRequest, ExecuteSimulationResponse},
 };
 
-#[post("/execute_simulation/<electrolyzer_id>", data = "<request>")]
+#[post("/execute_simulation", data = "<request>")]
 pub async fn execute_simulation(
     request: Form<ExecuteSimulationRequest>,
-    electrolyzer_id: usize,
     power_grid_fetcher: &State<Box<dyn GridFetcher>>,
     electrolyzer_client: &State<Box<dyn ElectrolyzerPersistanceClient>>,
 ) -> HtmxTemplate<ExecuteSimulationResponse> {
     let electrolyzer = electrolyzer_client
-        .get_electrolyzer(electrolyzer_id)
+        .get_electrolyzer(request.electrolyzer_id)
         .expect("Should work");
     let power_grid = power_grid_fetcher.get_power_grid();
 

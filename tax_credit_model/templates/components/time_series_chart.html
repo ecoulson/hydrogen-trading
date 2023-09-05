@@ -1,0 +1,27 @@
+<canvas id="{{ id }}"></canvas>
+<script>
+  new Chart(document.getElementById('{{ id }}'), {
+    type: 'line',
+    data: {
+      datasets: [{
+        label: "{{ time_series.label }}",
+        data: [
+            {% for data_point in time_series.data_points %}
+            {
+                x: "{{ data_point.date }}",
+                y: {{ data_point.value }}
+            },
+            {% endfor %}
+        ],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      scales: {
+        xAxes: {
+          type: 'time'
+        }
+      }
+    }
+  });
+</script>

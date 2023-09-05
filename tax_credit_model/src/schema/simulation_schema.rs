@@ -2,8 +2,11 @@ use askama::Template;
 use rocket::FromForm;
 use serde::{Deserialize, Serialize};
 
+use super::time_series::TimeSeriesChart;
+
 #[derive(FromForm, Deserialize, Serialize, Default, Debug, PartialEq)]
 pub struct ExecuteSimulationRequest {
+    pub electrolyzer_id: usize,
     pub simulation_time_range: TimeRange,
 }
 
@@ -32,8 +35,8 @@ impl std::fmt::Display for SimulationStatus {
 pub struct SimulationResult {
     pub status: SimulationStatus,
     pub tax_credit: TaxCredit45V,
-    pub emissions: Vec<EmissionEvent>,
-    pub hydrogen_productions: Vec<HydrogenProductionEvent>,
+    pub emissions: TimeSeriesChart,
+    pub hydrogen_productions: TimeSeriesChart,
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq)]
