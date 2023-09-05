@@ -1,4 +1,4 @@
-use tax_credit_model::server::{init_service, ServerConfiguration};
+use tax_credit_model_server::server::{init_service, ServerConfiguration};
 
 #[macro_use]
 extern crate rocket;

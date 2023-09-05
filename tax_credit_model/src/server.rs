@@ -1,4 +1,7 @@
-use rocket::{routes, Build, Rocket};
+use rocket::{
+    fs::{relative, FileServer},
+    routes, Build, Rocket,
+};
 
 use crate::{
     handlers::{
@@ -22,11 +25,15 @@ impl ServerConfiguration {
 }
 
 pub fn init_service(configuration: ServerConfiguration) -> Rocket<Build> {
+    let path =
+        std::env::var("ASSETS_DIRECTORY").unwrap_or_else(|_err| relative!("assets").to_string());
+
     rocket::build()
         .manage(configuration)
         .manage(Box::new(InMemoryGridFetcher::new()) as Box<dyn GridFetcher>)
         .manage(Box::new(InMemoryElectrolyzerPersistanceClient::new())
             as Box<dyn ElectrolyzerPersistanceClient>)
+        .mount("/assets", FileServer::from(path))
         .mount(
             "/",
             routes![

@@ -1,0 +1,19 @@
+[env]
+PORT = 8000
+
+[tasks.run]
+env = { "RUST_ENV" = "development", "PORT" = "${PORT}" }
+install_crate = "cargo-watch"
+command = "cargo"
+args = ["watch", "-x", "run"]
+
+[tasks.styles]
+command = "npx"
+args = [
+    "tailwindcss",
+    "-i",
+    "./styles/tailwind.css",
+    "-o",
+    "./assets/styles/main.css",
+    "--watch"
+]
