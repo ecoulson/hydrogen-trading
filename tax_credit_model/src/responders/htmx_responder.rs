@@ -3,17 +3,17 @@ use std::io::Cursor;
 use askama;
 use rocket::{http::ContentType, response::Responder, Response};
 
-const HX_TRIGGER: &str = "HX-Trigger";
-const HX_PUSH_URL: &str = "HX-Push-Url";
-const HX_LOCATION: &str = "HX-Location";
-const HX_RESWAP: &str = "HX-Reswap";
-const HX_REFRESH: &str = "HX-Refresh";
-const HX_REDIRECT: &str = "HX-Redirect";
-const HX_RETARGET: &str = "HX-Retarget";
-const HX_RESELECT: &str = "HX-Reselect";
-const HX_REPLACE_URL: &str = "HX-Replace-Url";
-const HX_TRIGGER_AFTER_SWAP: &str = "HX-Trigger-After-Swap";
-const HX_TRIGGER_AFTER_SETTLE: &str = "HX-Trigger-After-Settle";
+pub const HX_TRIGGER: &str = "HX-Trigger";
+pub const HX_PUSH_URL: &str = "HX-Push-Url";
+pub const HX_LOCATION: &str = "HX-Location";
+pub const HX_RESWAP: &str = "HX-Reswap";
+pub const HX_REFRESH: &str = "HX-Refresh";
+pub const HX_REDIRECT: &str = "HX-Redirect";
+pub const HX_RETARGET: &str = "HX-Retarget";
+pub const HX_RESELECT: &str = "HX-Reselect";
+pub const HX_REPLACE_URL: &str = "HX-Replace-Url";
+pub const HX_TRIGGER_AFTER_SWAP: &str = "HX-Trigger-After-Swap";
+pub const HX_TRIGGER_AFTER_SETTLE: &str = "HX-Trigger-After-Settle";
 
 pub struct HtmxTemplate<T>
 where

@@ -1,1 +1,39 @@
-<h1>Created Electrolyzer {{ electrolyzer.id }}</h1>
+<h1>Electrolyzer Parameters</h1>
+<table>
+    <tr>
+        <td>Id</td>
+        <td>{{ electrolyzer.id }}</td>
+    </tr>
+    <tr>
+        <td>Replacement Threshold</td>
+        <td>{{ electrolyzer.replacement_threshold }}</td>
+    </tr>
+    <tr>
+        <td>Degredation Rate</td>
+        <td>{{ electrolyzer.degredation_rate }}</td>
+    </tr>
+    <tr>
+        <td>Capacity MW</td>
+        <td>{{ electrolyzer.capacity_mw }}</td>
+    </tr>
+    <tr>
+        <td>Production Method</td>
+        <td>Constant</td>
+    </tr>
+    <tr>
+        <td>Production Rate (kg h2 / mw)</td>
+        <td>{{ electrolyzer.production_method.conversion_rate }}</td>
+    </tr>
+    <tr>
+        <td>Capex</td>
+        <td>{{ electrolyzer.capex }}</td>
+    </tr>
+    <tr>
+        <td>Opex ($/hr)</td>
+        <td>{{ electrolyzer.opex }}</td>
+    </tr>
+    <tr>
+        <td>Replacement Cost</td>
+        <td>{{ electrolyzer.replacement_cost }}</td>
+    </tr>
+</table>

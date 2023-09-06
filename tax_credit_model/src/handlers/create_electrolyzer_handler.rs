@@ -2,7 +2,7 @@ use rocket::{form::Form, post, State};
 
 use crate::{
     persistance::electrolyzer::ElectrolyzerPersistanceClient,
-    responders::htmx_responder::HtmxTemplate,
+    responders::htmx_responder::{HtmxTemplate, HtmxHeaders, HX_TRIGGER},
     schema::electrolyzer::{
         ConstantProduction, CreateElectrolyzerResponse, CreateElectrolyzerRequest, Electrolyzer,
     },
@@ -30,6 +30,8 @@ pub fn create_electrolyzer_handler(
             replacement_cost: request.replacement_cost,
         })
         .expect("Should create electrolyzer");
+    let mut headers = HtmxHeaders::default();
+    headers.set_header(HX_TRIGGER, "electrolyzer_created");
 
-    CreateElectrolyzerResponse { electrolyzer }.into()
+    HtmxTemplate::new(CreateElectrolyzerResponse { electrolyzer }, headers)
 }

@@ -581,6 +581,10 @@ video {
   display: flex;
 }
 
+.table {
+  display: table;
+}
+
 .w-1\/4 {
   width: 25%;
 }

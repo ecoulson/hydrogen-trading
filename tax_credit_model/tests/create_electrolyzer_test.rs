@@ -1,5 +1,6 @@
-use tax_credit_model_server::schema::electrolyzer::{
-    CreateElectrolyzerRequest, CreateElectrolyzerResponse,
+use tax_credit_model_server::{
+    responders::htmx_responder::HX_TRIGGER,
+    schema::electrolyzer::{CreateElectrolyzerRequest, CreateElectrolyzerResponse},
 };
 use utils::test_server::Method::Post;
 
@@ -12,13 +13,19 @@ async fn create_electrolyzer_successfully() {
     let server = TestEnv::load().create_test_server().await;
     let mut request = CreateElectrolyzerRequest::default();
     request.production_method.conversion_rate_constant = Some(0.5);
-    let expected_response = CreateElectrolyzerResponse::default();
+    let mut expected_response = CreateElectrolyzerResponse::default();
+    expected_response
+        .electrolyzer
+        .production_method
+        .conversion_rate = 0.5;
 
     let response = server
         .invoke_template::<CreateElectrolyzerRequest>(Post, "/create_electrolyzer", &request)
         .await;
-    dbg!(&response);
-    dbg!(expected_response.to_string());
 
-    assert_template_eq!(response, expected_response);
+    assert_eq!(
+        response.headers.get(HX_TRIGGER),
+        Some(&String::from("electrolyzer_created"))
+    );
+    assert_template_eq!(response.data, expected_response);
 }

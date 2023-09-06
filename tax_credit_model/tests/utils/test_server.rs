@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use rocket::{http::ContentType, local::asynchronous::Client};
 use serde::Serialize;
 use tax_credit_model_server::server::{init_service, ServerConfiguration};
@@ -11,6 +13,11 @@ pub enum Method {
     Post,
 }
 
+pub struct Response<T> {
+    pub headers: HashMap<String, String>,
+    pub data: T,
+}
+
 impl TestServer {
     pub async fn spawn(configuration: ServerConfiguration) -> TestServer {
         let client = Client::tracked(init_service(configuration));
@@ -19,12 +26,12 @@ impl TestServer {
         }
     }
 
-    pub async fn invoke_template<Request>(
+    pub async fn invoke_template<'a, Request>(
         &self,
         method: Method,
         path: &str,
         request_model: &Request,
-    ) -> String
+    ) -> Response<String>
     where
         Request: Serialize,
     {
@@ -34,10 +41,17 @@ impl TestServer {
         .header(ContentType::Form)
         .body(serde_qs::to_string(&request_model).expect("Should be a valid request"));
         let response = request.dispatch().await;
+        let mut headers = HashMap::new();
+        for header in response.headers().iter() {
+            headers.insert(header.name.to_string(), header.value().to_string());
+        }
 
-        response
-            .into_string()
-            .await
-            .expect("Should convert body to string")
+        Response {
+            headers,
+            data: response
+                .into_string()
+                .await
+                .expect("Should convert body to string"),
+        }
     }
 }
