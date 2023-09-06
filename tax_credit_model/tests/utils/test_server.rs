@@ -1,5 +1,5 @@
-use rocket::local::asynchronous::Client;
-use serde::{de::DeserializeOwned, Serialize};
+use rocket::{http::ContentType, local::asynchronous::Client};
+use serde::Serialize;
 use tax_credit_model_server::server::{init_service, ServerConfiguration};
 
 #[derive(Debug)]
@@ -9,9 +9,6 @@ pub struct TestServer {
 
 pub enum Method {
     Post,
-    Get,
-    Put,
-    Delete,
 }
 
 impl TestServer {
@@ -22,29 +19,25 @@ impl TestServer {
         }
     }
 
-    pub async fn invoke<Request, Response>(
+    pub async fn invoke_template<Request>(
         &self,
         method: Method,
         path: &str,
         request_model: &Request,
-    ) -> Response
+    ) -> String
     where
-        Response: DeserializeOwned,
         Request: Serialize,
     {
         let request = match method {
             Method::Post => self.server_client.post(path),
-            Method::Get => self.server_client.get(path),
-            Method::Put => self.server_client.put(path),
-            Method::Delete => self.server_client.delete(path)
-        }.body(serde_urlencoded::to_string(&request_model).expect("Should be a valid request"));
-
+        }
+        .header(ContentType::Form)
+        .body(serde_qs::to_string(&request_model).expect("Should be a valid request"));
         let response = request.dispatch().await;
-        let response_text = response
+
+        response
             .into_string()
             .await
-            .expect("Should convert body to string");
-
-        serde_urlencoded::from_str(&response_text).expect("Should be a valid response")
+            .expect("Should convert body to string")
     }
 }

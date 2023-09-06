@@ -37,9 +37,7 @@ impl ElectrolyzerPersistanceClient for InMemoryElectrolyzerPersistanceClient {
             .electrolyzers_by_id
             .lock()
             .expect("Should obtain mutex");
-        dbg!(&locked_map);
         electrolyzer.id = locked_map.len();
-        dbg!(electrolyzer);
         locked_map.insert(electrolyzer.id, electrolyzer);
 
         Ok(electrolyzer)

@@ -33,7 +33,7 @@ pub struct CreateProductionRequest {
 }
 
 #[derive(FromForm, Deserialize, Serialize, Default, Debug, PartialEq, Clone, Copy)]
-pub struct CreateElectrolzyerRequest {
+pub struct CreateElectrolyzerRequest {
     pub replacement_threshold: f32,
     pub degredation_rate: f32,
     pub capacity_mw: f32,
