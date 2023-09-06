@@ -4,7 +4,7 @@ use crate::{
     persistance::electrolyzer::ElectrolyzerPersistanceClient,
     responders::htmx_responder::{HtmxHeaders, HtmxTemplate},
     schema::electrolyzer::{
-        ConstantProduction, CreateElectrolyzerRespone, CreateElectrolzyerRequest, Electrolyzer,
+        ConstantProduction, CreateElectrolyzerResponse, CreateElectrolzyerRequest, Electrolyzer,
     },
 };
 
@@ -12,7 +12,7 @@ use crate::{
 pub fn create_electrolyzer_handler(
     request: Form<CreateElectrolzyerRequest>,
     electrolyzer_client: &State<Box<dyn ElectrolyzerPersistanceClient>>,
-) -> HtmxTemplate<CreateElectrolyzerRespone> {
+) -> HtmxTemplate<CreateElectrolyzerResponse> {
     let electrolyzer = electrolyzer_client
         .create_electrolyzer(&Electrolyzer {
             id: 0,
@@ -34,5 +34,5 @@ pub fn create_electrolyzer_handler(
     let mut headers = HtmxHeaders::default();
     headers.trigger = Some(String::from("electrolyzer_created"));
 
-    HtmxTemplate::new(CreateElectrolyzerRespone { electrolyzer }, headers)
+    HtmxTemplate::new(CreateElectrolyzerResponse { electrolyzer }, headers)
 }

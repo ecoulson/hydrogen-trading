@@ -45,6 +45,6 @@ pub struct CreateElectrolzyerRequest {
 
 #[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq, Clone, Copy)]
 #[template(path = "components/create_electrolyzer.html")]
-pub struct CreateElectrolyzerRespone {
+pub struct CreateElectrolyzerResponse {
     pub electrolyzer: Electrolyzer,
 }
