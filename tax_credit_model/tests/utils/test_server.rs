@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use rocket::{http::ContentType, local::asynchronous::Client};
+use rocket::{http::ContentType, local::asynchronous::Client, State};
 use serde::Serialize;
 use tax_credit_model_server::server::{init_service, ServerConfiguration};
 
@@ -24,6 +24,16 @@ impl TestServer {
         TestServer {
             server_client: client.await.expect("Should spawn server"),
         }
+    }
+
+    pub fn get<T>(&self) -> &T
+    where
+        T: Sync + Send + 'static,
+    {
+        let state: &State<T> =
+            State::get(&self.server_client.rocket()).expect("State should be defined");
+
+        state.inner()
     }
 
     pub async fn invoke_template<'a, Request>(

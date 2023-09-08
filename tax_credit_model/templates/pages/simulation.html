@@ -1,8 +1,8 @@
 {% extends "layouts/base.html" %}
 
 {% block head %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script async defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script async defer src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 {% endblock %}
 
 {% block title %}Tax Credit Policy Modeling{% endblock %}
@@ -79,12 +79,12 @@
                 <input class="border" id="simulation_time_range.start.nanos" name="simulation_time_range.start.nanos" />
             </div>
             <div class="p-4">
-                <label for="simulation_time_range.end.seconds">Start Seconds</label>
+                <label for="simulation_time_range.end.seconds">End Seconds</label>
                 <br/>
                 <input class="border" id="simulation_time_range.end.seconds" name="simulation_time_range.end.seconds" />
             </div>
             <div class="p-4">
-                <label for="simulation_time_range.end.nanos">Start Nanos</label>
+                <label for="simulation_time_range.end.nanos">End Nanos</label>
                 <br/>
                 <input class="border" id="simulation_time_range.end.nanos" name="simulation_time_range.end.nanos" />
             </div>

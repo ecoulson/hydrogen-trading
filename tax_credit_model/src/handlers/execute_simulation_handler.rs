@@ -15,11 +15,11 @@ pub async fn execute_simulation(
 ) -> HtmxTemplate<ExecuteSimulationResponse> {
     let electrolyzer = electrolyzer_client
         .get_electrolyzer(request.electrolyzer_id)
-        .expect("Should work");
+        .expect("Electrolyzer should exist");
     let power_grid = power_grid_fetcher.get_power_grid();
 
     ExecuteSimulationResponse {
-        simulation_result: simulate(&power_grid, &electrolyzer, &request.simulation_time_range),
+        simulation_result:simulate(&power_grid, &electrolyzer, &request.simulation_time_range),
     }
     .into()
 }

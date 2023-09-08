@@ -2,9 +2,10 @@ use rocket::{form::Form, post, State};
 
 use crate::{
     persistance::electrolyzer::ElectrolyzerPersistanceClient,
-    responders::htmx_responder::{HtmxTemplate, HtmxHeaders, HX_TRIGGER},
+    responders::htmx_responder::{HtmxHeaders, HtmxTemplate, HX_TRIGGER},
     schema::electrolyzer::{
-        ConstantProduction, CreateElectrolyzerResponse, CreateElectrolyzerRequest, Electrolyzer,
+        ConstantProduction, CreateElectrolyzerRequest, CreateElectrolyzerResponse, Electrolyzer,
+        ProductionType,
     },
 };
 
@@ -21,12 +22,13 @@ pub fn create_electrolyzer_handler(
             capacity_mw: request.capacity_mw,
             opex: request.opex,
             capex: request.capex,
-            production_method: ConstantProduction {
+            constant_production: Some(ConstantProduction {
                 conversion_rate: request
                     .production_method
                     .conversion_rate_constant
-                    .expect("Expected constant rate"),
-            },
+                    .expect("Only constant rate supported"),
+            }),
+            production_type: ProductionType::Constant,
             replacement_cost: request.replacement_cost,
         })
         .expect("Should create electrolyzer");

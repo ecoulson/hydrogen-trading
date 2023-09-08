@@ -22,7 +22,11 @@
     </tr>
     <tr>
         <td>Production Rate (kg h2 / mw)</td>
-        <td>{{ electrolyzer.production_method.conversion_rate }}</td>
+        <td>{{ electrolyzer
+            .constant_production
+            .expect("Only constant production supported")
+            .conversion_rate }}
+        </td>
     </tr>
     <tr>
         <td>Capex</td>

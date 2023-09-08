@@ -2,12 +2,27 @@ use askama::Template;
 use rocket::FromForm;
 use serde::{Deserialize, Serialize};
 
-use super::time_series::TimeSeriesChart;
+use super::{
+    time::{TimeRange, Timestamp},
+    time_series::TimeSeriesChart,
+};
 
 #[derive(FromForm, Deserialize, Serialize, Default, Debug, PartialEq)]
 pub struct ExecuteSimulationRequest {
     pub electrolyzer_id: usize,
     pub simulation_time_range: TimeRange,
+}
+
+impl ExecuteSimulationRequest {
+    pub fn new(
+        electrolyzer_id: usize,
+        simulation_time_range: TimeRange,
+    ) -> ExecuteSimulationRequest {
+        ExecuteSimulationRequest {
+            electrolyzer_id,
+            simulation_time_range,
+        }
+    }
 }
 
 #[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq)]
@@ -54,12 +69,6 @@ pub struct HydrogenProductionEvent {
     pub kg_hydrogen: f32,
 }
 
-#[derive(FromForm, Deserialize, Serialize, Default, Debug, PartialEq, Eq)]
-pub struct TimeRange {
-    pub start: Timestamp,
-    pub end: Timestamp,
-}
-
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq)]
 pub struct EnergySourcePortfolio {
     pub simulation_id: i32,
@@ -100,6 +109,12 @@ impl EnergySourcePortfolio {
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq)]
 pub struct PowerGrid {
     pub power_plants: Vec<PowerPlant>,
+}
+
+impl PowerGrid {
+    pub fn add_power_plant(&mut self, power_plant: PowerPlant) {
+        self.power_plants.push(power_plant);
+    }
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq, Eq)]
@@ -144,6 +159,24 @@ pub struct GenerationMetric {
     pub amount_mmbtu: f32,
 }
 
+impl GenerationMetric {
+    pub fn new(
+        plant_id: i32,
+        time_generated: &Timestamp,
+        amount_mwh: f32,
+        sale_price_usd_per_mwh: f32,
+        amount_mmbtu: f32,
+    ) -> GenerationMetric {
+        GenerationMetric {
+            plant_id,
+            time_generated: Timestamp::new(time_generated.seconds, time_generated.nanos),
+            amount_mmbtu,
+            sale_price_usd_per_mwh,
+            amount_mwh,
+        }
+    }
+}
+
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq)]
 pub struct PowerPlant {
     pub plant_id: i32,
@@ -156,12 +189,6 @@ impl PowerPlant {
     pub fn add_generation(&mut self, generation: GenerationMetric) {
         self.generation.push(generation);
     }
-}
-
-#[derive(FromForm, Deserialize, Serialize, Default, Debug, PartialEq, Eq)]
-pub struct Timestamp {
-    pub seconds: i64,
-    pub nanos: u32,
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq)]

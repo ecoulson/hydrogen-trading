@@ -1,5 +1,6 @@
-use crate::schema::simulation_schema::{
-    EnergySource, GenerationMetric, PowerGrid, PowerPlant, Timestamp,
+use crate::schema::{
+    simulation_schema::{EnergySource, GenerationMetric, PowerGrid, PowerPlant},
+    time::Timestamp,
 };
 
 pub trait GridFetcher: Send + Sync {
@@ -34,20 +35,14 @@ impl InMemoryGridFetcher {
             15706.68,
             1351.545,
             0.02,
-            Timestamp {
-                seconds: 1690876800,
-                nanos: 0,
-            },
+            Timestamp::default(),
         ));
         power_plant.add_generation(self.generate_power(
             power_plant.plant_id,
             15706.68,
             1351.545,
             0.02,
-            Timestamp {
-                seconds: 1693555200,
-                nanos: 0,
-            },
+            Timestamp::default(),
         ));
 
         power_plant
