@@ -17,10 +17,6 @@ async fn test_simulate_for_simple_model() {
     let server = TestEnv::load().create_test_server().await;
     let mut time_range = TimeRange::default();
     time_range.end.seconds = 3600;
-    // let end_iso_date = Timestamp::new(time_range.end.seconds, time_range.end.nanos)
-    //     .to_utc_date_time()
-    //     .unwrap()
-    //     .to_rfc3339();
     let mut expected_response = ExecuteSimulationResponse::default();
     expected_response.simulation_result.emissions.id = String::from("emissions");
     expected_response
