@@ -5,3 +5,4 @@ pub mod logic;
 pub mod persistance;
 pub mod responders;
 pub mod jobs;
+pub mod parsers;

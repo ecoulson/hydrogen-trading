@@ -148,6 +148,8 @@ pub enum EnergySource {
     Wind,
     Biomass,
     Hydropower,
+    WholesaleStoageLoad,
+    Unknown,
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq)]

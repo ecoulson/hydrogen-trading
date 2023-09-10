@@ -1,8 +1,27 @@
-use crate::schema::{simulation_schema::GenerationMetric, time::Timestamp};
+use std::{collections::HashMap, num::ParseFloatError};
+
+use chrono::NaiveDate;
+
+use crate::{parsers::csv_parser::CsvParser, schema::simulation_schema::EnergySource};
 
 // 2023 link: https://www.ercot.com/files/docs/2023/02/07/IntGenbyFuel2023.xlsx
 pub struct ErcotDataRetrieverJob {
     data_directory: String,
+}
+
+#[derive(Default, Debug, PartialEq)]
+enum Settlement {
+    #[default]
+    Final,
+}
+
+#[derive(Default, Debug, PartialEq)]
+struct ErcotFuelMix {
+    date: NaiveDate,
+    total_electricity: f32,
+    fuel_source: EnergySource,
+    settlement: Settlement,
+    electricity_production: Vec<f32>,
 }
 
 impl ErcotDataRetrieverJob {
@@ -12,65 +31,80 @@ impl ErcotDataRetrieverJob {
         }
     }
 
-    pub fn run(&mut self) {
-        self.data_directory.push_str("/ercot/fuel_mix_2023_01.csv");
-        let csv = std::fs::read_to_string(&self.data_directory).expect("CSV should exist");
-        let mut lines = csv.lines();
-        let mut generations: Vec<GenerationMetric> = vec![];
-        lines.next(); // Ignore csv heading
+    pub fn run(&self) {
+        let mut fuel_mixes: Vec<ErcotFuelMix> = vec![];
+        let fuel_mix_path = format!("{}{}", &self.data_directory, "/ercot/fuel_mix_2023_01.csv");
+        let rtm_pricing_path = format!("{}{}", &self.data_directory, "/ercot/rtm_pricing_2023_01.csv");
+        let fuel_mix_entries = CsvParser::parse(&fuel_mix_path);
+        let rtm_pricing_entries = CsvParser::parse(&rtm_pricing_path);
 
-        for line in lines {
-            let mut values: Vec<String> = Vec::with_capacity(100);
-            let chars: Vec<char> = line.chars().collect();
-            let mut i = 0;
-
-            while i < chars.len() {
-                let (next_index, value) = if chars[i] == '"' {
-                    self.parse_to_quotation(&chars, i)
-                } else {
-                    self.parse_to_seperator(&chars, i)
-                };
-
-                values.push(value);
-                i = next_index + 1;
+        for entry in fuel_mix_entries {
+            let fuel_source = match entry["Fuel"].as_str() {
+                "Coal" => Ok(EnergySource::Coal),
+                "Biomass" => Ok(EnergySource::Biomass),
+                "Gas" => Ok(EnergySource::NaturalGas),
+                "Gas-CC" => Ok(EnergySource::NaturalGas),
+                "Hydro" => Ok(EnergySource::Hydropower),
+                "Nuclear" => Ok(EnergySource::Nuclear),
+                "Solar" => Ok(EnergySource::Solar),
+                "Wind" => Ok(EnergySource::Wind),
+                "WSL" => Ok(EnergySource::WholesaleStoageLoad),
+                "Other" => Ok(EnergySource::Unknown),
+                _ => Err("Invalid fuel source"),
             }
+            .unwrap();
 
-            // should create an ErcotFuelMix struct
-            // should create an ErcotMarketPrice struct
-            // aggregate the retrieved data in to generation metrics
-            // then we can have power plant specific aggregations and have the simulation work as
-            // expected
-            let generation = GenerationMetric {
-                plant_id: 0,
-                amount_mwh: 0.0, // can get from data
-                amount_mmbtu: 0.0, // depends on type but can calc
-                sale_price_usd_per_mwh: 0.0, // need market data
-                time_generated: Timestamp::default()
-            };
+            let settlement = match entry["Settlement Type"].as_str() {
+                "FINAL" => Ok(Settlement::Final),
+                _ => Err("Invalid settlement type"),
+            }
+            .unwrap();
+
+            fuel_mixes.push(ErcotFuelMix {
+                date: NaiveDate::parse_from_str(&entry["Date"], "%m/%d/%Y")
+                    .expect("Should be valid date"),
+                fuel_source,
+                settlement,
+                total_electricity: self
+                    .parse_float(&entry["Total"])
+                    .expect("Should be a valid float"),
+                electricity_production: self.parse_electricity_production(&entry),
+            });
         }
+
+        dbg!(rtm_pricing_entries);
     }
 
-    fn parse_to_quotation(&self, chars: &Vec<char>, i: usize) -> (usize, String) {
-        let mut i = i + 1;
-        let mut value = String::new();
+    fn parse_electricity_production(&self, entry: &HashMap<String, String>) -> Vec<f32> {
+        let mut productions = vec![];
+        let mut i = 1;
 
-        while i < chars.len() && chars[i] != '"' {
-            value.push(chars[i]);
+        while i < 24 * 4 {
+            let hour = i / 4;
+            let segment = i % 4;
+            let minute = match segment {
+                0 => Ok("00"),
+                1 => Ok("15"),
+                2 => Ok("30"),
+                3 => Ok("45"),
+                _ => Err("Illegal segment"),
+            }
+            .unwrap();
+            let key = format!("{}:{}", hour, minute);
+
+            productions.push(self.parse_float(&entry[&key]).expect("Should be a float"));
+
             i += 1;
         }
 
-        (i + 1, value)
+        productions.push(self.parse_float(&entry["0:00"]).expect("Should be a float"));
+
+        productions
     }
 
-    fn parse_to_seperator(&self, chars: &Vec<char>, i: usize) -> (usize, String) {
-        let mut i = i;
-        let mut value = String::new();
+    fn parse_float(&self, value: &str) -> Result<f32, ParseFloatError> {
+        let cleaned_float = value.replace(",", "");
 
-        while i < chars.len() && chars[i] != ',' {
-            value.push(chars[i]);
-            i += 1;
-        }
-
-        (i, value)
+        cleaned_float.parse()
     }
 }
