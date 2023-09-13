@@ -3,9 +3,12 @@ use rocket::{form::Form, post, State};
 use crate::{
     persistance::electrolyzer::ElectrolyzerPersistanceClient,
     responders::htmx_responder::{HtmxHeaders, HtmxTemplate, HX_TRIGGER},
-    schema::electrolyzer::{
-        ConstantProduction, CreateElectrolyzerRequest, CreateElectrolyzerResponse, Electrolyzer,
-        ProductionType,
+    schema::{
+        electrolyzer::{
+            ConstantProduction, CreateElectrolyzerRequest, CreateElectrolyzerResponse,
+            Electrolyzer, ProductionType,
+        },
+        errors::BannerError,
     },
 };
 
@@ -13,7 +16,7 @@ use crate::{
 pub fn create_electrolyzer_handler(
     request: Form<CreateElectrolyzerRequest>,
     electrolyzer_client: &State<Box<dyn ElectrolyzerPersistanceClient>>,
-) -> HtmxTemplate<CreateElectrolyzerResponse> {
+) -> Result<HtmxTemplate<CreateElectrolyzerResponse>, HtmxTemplate<BannerError>> {
     let electrolyzer = electrolyzer_client
         .create_electrolyzer(&Electrolyzer {
             id: 0,
@@ -26,14 +29,21 @@ pub fn create_electrolyzer_handler(
                 conversion_rate: request
                     .production_method
                     .conversion_rate_constant
-                    .expect("Only constant rate supported"),
+                    .ok_or_else(|| BannerError {
+                        message: String::from("Only constant rate supported"),
+                    })?,
             }),
             production_type: ProductionType::Constant,
             replacement_cost: request.replacement_cost,
         })
-        .expect("Should create electrolyzer");
+        .map_err(|err| BannerError {
+            message: err.to_string(),
+        })?;
     let mut headers = HtmxHeaders::default();
     headers.set_header(HX_TRIGGER, "electrolyzer_created");
 
-    HtmxTemplate::new(CreateElectrolyzerResponse { electrolyzer }, headers)
+    Ok(HtmxTemplate::new(
+        CreateElectrolyzerResponse { electrolyzer },
+        headers,
+    ))
 }

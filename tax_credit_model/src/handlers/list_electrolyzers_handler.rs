@@ -3,7 +3,8 @@ use rocket::{get, State};
 
 use crate::{
     persistance::electrolyzer::ElectrolyzerPersistanceClient,
-    responders::htmx_responder::HtmxTemplate, schema::electrolyzer::Electrolyzer,
+    responders::htmx_responder::HtmxTemplate,
+    schema::{electrolyzer::Electrolyzer, errors::BannerError},
 };
 
 #[derive(Template)]
@@ -15,10 +16,12 @@ pub struct ListElectrolyzerTemplate {
 #[get("/list_electrolyzers")]
 pub fn list_electrolyzers_handler(
     electrolyzer_client: &State<Box<dyn ElectrolyzerPersistanceClient>>,
-) -> HtmxTemplate<ListElectrolyzerTemplate> {
+) -> Result<HtmxTemplate<ListElectrolyzerTemplate>, HtmxTemplate<BannerError>> {
     let electrolyzers = electrolyzer_client
         .list_electrolyzers()
-        .expect("Should list electrolyzers");
+        .map_err(|err| BannerError {
+            message: err.to_string(),
+        })?;
 
-    ListElectrolyzerTemplate { electrolyzers }.into()
+    Ok(ListElectrolyzerTemplate { electrolyzers }.into())
 }

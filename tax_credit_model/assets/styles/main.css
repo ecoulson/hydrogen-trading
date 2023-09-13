@@ -593,6 +593,10 @@ video {
   width: 75%;
 }
 
+.w-full {
+  width: 100%;
+}
+
 .border {
   border-width: 1px;
 }
@@ -605,6 +609,11 @@ video {
 .bg-slate-400 {
   --tw-bg-opacity: 1;
   background-color: rgb(148 163 184 / var(--tw-bg-opacity));
+}
+
+.bg-red-600 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(220 38 38 / var(--tw-bg-opacity));
 }
 
 .p-4 {

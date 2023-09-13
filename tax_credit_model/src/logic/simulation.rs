@@ -1,5 +1,6 @@
 use crate::schema::{
     electrolyzer::Electrolyzer,
+    errors::Error,
     simulation_schema::{
         EmissionEvent, EnergySourcePortfolio, EnergyTransaction, HydrogenProductionEvent,
         PowerGrid, PowerPlant, SimulationResult, SimulationStatus, TaxCredit45V,
@@ -9,8 +10,12 @@ use crate::schema::{
 };
 use chrono::{Datelike, Duration, TimeZone, Timelike, Utc};
 
-const NATURAL_GAS_MMBTU_TO_CO2: f32 = 53.0703;
+// https://ourworldindata.org/grapher/carbon-dioxide-emissions-factor
+const NATURAL_GAS_MWH_TO_CO2: f32 = 201.96;
 const TAX_CREDIT_45V_MAX_VALUE_USD: f32 = 3.0;
+
+// TODO: Refactor to error file
+type Result<T> = std::result::Result<T, Error>;
 
 struct SimulationState {
     emissions: Vec<EmissionEvent>,
@@ -32,10 +37,10 @@ pub fn simulate(
     power_grid: &PowerGrid,
     electrolyzer: &Electrolyzer,
     time_range: &TimeRange,
-) -> SimulationResult {
+) -> Result<SimulationResult> {
     let simulation_id = 0;
-    let mut current_timestamp = time_range.start.to_utc_date_time().unwrap();
-    let end_timestamp = time_range.end.to_utc_date_time().unwrap();
+    let mut current_timestamp = time_range.start.to_utc_date_time()?;
+    let end_timestamp = time_range.end.to_utc_date_time()?;
     let increment = Duration::hours(1);
     let mut state = SimulationState::new();
 
@@ -45,15 +50,20 @@ pub fn simulate(
             &Timestamp::from(current_timestamp),
             electrolyzer,
             power_grid,
-        );
-        let portfolio = create_energy_source_portfolio(
+        )?;
+        let portfolio = create_energy_source_portfolio(&transactions);
+        let emission_event = create_emission_event(
             simulation_id,
             &Timestamp::from(current_timestamp),
-            &transactions,
+            electrolyzer,
+            &portfolio,
         );
-        let emission_event = create_emission_event(simulation_id, electrolyzer, &portfolio);
-        let hydrogen_production_event =
-            create_hydrogen_production_event(simulation_id, electrolyzer, &portfolio);
+        let hydrogen_production_event = create_hydrogen_production_event(
+            simulation_id,
+            &Timestamp::from(current_timestamp),
+            electrolyzer,
+            &portfolio,
+        )?;
 
         state.transactions.append(&mut transactions);
         state.emissions.push(emission_event);
@@ -69,33 +79,32 @@ pub fn simulate(
         data_points: state
             .emissions
             .iter()
-            .map(|emission| TimeSeriesEntry {
-                date: emission
-                    .emission_timestamp
-                    .to_utc_date_time()
-                    .unwrap()
-                    .to_rfc3339(),
-                value: emission.amount_emitted_kg,
+            .map(|emission| {
+                Ok(TimeSeriesEntry {
+                    date: emission.emission_timestamp.to_utc_date_time()?.to_rfc3339(),
+                    value: emission.amount_emitted_kg,
+                })
             })
-            .collect(),
+            .collect::<Result<Vec<TimeSeriesEntry>>>()?,
     };
     let hydrogen_production_time_series = TimeSeries {
         label: String::from("Hydrogen Produced"),
         data_points: state
             .hydrogen_productions
             .iter()
-            .map(|production| TimeSeriesEntry {
-                date: production
-                    .production_timestamp
-                    .to_utc_date_time()
-                    .unwrap()
-                    .to_rfc3339(),
-                value: production.kg_hydrogen,
+            .map(|production| {
+                Ok(TimeSeriesEntry {
+                    date: production
+                        .production_timestamp
+                        .to_utc_date_time()?
+                        .to_rfc3339(),
+                    value: production.kg_hydrogen,
+                })
             })
-            .collect(),
+            .collect::<Result<Vec<TimeSeriesEntry>>>()?,
     };
 
-    SimulationResult {
+    Ok(SimulationResult {
         status: SimulationStatus::Complete,
         tax_credit,
         emissions: TimeSeriesChart {
@@ -108,7 +117,7 @@ pub fn simulate(
             title: String::from("Hydrogen Production over time"),
             time_series: hydrogen_production_time_series,
         },
-    }
+    })
 }
 
 fn make_optimal_transactions(
@@ -116,7 +125,7 @@ fn make_optimal_transactions(
     timestamp: &Timestamp,
     electrolyzer: &Electrolyzer,
     power_grid: &PowerGrid,
-) -> Vec<EnergyTransaction> {
+) -> Result<Vec<EnergyTransaction>> {
     power_grid
         .power_plants
         .iter()
@@ -130,91 +139,78 @@ fn purchase(
     power_plant: &PowerPlant,
     amount_mwh: f32,
     timestamp: &Timestamp,
-) -> EnergyTransaction {
-    let purchase_datetime = Utc
-        .timestamp_opt(timestamp.seconds, timestamp.nanos)
-        .unwrap();
+) -> Result<EnergyTransaction> {
+    let purchase_datetime = timestamp.to_utc_date_time()?;
     let generation = power_plant
         .generation
         .iter()
         .find(|generation| {
-            let generation_datetime = Utc
-                .timestamp_opt(
-                    generation.time_generated.seconds,
-                    generation.time_generated.nanos,
-                )
-                .unwrap();
-
-            purchase_datetime.year() == generation_datetime.year()
-                && purchase_datetime.month() == generation_datetime.month()
-                && purchase_datetime.day() == generation_datetime.day()
-                && purchase_datetime.hour() == generation_datetime.hour()
+            generation.time_generated.to_utc_date_time().map_or_else(
+                |_| false,
+                |generation_datetime| {
+                    purchase_datetime.year() == generation_datetime.year()
+                        && purchase_datetime.month() == generation_datetime.month()
+                        && purchase_datetime.day() == generation_datetime.day()
+                        && purchase_datetime.hour() == generation_datetime.hour()
+                },
+            )
         })
-        .expect("Should find a valid generation");
+        .ok_or_else(|| {
+            Error::create_not_found_error(&format!("Generation not found for timestep"))
+        })?;
 
-    EnergyTransaction {
+    Ok(EnergyTransaction {
         simulation_id,
         electrolyzer_id: electrolyzer.id,
         plant_id: generation.plant_id,
-        timestamp: Timestamp::new(timestamp.seconds, timestamp.nanos),
-        amount_mwh,
-        fuel_consumed_mmbtu: amount_mwh * (1.0 / power_plant.heat_rate),
+        timestamp: timestamp.clone(),
         price_usd: generation.sale_price_usd_per_mwh * amount_mwh,
-        energy_source: power_plant.energy_source.clone(),
-    }
+        portfolio: EnergySourcePortfolio::scale_to_amount(&generation.portfolio, amount_mwh)?,
+    })
 }
 
-fn create_energy_source_portfolio(
-    simulation_id: i32,
-    timestamp: &Timestamp,
-    transactions: &Vec<EnergyTransaction>,
-) -> EnergySourcePortfolio {
-    let mut portfolio = EnergySourcePortfolio::new(
-        simulation_id,
-        Timestamp::new(timestamp.seconds, timestamp.nanos),
-    );
-    for transaction in transactions {
-        portfolio.total_electricity_mwh += transaction.amount_mwh;
-        portfolio.natural_gas_mmbtu += transaction.fuel_consumed_mmbtu;
-    }
-
-    portfolio
+fn create_energy_source_portfolio(transactions: &Vec<EnergyTransaction>) -> EnergySourcePortfolio {
+    transactions.iter().fold(
+        EnergySourcePortfolio::default(),
+        |portfolio, transaction| EnergySourcePortfolio::merge(&portfolio, &transaction.portfolio),
+    )
 }
 
 fn create_emission_event(
     simulation_id: i32,
+    timestamp: &Timestamp,
     electrolyzer: &Electrolyzer,
     portfolio: &EnergySourcePortfolio,
 ) -> EmissionEvent {
     let mut amount_emitted_kg = 0.0;
-    amount_emitted_kg += portfolio.natural_gas_mmbtu * NATURAL_GAS_MMBTU_TO_CO2;
+    amount_emitted_kg += portfolio.natural_gas_mwh * NATURAL_GAS_MWH_TO_CO2;
 
     EmissionEvent {
         simulation_id,
         electrolyzer_id: electrolyzer.id,
-        emission_timestamp: Timestamp::new(portfolio.timestamp.seconds, portfolio.timestamp.nanos),
+        emission_timestamp: timestamp.clone(),
         amount_emitted_kg,
     }
 }
 
 fn create_hydrogen_production_event(
     simulation_id: i32,
+    timestamp: &Timestamp,
     electrolyzer: &Electrolyzer,
     portfolio: &EnergySourcePortfolio,
-) -> HydrogenProductionEvent {
-    HydrogenProductionEvent {
+) -> Result<HydrogenProductionEvent> {
+    Ok(HydrogenProductionEvent {
         simulation_id,
         electrolyzer_id: electrolyzer.id,
-        production_timestamp: Timestamp::new(
-            portfolio.timestamp.seconds,
-            portfolio.timestamp.nanos,
-        ),
+        production_timestamp: timestamp.clone(),
         kg_hydrogen: f32::min(portfolio.total_electricity_mwh, electrolyzer.capacity_mw)
             * electrolyzer
                 .constant_production
-                .expect("Only constant production supported")
+                .ok_or_else(|| {
+                    Error::create_unimplemented_error("Only constant production supported")
+                })?
                 .conversion_rate,
-    }
+    })
 }
 
 fn calculate_tax_credit(
@@ -255,15 +251,15 @@ mod test {
     use crate::schema::{
         electrolyzer::{ConstantProduction, Electrolyzer, ProductionType},
         simulation_schema::{
-            EmissionEvent, EnergySource, EnergySourcePortfolio, EnergyTransaction,
-            GenerationMetric, HydrogenProductionEvent, PowerGrid, PowerPlant, TaxCredit45V,
+            EmissionEvent, EnergySourcePortfolio, EnergyTransaction, GenerationMetric,
+            HydrogenProductionEvent, PowerGrid, PowerPlant, TaxCredit45V,
         },
         time::Timestamp,
     };
 
     use super::{
         calculate_tax_credit, create_emission_event, create_energy_source_portfolio,
-        create_hydrogen_production_event, make_optimal_transactions, NATURAL_GAS_MMBTU_TO_CO2,
+        create_hydrogen_production_event, make_optimal_transactions, NATURAL_GAS_MWH_TO_CO2,
     };
 
     // Note that this is it's own piece of work and should be refactored out
@@ -275,14 +271,17 @@ mod test {
         let electrolyzer = Electrolyzer::default();
         let mut power_grid = PowerGrid::default();
         let mut power_plant = PowerPlant::default();
-        power_plant.energy_source = EnergySource::NaturalGas;
-        power_plant.heat_rate = 2.0; // mmbtu / mwh
+        let mut generation_portfolio = EnergySourcePortfolio::default();
+        generation_portfolio.total_electricity_mwh = 4.0;
+        generation_portfolio.natural_gas_mwh = 4.0;
+        let mut transaction_portfolio = EnergySourcePortfolio::default();
+        transaction_portfolio.total_electricity_mwh = 2.0;
+        transaction_portfolio.natural_gas_mwh = 2.0;
         power_plant.add_generation(GenerationMetric::new(
             0,
-            &Timestamp::new(timestamp.seconds, timestamp.nanos),
-            4.0,
+            &timestamp,
             1.0,
-            2.0,
+            generation_portfolio,
         ));
         power_grid.add_power_plant(power_plant);
         let expected_transactions = vec![EnergyTransaction {
@@ -290,10 +289,8 @@ mod test {
             electrolyzer_id: 0,
             plant_id: 0,
             timestamp: Timestamp::new(timestamp.seconds, timestamp.nanos),
-            amount_mwh: 2.0,
-            fuel_consumed_mmbtu: 1.0,
             price_usd: 2.0,
-            energy_source: EnergySource::NaturalGas,
+            portfolio: transaction_portfolio,
         }];
 
         let transactions =
@@ -312,14 +309,14 @@ mod test {
         let electrolyzer = Electrolyzer::default();
         let mut power_grid = PowerGrid::default();
         let mut power_plant = PowerPlant::default();
-        power_plant.energy_source = EnergySource::NaturalGas;
-        power_plant.heat_rate = 2.0; // mmbtu / mwh
+        let mut generation_portfolio = EnergySourcePortfolio::default();
+        generation_portfolio.total_electricity_mwh = 4.0;
+        generation_portfolio.natural_gas_mwh = 2.0;
         power_plant.add_generation(GenerationMetric::new(
             0,
             &Timestamp::new(timestamp.seconds, timestamp.nanos),
-            4.0,
             1.0,
-            2.0,
+            generation_portfolio,
         ));
         power_grid.add_power_plant(power_plant);
         let future_timestamp = Timestamp::new(timestamp.seconds + 3600, timestamp.nanos);
@@ -329,38 +326,33 @@ mod test {
 
     #[test]
     fn should_calculate_energy_portfolio() {
-        let simulation_id = 0;
         let timestamp = Timestamp::default();
+        let mut transaction_portfolio = EnergySourcePortfolio::default();
+        transaction_portfolio.total_electricity_mwh = 2.0;
+        transaction_portfolio.natural_gas_mwh = 2.0;
         let transactions = vec![
             EnergyTransaction {
                 simulation_id: 0,
                 electrolyzer_id: 0,
                 plant_id: 0,
-                timestamp: Timestamp::new(timestamp.seconds, timestamp.nanos),
-                amount_mwh: 2.0,
-                fuel_consumed_mmbtu: 1.0,
+                timestamp: timestamp.clone(),
                 price_usd: 2.0,
-                energy_source: EnergySource::NaturalGas,
+                portfolio: transaction_portfolio.clone(),
             },
             EnergyTransaction {
                 simulation_id: 0,
                 electrolyzer_id: 0,
                 plant_id: 0,
-                timestamp: Timestamp::new(timestamp.seconds, timestamp.nanos),
-                amount_mwh: 2.0,
-                fuel_consumed_mmbtu: 1.0,
+                timestamp: timestamp.clone(),
                 price_usd: 2.0,
-                energy_source: EnergySource::NaturalGas,
+                portfolio: transaction_portfolio.clone(),
             },
         ];
-        let mut expected_portfolio = EnergySourcePortfolio::new(
-            simulation_id,
-            Timestamp::new(timestamp.seconds, timestamp.nanos),
-        );
+        let mut expected_portfolio = EnergySourcePortfolio::default();
         expected_portfolio.total_electricity_mwh = 4.0;
-        expected_portfolio.natural_gas_mmbtu = 2.0;
+        expected_portfolio.natural_gas_mwh = 4.0;
 
-        let portfolio = create_energy_source_portfolio(simulation_id, &timestamp, &transactions);
+        let portfolio = create_energy_source_portfolio(&transactions);
 
         assert_eq!(portfolio, expected_portfolio);
     }
@@ -370,18 +362,16 @@ mod test {
         let simulation_id = 0;
         let electrolyzer = Electrolyzer::default();
         let timestamp = Timestamp::default();
-        let mut portfolio = EnergySourcePortfolio::new(
-            simulation_id,
-            Timestamp::new(timestamp.seconds, timestamp.nanos),
-        );
+        let mut portfolio = EnergySourcePortfolio::default();
         portfolio.total_electricity_mwh = 4.0;
-        portfolio.natural_gas_mmbtu = 2.0;
+        portfolio.natural_gas_mwh = 2.0;
         let mut expected_emission_event = EmissionEvent::default();
         expected_emission_event.emission_timestamp =
             Timestamp::new(timestamp.seconds, timestamp.nanos);
-        expected_emission_event.amount_emitted_kg = 2.0 * NATURAL_GAS_MMBTU_TO_CO2;
+        expected_emission_event.amount_emitted_kg = 2.0 * NATURAL_GAS_MWH_TO_CO2;
 
-        let emission_event = create_emission_event(simulation_id, &electrolyzer, &portfolio);
+        let emission_event =
+            create_emission_event(simulation_id, &timestamp, &electrolyzer, &portfolio);
 
         assert_eq!(emission_event, expected_emission_event);
     }
@@ -396,19 +386,16 @@ mod test {
             conversion_rate: 2.0,
         });
         let timestamp = Timestamp::default();
-        let mut portfolio = EnergySourcePortfolio::new(
-            simulation_id,
-            Timestamp::new(timestamp.seconds, timestamp.nanos),
-        );
+        let mut portfolio = EnergySourcePortfolio::default();
         portfolio.total_electricity_mwh = 4.0;
-        portfolio.natural_gas_mmbtu = 2.0;
+        portfolio.natural_gas_mwh = 2.0;
         let mut expected_hydrogen_production_event = HydrogenProductionEvent::default();
-        expected_hydrogen_production_event.production_timestamp =
-            Timestamp::new(timestamp.seconds, timestamp.nanos);
+        expected_hydrogen_production_event.production_timestamp = timestamp.clone();
         expected_hydrogen_production_event.kg_hydrogen = 8.0;
 
         let hydrogen_production_event =
-            create_hydrogen_production_event(simulation_id, &electrolyzer, &portfolio);
+            create_hydrogen_production_event(simulation_id, &timestamp, &electrolyzer, &portfolio)
+                .expect("Should create hydrogen production event");
 
         assert_eq!(
             hydrogen_production_event,
@@ -426,19 +413,16 @@ mod test {
             conversion_rate: 2.0,
         });
         let timestamp = Timestamp::default();
-        let mut portfolio = EnergySourcePortfolio::new(
-            simulation_id,
-            Timestamp::new(timestamp.seconds, timestamp.nanos),
-        );
+        let mut portfolio = EnergySourcePortfolio::default();
         portfolio.total_electricity_mwh = 14.0;
-        portfolio.natural_gas_mmbtu = 2.0;
+        portfolio.natural_gas_mwh = 2.0;
         let mut expected_hydrogen_production_event = HydrogenProductionEvent::default();
-        expected_hydrogen_production_event.production_timestamp =
-            Timestamp::new(timestamp.seconds, timestamp.nanos);
+        expected_hydrogen_production_event.production_timestamp = timestamp.clone();
         expected_hydrogen_production_event.kg_hydrogen = 20.0;
 
         let hydrogen_production_event =
-            create_hydrogen_production_event(simulation_id, &electrolyzer, &portfolio);
+            create_hydrogen_production_event(simulation_id, &timestamp, &electrolyzer, &portfolio)
+                .expect("Should create hydrogen production event");
 
         assert_eq!(
             hydrogen_production_event,
@@ -450,7 +434,7 @@ mod test {
     fn should_calculate_full_tax_credit() {
         let mut emission_event = EmissionEvent::default();
         emission_event.emission_timestamp = Timestamp::default();
-        emission_event.amount_emitted_kg = 0.2 * NATURAL_GAS_MMBTU_TO_CO2;
+        emission_event.amount_emitted_kg = 0.2 * NATURAL_GAS_MWH_TO_CO2;
         let emissions = vec![emission_event];
         let mut hydrogen_production_event = HydrogenProductionEvent::default();
         hydrogen_production_event.production_timestamp = Timestamp::default();
@@ -469,14 +453,15 @@ mod test {
     fn should_calculate_33_4_percent_tax_credit() {
         let mut emission_event = EmissionEvent::default();
         emission_event.emission_timestamp = Timestamp::default();
-        emission_event.amount_emitted_kg = 2.0 * NATURAL_GAS_MMBTU_TO_CO2;
+        emission_event.amount_emitted_kg = 2.0 * NATURAL_GAS_MWH_TO_CO2;
+        dbg!(&emission_event);
         let emissions = vec![emission_event];
         let mut hydrogen_production_event = HydrogenProductionEvent::default();
         hydrogen_production_event.production_timestamp = Timestamp::default();
-        hydrogen_production_event.kg_hydrogen = 100.0;
+        hydrogen_production_event.kg_hydrogen = 800.0;
         let hydrogen_productions = vec![hydrogen_production_event];
         let mut expected_tax_credit = TaxCredit45V::default();
-        expected_tax_credit.total_usd = 100.2;
+        expected_tax_credit.total_usd = 801.6;
         expected_tax_credit.amount_usd_per_kg = 1.002;
 
         let tax_credit = calculate_tax_credit(&emissions, &hydrogen_productions);
@@ -488,14 +473,14 @@ mod test {
     fn should_calculate_25_percent_tax_credit() {
         let mut emission_event = EmissionEvent::default();
         emission_event.emission_timestamp = Timestamp::default();
-        emission_event.amount_emitted_kg = 3.0 * NATURAL_GAS_MMBTU_TO_CO2;
+        emission_event.amount_emitted_kg = 3.0 * NATURAL_GAS_MWH_TO_CO2;
         let emissions = vec![emission_event];
         let mut hydrogen_production_event = HydrogenProductionEvent::default();
         hydrogen_production_event.production_timestamp = Timestamp::default();
-        hydrogen_production_event.kg_hydrogen = 100.0;
+        hydrogen_production_event.kg_hydrogen = 300.0;
         let hydrogen_productions = vec![hydrogen_production_event];
         let mut expected_tax_credit = TaxCredit45V::default();
-        expected_tax_credit.total_usd = 75.0;
+        expected_tax_credit.total_usd = 225.0;
         expected_tax_credit.amount_usd_per_kg = 0.75;
 
         let tax_credit = calculate_tax_credit(&emissions, &hydrogen_productions);
@@ -507,14 +492,14 @@ mod test {
     fn should_calculate_20_percent_tax_credit() {
         let mut emission_event = EmissionEvent::default();
         emission_event.emission_timestamp = Timestamp::default();
-        emission_event.amount_emitted_kg = 4.0 * NATURAL_GAS_MMBTU_TO_CO2;
+        emission_event.amount_emitted_kg = 4.0 * NATURAL_GAS_MWH_TO_CO2;
         let emissions = vec![emission_event];
         let mut hydrogen_production_event = HydrogenProductionEvent::default();
         hydrogen_production_event.production_timestamp = Timestamp::default();
-        hydrogen_production_event.kg_hydrogen = 100.0;
+        hydrogen_production_event.kg_hydrogen = 500.0;
         let hydrogen_productions = vec![hydrogen_production_event];
         let mut expected_tax_credit = TaxCredit45V::default();
-        expected_tax_credit.total_usd = 75.0;
+        expected_tax_credit.total_usd = 375.0;
         expected_tax_credit.amount_usd_per_kg = 0.75;
 
         let tax_credit = calculate_tax_credit(&emissions, &hydrogen_productions);

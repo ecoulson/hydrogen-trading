@@ -1,8 +1,12 @@
-use chrono::{DateTime, LocalResult, TimeZone, Utc};
+use chrono::{DateTime, TimeZone, Utc};
 use rocket::FromForm;
 use serde::{Deserialize, Serialize};
 
-#[derive(FromForm, Deserialize, Serialize, Default, Debug, PartialEq, Eq)]
+use super::errors::Error;
+
+type Result<T> = std::result::Result<T, Error>;
+
+#[derive(FromForm, Deserialize, Serialize, Default, Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub struct Timestamp {
     pub seconds: i64,
     pub nanos: u32,
@@ -13,8 +17,10 @@ impl Timestamp {
         Timestamp { seconds, nanos }
     }
 
-    pub fn to_utc_date_time(&self) -> LocalResult<DateTime<Utc>> {
+    pub fn to_utc_date_time(&self) -> Result<DateTime<Utc>> {
         Utc.timestamp_opt(self.seconds, self.nanos)
+            .single()
+            .ok_or_else(|| Error::create_parse_error("Invalid timestamp"))
     }
 }
 

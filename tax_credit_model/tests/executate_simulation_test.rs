@@ -32,9 +32,9 @@ async fn test_simulate_for_simple_model() {
         .push(TimeSeriesEntry {
             date: Timestamp::new(time_range.start.seconds, time_range.start.nanos)
                 .to_utc_date_time()
-                .unwrap()
+                .expect("Should be valid date time")
                 .to_rfc3339(),
-            value: 530.703,
+            value: 403.92,
         });
     expected_response.simulation_result.hydrogen_productions.id = String::from("hydrogen-produced");
     expected_response
@@ -50,7 +50,7 @@ async fn test_simulate_for_simple_model() {
         .push(TimeSeriesEntry {
             date: Timestamp::new(time_range.start.seconds, time_range.start.nanos)
                 .to_utc_date_time()
-                .unwrap()
+                .expect("Should be valid date time")
                 .to_rfc3339(),
             value: 40.0,
         });
