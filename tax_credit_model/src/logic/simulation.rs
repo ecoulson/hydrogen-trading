@@ -1,6 +1,6 @@
 use crate::schema::{
     electrolyzer::Electrolyzer,
-    errors::Error,
+    errors::{Error, Result},
     simulation_schema::{
         EmissionEvent, EnergySourcePortfolio, EnergyTransaction, HydrogenProductionEvent,
         PowerGrid, PowerPlant, SimulationResult, SimulationStatus, TaxCredit45V,
@@ -8,14 +8,11 @@ use crate::schema::{
     time::{TimeRange, Timestamp},
     time_series::{TimeSeries, TimeSeriesChart, TimeSeriesEntry},
 };
-use chrono::{Datelike, Duration, TimeZone, Timelike, Utc};
+use chrono::{Datelike, Duration, Timelike};
 
 // https://ourworldindata.org/grapher/carbon-dioxide-emissions-factor
 const NATURAL_GAS_MWH_TO_CO2: f32 = 201.96;
 const TAX_CREDIT_45V_MAX_VALUE_USD: f32 = 3.0;
-
-// TODO: Refactor to error file
-type Result<T> = std::result::Result<T, Error>;
 
 struct SimulationState {
     emissions: Vec<EmissionEvent>,

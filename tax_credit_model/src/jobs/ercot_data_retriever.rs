@@ -2,7 +2,7 @@ use crate::{
     parsers::csv_parser::{CsvParser, CsvRow},
     schema::{
         ercot::{ErcotFuelMix, ErcotRTMPrice, SettlementPointLocation},
-        errors::Error,
+        errors::{Error, Result},
         simulation_schema::{EnergySourcePortfolio, GenerationMetric},
         time::Timestamp,
     },
@@ -16,8 +16,6 @@ const DATE_FORMAT: &'static str = "%m/%d/%Y %H:%M";
 
 // 2023 link: https://www.ercot.com/files/docs/2023/02/07/IntGenbyFuel2023.xlsx
 pub struct ErcotDataRetrieverJob {}
-
-type Result<T> = std::result::Result<T, Error>;
 
 pub struct ErcotDataRetrieverInput {
     fuel_mix_rows: Vec<CsvRow>,

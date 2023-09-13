@@ -2,9 +2,7 @@ use chrono::{DateTime, TimeZone, Utc};
 use rocket::FromForm;
 use serde::{Deserialize, Serialize};
 
-use super::errors::Error;
-
-type Result<T> = std::result::Result<T, Error>;
+use super::errors::{Error, Result};
 
 #[derive(FromForm, Deserialize, Serialize, Default, Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub struct Timestamp {

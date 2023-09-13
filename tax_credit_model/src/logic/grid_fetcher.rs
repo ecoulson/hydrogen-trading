@@ -1,12 +1,10 @@
 use std::sync::Mutex;
 
 use crate::schema::{
-    errors::Error,
+    errors::{Error, Result},
     simulation_schema::{EnergySourcePortfolio, GenerationMetric, PowerGrid, PowerPlant},
     time::Timestamp,
 };
-
-type Result<T> = std::result::Result<T, Error>;
 
 // TODO: Move from a fetcher to a persistance client
 pub trait GridFetcher: Send + Sync {

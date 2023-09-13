@@ -5,12 +5,10 @@ use rocket::FromForm;
 use serde::{Deserialize, Serialize};
 
 use super::{
-    errors::Error,
+    errors::{Error, Result},
     time::{TimeRange, Timestamp},
     time_series::TimeSeriesChart,
 };
-
-type Result<T> = std::result::Result<T, Error>;
 
 #[derive(FromForm, Deserialize, Serialize, Default, Debug, PartialEq)]
 pub struct ExecuteSimulationRequest {

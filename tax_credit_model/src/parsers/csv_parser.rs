@@ -1,8 +1,6 @@
 use std::{collections::HashMap, str::FromStr};
 
-use crate::schema::errors::Error;
-
-type Result<T> = std::result::Result<T, Error>;
+use crate::schema::errors::{Error, Result};
 
 pub struct CsvRow {
     row: HashMap<String, String>,

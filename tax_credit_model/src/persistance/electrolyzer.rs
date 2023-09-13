@@ -1,14 +1,15 @@
 use std::{collections::HashMap, sync::Mutex};
 
-use crate::schema::{electrolyzer::Electrolyzer, errors::Error};
+use crate::schema::{
+    electrolyzer::Electrolyzer,
+    errors::{Error, Result},
+};
 
 pub trait ElectrolyzerPersistanceClient: Send + Sync {
     fn get_electrolyzer(&self, id: usize) -> Result<Electrolyzer>;
     fn create_electrolyzer(&self, electrolyzer: &Electrolyzer) -> Result<Electrolyzer>;
     fn list_electrolyzers(&self) -> Result<Vec<Electrolyzer>>;
 }
-
-type Result<T> = std::result::Result<T, Error>;
 
 pub struct InMemoryElectrolyzerPersistanceClient {
     electrolyzers_by_id: Mutex<HashMap<usize, Electrolyzer>>,
