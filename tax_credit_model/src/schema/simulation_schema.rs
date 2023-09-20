@@ -61,7 +61,7 @@ pub struct EmissionEvent {
     pub simulation_id: i32,
     pub electrolyzer_id: usize,
     pub emission_timestamp: Timestamp,
-    pub amount_emitted_kg: f32,
+    pub amount_emitted_kg: f64,
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq)]
@@ -69,28 +69,28 @@ pub struct HydrogenProductionEvent {
     pub simulation_id: i32,
     pub electrolyzer_id: usize,
     pub production_timestamp: Timestamp,
-    pub kg_hydrogen: f32,
+    pub kg_hydrogen: f64,
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone, Copy)]
 pub struct EnergySourcePortfolio {
-    pub total_electricity_mwh: f32,
-    pub petroleum_mwh: f32,
-    pub hydrocarbons_mwh: f32,
-    pub natural_gas_mwh: f32,
-    pub coal_mwh: f32,
-    pub nuclear_mwh: f32,
-    pub solar_mwh: f32,
-    pub geothermal_mwh: f32,
-    pub wind_mwh: f32,
-    pub biomass_mwh: f32,
-    pub hydropower_mwh: f32,
-    pub unknown_mwh: f32,
-    pub wholesale_storage_load: f32,
+    pub total_electricity_mwh: f64,
+    pub petroleum_mwh: f64,
+    pub hydrocarbons_mwh: f64,
+    pub natural_gas_mwh: f64,
+    pub coal_mwh: f64,
+    pub nuclear_mwh: f64,
+    pub solar_mwh: f64,
+    pub geothermal_mwh: f64,
+    pub wind_mwh: f64,
+    pub biomass_mwh: f64,
+    pub hydropower_mwh: f64,
+    pub unknown_mwh: f64,
+    pub wholesale_storage_load: f64,
 }
 
 impl EnergySourcePortfolio {
-    pub fn add_energy(&mut self, source: &EnergySource, amount_mwh: f32) {
+    pub fn add_energy(&mut self, source: &EnergySource, amount_mwh: f64) {
         self.total_electricity_mwh += amount_mwh;
 
         match source {
@@ -134,7 +134,7 @@ impl EnergySourcePortfolio {
 
     pub fn scale_to_amount(
         portfolio: &EnergySourcePortfolio,
-        amount_mwh: f32,
+        amount_mwh: f64,
     ) -> Result<EnergySourcePortfolio> {
         if amount_mwh > portfolio.total_electricity_mwh {
             return Err(Error::create_invalid_argument_error(
@@ -232,7 +232,7 @@ impl FromStr for EnergySource {
 pub struct GenerationMetric {
     pub plant_id: i32,
     pub time_generated: Timestamp,
-    pub sale_price_usd_per_mwh: f32,
+    pub sale_price_usd_per_mwh: f64,
     pub portfolio: EnergySourcePortfolio,
 }
 
@@ -240,7 +240,7 @@ impl GenerationMetric {
     pub fn new(
         plant_id: i32,
         time_generated: &Timestamp,
-        sale_price_usd_per_mwh: f32,
+        sale_price_usd_per_mwh: f64,
         portfolio: EnergySourcePortfolio,
     ) -> GenerationMetric {
         GenerationMetric {
@@ -266,8 +266,8 @@ impl PowerPlant {
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq)]
 pub struct TaxCredit45V {
-    pub amount_usd_per_kg: f32,
-    pub total_usd: f32,
+    pub amount_usd_per_kg: f64,
+    pub total_usd: f64,
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq)]
@@ -276,6 +276,6 @@ pub struct EnergyTransaction {
     pub electrolyzer_id: usize,
     pub plant_id: i32,
     pub timestamp: Timestamp,
-    pub price_usd: f32,
+    pub price_usd: f64,
     pub portfolio: EnergySourcePortfolio,
 }

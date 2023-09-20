@@ -1,4 +1,4 @@
-use chrono::{DateTime, TimeZone, Utc};
+use chrono::{DateTime, NaiveDateTime, TimeZone, Utc};
 use rocket::FromForm;
 use serde::{Deserialize, Serialize};
 
@@ -27,6 +27,15 @@ where
     T: TimeZone,
 {
     fn from(value: DateTime<T>) -> Self {
+        Timestamp {
+            seconds: value.timestamp(),
+            nanos: value.timestamp_subsec_nanos(),
+        }
+    }
+}
+
+impl From<NaiveDateTime> for Timestamp {
+    fn from(value: NaiveDateTime) -> Self {
         Timestamp {
             seconds: value.timestamp(),
             nanos: value.timestamp_subsec_nanos(),

@@ -6,6 +6,7 @@ use super::{errors::Error, simulation_schema::EnergySource, time::Timestamp};
 pub enum Settlement {
     #[default]
     Final,
+    Initial
 }
 
 impl FromStr for Settlement {
@@ -14,6 +15,7 @@ impl FromStr for Settlement {
     fn from_str(value: &str) -> Result<Self, Self::Err> {
         match value {
             "FINAL" => Ok(Settlement::Final),
+            "INITIAL" => Ok(Settlement::Initial),
             _ => Err(Error::create_parse_error(value)),
         }
     }
@@ -113,7 +115,7 @@ pub struct ErcotFuelMix {
     pub date: Timestamp,
     pub fuel_source: EnergySource,
     pub settlement: Settlement,
-    pub electricity_produced: f32,
+    pub electricity_produced: f64,
 }
 
 #[derive(Default, Debug, PartialEq)]
@@ -122,5 +124,5 @@ pub struct ErcotRTMPrice {
     pub repeated_hour_flag: RepeatedHourFlag,
     pub settlement_point_location: SettlementPointLocation,
     pub settlement_point_type: SettlementPointType,
-    pub settlement_point_price: f32,
+    pub settlement_point_price: f64,
 }

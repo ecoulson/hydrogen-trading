@@ -10,6 +10,7 @@ pub enum Error {
     Poisoned(String),
     Unimplemented(String),
     InvalidArgument(String),
+    Unknown(String),
 }
 
 // TODO: have these functions accept an error instead of a string
@@ -33,6 +34,10 @@ impl Error {
     pub fn create_invalid_argument_error(value: &str) -> Error {
         Error::InvalidArgument(String::from(value))
     }
+
+    pub fn create_unknown_error(value: &str) -> Error {
+        Error::Unknown(String::from(value))
+    }
 }
 
 // TODO: using errors convert to string to make easier
@@ -44,6 +49,7 @@ impl std::fmt::Display for Error {
             Self::Poisoned(value) => write!(f, "Poisoned: {}", value),
             Self::Unimplemented(value) => write!(f, "Uniplemented: {}", value),
             Self::InvalidArgument(value) => write!(f, "Invalid Argument: {}", value),
+            Self::Unknown(value) => write!(f, "Unknown: {}", value),
         }
     }
 }

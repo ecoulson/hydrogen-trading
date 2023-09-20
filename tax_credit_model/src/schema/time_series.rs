@@ -10,7 +10,7 @@ pub struct TimeSeries {
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq)]
 pub struct TimeSeriesEntry {
     pub date: String,
-    pub value: f32
+    pub value: f64
 }
 
 #[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq)]

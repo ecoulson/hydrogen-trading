@@ -4,32 +4,32 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone, Copy)]
 pub struct ConstantProduction {
-    pub conversion_rate: f32,
+    pub conversion_rate: f64,
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone, Copy)]
 pub struct Electrolyzer {
     pub id: usize,
-    pub replacement_threshold: f32,
-    pub degredation_rate: f32,
-    pub capacity_mw: f32,
+    pub replacement_threshold: f64,
+    pub degredation_rate: f64,
+    pub capacity_mw: f64,
     pub production_type: ProductionType,
     pub constant_production: Option<ConstantProduction>,
-    pub capex: f32,
-    pub opex: f32,
-    pub replacement_cost: f32,
+    pub capex: f64,
+    pub opex: f64,
+    pub replacement_cost: f64,
 }
 
 impl Electrolyzer {
     pub fn constant_production(
         id: usize,
-        replacement_threshold: f32,
-        replacement_cost: f32,
-        degredation_rate: f32,
-        capacity_mw: f32,
-        production_rate: f32,
-        capex: f32,
-        opex: f32,
+        replacement_threshold: f64,
+        replacement_cost: f64,
+        degredation_rate: f64,
+        capacity_mw: f64,
+        production_rate: f64,
+        capex: f64,
+        opex: f64,
     ) -> Electrolyzer {
         Electrolyzer {
             id,
@@ -57,18 +57,18 @@ pub enum ProductionType {
 #[derive(FromForm, Deserialize, Serialize, Default, Debug, PartialEq, Clone, Copy)]
 pub struct CreateProductionRequest {
     pub production_type: ProductionType,
-    pub conversion_rate_constant: Option<f32>,
+    pub conversion_rate_constant: Option<f64>,
 }
 
 #[derive(FromForm, Deserialize, Serialize, Default, Debug, PartialEq, Clone, Copy)]
 pub struct CreateElectrolyzerRequest {
-    pub replacement_threshold: f32,
-    pub degredation_rate: f32,
-    pub capacity_mw: f32,
+    pub replacement_threshold: f64,
+    pub degredation_rate: f64,
+    pub capacity_mw: f64,
     pub production_method: CreateProductionRequest,
-    pub capex: f32,
-    pub opex: f32,
-    pub replacement_cost: f32,
+    pub capex: f64,
+    pub opex: f64,
+    pub replacement_cost: f64,
 }
 
 #[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq, Clone, Copy)]

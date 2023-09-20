@@ -11,8 +11,8 @@ use crate::schema::{
 use chrono::{Datelike, Duration, Timelike};
 
 // https://ourworldindata.org/grapher/carbon-dioxide-emissions-factor
-const NATURAL_GAS_MWH_TO_CO2: f32 = 201.96;
-const TAX_CREDIT_45V_MAX_VALUE_USD: f32 = 3.0;
+const NATURAL_GAS_MWH_TO_CO2: f64 = 201.96;
+const TAX_CREDIT_45V_MAX_VALUE_USD: f64 = 3.0;
 
 struct SimulationState {
     emissions: Vec<EmissionEvent>,
@@ -134,7 +134,7 @@ fn purchase(
     simulation_id: i32,
     electrolyzer: &Electrolyzer,
     power_plant: &PowerPlant,
-    amount_mwh: f32,
+    amount_mwh: f64,
     timestamp: &Timestamp,
 ) -> Result<EnergyTransaction> {
     let purchase_datetime = timestamp.to_utc_date_time()?;
@@ -200,7 +200,7 @@ fn create_hydrogen_production_event(
         simulation_id,
         electrolyzer_id: electrolyzer.id,
         production_timestamp: timestamp.clone(),
-        kg_hydrogen: f32::min(portfolio.total_electricity_mwh, electrolyzer.capacity_mw)
+        kg_hydrogen: f64::min(portfolio.total_electricity_mwh, electrolyzer.capacity_mw)
             * electrolyzer
                 .constant_production
                 .ok_or_else(|| {
