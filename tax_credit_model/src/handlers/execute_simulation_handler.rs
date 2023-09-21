@@ -2,7 +2,10 @@ use rocket::{form::Form, post, State};
 
 use crate::{
     logic::{grid_fetcher::GridFetcher, simulation::simulate},
-    persistance::electrolyzer::ElectrolyzerPersistanceClient,
+    persistance::{
+        db::{DatabaseClient, DatabaseConnectionParameters},
+        electrolyzer::ElectrolyzerPersistanceClient,
+    },
     responders::htmx_responder::HtmxTemplate,
     schema::{
         errors::BannerError,
@@ -16,13 +19,23 @@ pub async fn execute_simulation(
     power_grid_fetcher: &State<Box<dyn GridFetcher>>,
     electrolyzer_client: &State<Box<dyn ElectrolyzerPersistanceClient>>,
 ) -> Result<HtmxTemplate<ExecuteSimulationResponse>, HtmxTemplate<BannerError>> {
+    let mut client = DatabaseClient::open(&DatabaseConnectionParameters::new(
+        "hydrogen_trading_dev",
+        "localhost",
+        "hydrogen_trading",
+    ))
+    .await
+    .map_err(|err| BannerError {
+        message: err.to_string(),
+    })?;
     let electrolyzer = electrolyzer_client
         .get_electrolyzer(request.electrolyzer_id)
         .map_err(|err| BannerError {
             message: err.to_string(),
         })?;
     let power_grid = power_grid_fetcher
-        .get_power_grid()
+        .get_power_grid(&mut client)
+        .await
         .map_err(|err| BannerError {
             message: err.to_string(),
         })?;

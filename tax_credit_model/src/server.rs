@@ -7,7 +7,7 @@ use crate::{
         list_electrolyzers_handler::list_electrolyzers_handler,
         simulation_handler::simulation_handler,
     },
-    logic::grid_fetcher::{GridFetcher, InMemoryGridFetcher},
+    logic::grid_fetcher::{GridFetcher, SQLGridFetcher},
     persistance::electrolyzer::{
         ElectrolyzerPersistanceClient, InMemoryElectrolyzerPersistanceClient,
     },
@@ -36,7 +36,7 @@ pub fn init_service(configuration: ServerConfiguration) -> Rocket<Build> {
 
     rocket::build()
         .manage(configuration)
-        .manage(Box::new(InMemoryGridFetcher::new()) as Box<dyn GridFetcher>)
+        .manage(Box::new(SQLGridFetcher::new()) as Box<dyn GridFetcher>)
         .manage(Box::new(InMemoryElectrolyzerPersistanceClient::new())
             as Box<dyn ElectrolyzerPersistanceClient>)
         .mount("/assets", static_files)

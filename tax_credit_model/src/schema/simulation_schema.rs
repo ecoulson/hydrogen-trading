@@ -228,8 +228,9 @@ impl FromStr for EnergySource {
     }
 }
 
-#[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone, Copy)]
+#[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
 pub struct GenerationMetric {
+    pub id: String,
     pub plant_id: i32,
     pub time_generated: Timestamp,
     pub sale_price_usd_per_mwh: f64,
@@ -244,6 +245,7 @@ impl GenerationMetric {
         portfolio: EnergySourcePortfolio,
     ) -> GenerationMetric {
         GenerationMetric {
+            id: String::new(),
             plant_id,
             time_generated: Timestamp::new(time_generated.seconds, time_generated.nanos),
             sale_price_usd_per_mwh,

@@ -6,4 +6,4 @@ CREATE TABLE GenerationMetrics (
     portfolio JSON
 );
 
-GRANT INSERT ON GenerationMetrics TO hydrogen_trading_dev;
+GRANT ALL ON GenerationMetrics TO hydrogen_trading_dev;

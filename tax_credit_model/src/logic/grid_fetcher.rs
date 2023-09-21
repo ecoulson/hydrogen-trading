@@ -1,73 +1,64 @@
-use std::sync::Mutex;
+use rocket::async_trait;
 
-use crate::schema::{
-    errors::{Error, Result},
-    simulation_schema::{EnergySourcePortfolio, GenerationMetric, PowerGrid, PowerPlant},
-    time::Timestamp,
+use crate::{
+    persistance::db::DatabaseClient,
+    schema::{
+        errors::{Error, Result},
+        simulation_schema::{GenerationMetric, PowerGrid, PowerPlant},
+    },
 };
 
+const SALE_PRICE_COLUMN: &'static str = "sale_price";
+const TIME_GENERATED_COLUMN: &'static str = "time_generated";
+const PORTFOLIO_COLUMN: &'static str = "portfolio";
+const ID_COLUMN: &'static str = "id";
+const PLANT_ID_COLUMN: &'static str = "plant_id";
+
 // TODO: Move from a fetcher to a persistance client
+#[async_trait]
 pub trait GridFetcher: Send + Sync {
-    fn get_power_grid(&self) -> Result<PowerGrid>;
-    fn add_generations(&self, plant_id: i32, generation: &mut Vec<GenerationMetric>) -> Result<()>;
+    async fn get_power_grid(&self, client: &mut DatabaseClient) -> Result<PowerGrid>;
 }
 
-pub struct InMemoryGridFetcher {
-    power_grid: Mutex<PowerGrid>,
-}
+pub struct SQLGridFetcher {}
 
-impl GridFetcher for InMemoryGridFetcher {
-    fn get_power_grid(&self) -> Result<PowerGrid> {
-        Ok(self
-            .power_grid
-            .lock()
-            .map_err(|err| Error::create_poison_error(&err.to_string()))?
-            .clone())
-    }
-
-    fn add_generations(
-        &self,
-        plant_id: i32,
-        generations: &mut Vec<GenerationMetric>,
-    ) -> Result<()> {
-        self.power_grid
-            .lock()
-            .map_err(|err| Error::create_poison_error(&err.to_string()))?
-            .power_plants
-            .iter_mut()
-            .find(|plant| plant.plant_id == plant_id)
-            .ok_or_else(|| Error::create_not_found_error(&format!("plant id {}", plant_id)))?
-            .generation
-            .append(generations);
-
-        Ok(())
+impl SQLGridFetcher {
+    pub fn new() -> SQLGridFetcher {
+        SQLGridFetcher {}
     }
 }
 
-impl InMemoryGridFetcher {
-    pub fn new() -> InMemoryGridFetcher {
-        InMemoryGridFetcher {
-            power_grid: Mutex::new(PowerGrid {
-                power_plants: vec![InMemoryGridFetcher::create_power_plant()],
-            }),
-        }
-    }
-
-    fn create_power_plant() -> PowerPlant {
+#[async_trait]
+impl GridFetcher for SQLGridFetcher {
+    async fn get_power_grid(&self, client: &mut DatabaseClient) -> Result<PowerGrid> {
         let mut power_plant = PowerPlant {
-            plant_id: 50098,
+            plant_id: 0,
             generation: vec![],
         };
-        let mut portfolio = EnergySourcePortfolio::default();
-        portfolio.total_electricity_mwh = 10.0;
-        portfolio.natural_gas_mwh = 10.0;
-        power_plant.generation.push(GenerationMetric {
-            plant_id: power_plant.plant_id,
-            time_generated: Timestamp::default(),
-            sale_price_usd_per_mwh: 0.02,
-            portfolio,
-        });
+        let rows = client
+            .query(
+                "SELECT * FROM GenerationMetrics WHERE plant_id = $1",
+                &[&power_plant.plant_id],
+            )
+            .await?;
 
-        power_plant
+        power_plant.generation = rows
+            .iter()
+            .map(|row| {
+                Ok(GenerationMetric {
+                    id: row.get(ID_COLUMN),
+                    plant_id: row.get(PLANT_ID_COLUMN),
+                    sale_price_usd_per_mwh: row.get(SALE_PRICE_COLUMN),
+                    time_generated: serde_json::from_value(row.get(TIME_GENERATED_COLUMN))
+                        .map_err(|err| Error::create_invalid_argument_error(&err.to_string()))?,
+                    portfolio: serde_json::from_value(row.get(PORTFOLIO_COLUMN))
+                        .map_err(|err| Error::create_invalid_argument_error(&err.to_string()))?,
+                })
+            })
+            .collect::<Result<_>>()?;
+
+        Ok(PowerGrid {
+            power_plants: vec![power_plant],
+        })
     }
 }

@@ -5,13 +5,12 @@ use crate::{
         errors::{Error, Result},
         simulation_schema::{EnergySourcePortfolio, GenerationMetric},
         time::Timestamp,
-    },
+    }, persistance::db::DatabaseClient,
 };
 use chrono::{Duration, NaiveDateTime};
 use nanoid::nanoid;
 use serde_json::json;
 use std::collections::HashMap;
-use tokio_postgres::Client;
 
 const DATE_COLUNMN: usize = 0;
 const FUEL_SOURCE_COLUMN: usize = 1;
@@ -150,6 +149,7 @@ impl ErcotDataRetrieverJob {
                     );
 
                 Ok(GenerationMetric {
+                    id: String::new(),
                     plant_id: 0,
                     time_generated: price.delivery_timestamp.clone(),
                     portfolio,
@@ -159,7 +159,7 @@ impl ErcotDataRetrieverJob {
             .collect()
     }
 
-    pub async fn load(client: &mut Client, generations: Vec<GenerationMetric>) -> Result<()> {
+    pub async fn load(client: &mut DatabaseClient, generations: Vec<GenerationMetric>) -> Result<()> {
         let transaction = client
             .transaction()
             .await
