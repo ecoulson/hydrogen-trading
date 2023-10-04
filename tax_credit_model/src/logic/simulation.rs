@@ -11,8 +11,11 @@ use crate::schema::{
 use chrono::{Datelike, Duration, Timelike};
 
 // https://ourworldindata.org/grapher/carbon-dioxide-emissions-factor
+const COAL_MWH_TO_CO2: f64 = 353.88;
 const NATURAL_GAS_MWH_TO_CO2: f64 = 201.96;
+const PETROLEUM_MWH_TO_CO2: f64 = 266.76;
 const TAX_CREDIT_45V_MAX_VALUE_USD: f64 = 3.0;
+const BIOMASS_MWH_TO_CO2: f64 = 530.82;
 
 struct SimulationState {
     emissions: Vec<EmissionEvent>,
@@ -139,7 +142,7 @@ fn purchase(
 ) -> Result<EnergyTransaction> {
     let purchase_datetime = timestamp.to_utc_date_time()?;
     let generation = power_plant
-        .generation
+        .generations
         .iter()
         .find(|generation| {
             generation.time_generated.to_utc_date_time().map_or_else(
@@ -181,6 +184,9 @@ fn create_emission_event(
 ) -> EmissionEvent {
     let mut amount_emitted_kg = 0.0;
     amount_emitted_kg += portfolio.natural_gas_mwh * NATURAL_GAS_MWH_TO_CO2;
+    amount_emitted_kg += portfolio.coal_mwh * COAL_MWH_TO_CO2;
+    amount_emitted_kg += portfolio.petroleum_mwh * PETROLEUM_MWH_TO_CO2;
+    amount_emitted_kg += portfolio.biomass_mwh * BIOMASS_MWH_TO_CO2;
 
     EmissionEvent {
         simulation_id,
@@ -291,7 +297,8 @@ mod test {
         }];
 
         let transactions =
-            make_optimal_transactions(simulation_id, &timestamp, &electrolyzer, &power_grid);
+            make_optimal_transactions(simulation_id, &timestamp, &electrolyzer, &power_grid)
+                .unwrap();
 
         assert_eq!(transactions, expected_transactions);
     }
@@ -318,7 +325,8 @@ mod test {
         power_grid.add_power_plant(power_plant);
         let future_timestamp = Timestamp::new(timestamp.seconds + 3600, timestamp.nanos);
 
-        make_optimal_transactions(simulation_id, &future_timestamp, &electrolyzer, &power_grid);
+        make_optimal_transactions(simulation_id, &future_timestamp, &electrolyzer, &power_grid)
+            .unwrap();
     }
 
     #[test]
@@ -451,7 +459,6 @@ mod test {
         let mut emission_event = EmissionEvent::default();
         emission_event.emission_timestamp = Timestamp::default();
         emission_event.amount_emitted_kg = 2.0 * NATURAL_GAS_MWH_TO_CO2;
-        dbg!(&emission_event);
         let emissions = vec![emission_event];
         let mut hydrogen_production_event = HydrogenProductionEvent::default();
         hydrogen_production_event.production_timestamp = Timestamp::default();

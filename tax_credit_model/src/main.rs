@@ -1,5 +1,9 @@
 use rocket::fs::relative;
-use tax_credit_model_server::server::{init_service, ServerConfiguration};
+use tax_credit_model_server::{
+    data_retriever::fill_generations,
+    persistance::{electrolyzer::InMemoryElectrolyzerPersistanceClient, grid::InMemoryGridFetcher},
+    server::{init_service, Dependencies, ServerConfiguration},
+};
 
 #[macro_use]
 extern crate rocket;
@@ -8,7 +12,16 @@ extern crate rocket;
 pub async fn rocket() -> _ {
     let assets_directory =
         std::env::var("ASSETS_DIRECTORY").unwrap_or_else(|_| relative!("assets").to_string());
-    let configuration = ServerConfiguration::new(&assets_directory);
+    let data_directory =
+        std::env::var("DATA_DIRECTORY").unwrap_or_else(|_| relative!("../data").to_string());
+    let configuration = ServerConfiguration::new(&data_directory, &assets_directory);
+    let dependencies = Dependencies {
+        grid_client: Box::new(InMemoryGridFetcher::new()),
+        electrolyzer_client: Box::new(InMemoryElectrolyzerPersistanceClient::new()),
+    };
 
-    init_service(configuration)
+    fill_generations(configuration.clone(), &dependencies);
+    let server = init_service(configuration.clone(), dependencies);
+
+    server
 }

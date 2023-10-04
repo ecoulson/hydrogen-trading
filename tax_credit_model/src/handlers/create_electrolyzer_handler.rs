@@ -1,7 +1,7 @@
 use rocket::{form::Form, post, State};
 
 use crate::{
-    persistance::electrolyzer::ElectrolyzerPersistanceClient,
+    persistance::electrolyzer::ElectrolyzerClient,
     responders::htmx_responder::{HtmxHeaders, HtmxTemplate, HX_TRIGGER},
     schema::{
         electrolyzer::{
@@ -15,7 +15,7 @@ use crate::{
 #[post("/create_electrolyzer", data = "<request>")]
 pub fn create_electrolyzer_handler(
     request: Form<CreateElectrolyzerRequest>,
-    electrolyzer_client: &State<Box<dyn ElectrolyzerPersistanceClient>>,
+    electrolyzer_client: &State<Box<dyn ElectrolyzerClient>>,
 ) -> Result<HtmxTemplate<CreateElectrolyzerResponse>, HtmxTemplate<BannerError>> {
     let electrolyzer = electrolyzer_client
         .create_electrolyzer(&Electrolyzer {

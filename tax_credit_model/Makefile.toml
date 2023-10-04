@@ -8,16 +8,7 @@ command = "cargo"
 args = [
     "watch", 
     "-x", 
-    "run --bin server"
-]
-
-[tasks.data_retriever]
-install_crate = "cargo-watch"
-command = "cargo"
-args = [
-    "watch",
-    "-x",
-    "run --bin data_retriever"
+    "run"
 ]
 
 [tasks.styles]

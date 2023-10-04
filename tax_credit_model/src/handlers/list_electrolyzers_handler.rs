@@ -2,7 +2,7 @@ use askama::Template;
 use rocket::{get, State};
 
 use crate::{
-    persistance::electrolyzer::ElectrolyzerPersistanceClient,
+    persistance::electrolyzer::ElectrolyzerClient,
     responders::htmx_responder::HtmxTemplate,
     schema::{electrolyzer::Electrolyzer, errors::BannerError},
 };
@@ -15,7 +15,7 @@ pub struct ListElectrolyzerTemplate {
 
 #[get("/list_electrolyzers")]
 pub fn list_electrolyzers_handler(
-    electrolyzer_client: &State<Box<dyn ElectrolyzerPersistanceClient>>,
+    electrolyzer_client: &State<Box<dyn ElectrolyzerClient>>,
 ) -> Result<HtmxTemplate<ListElectrolyzerTemplate>, HtmxTemplate<BannerError>> {
     let electrolyzers = electrolyzer_client
         .list_electrolyzers()

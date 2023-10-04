@@ -257,12 +257,12 @@ impl GenerationMetric {
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
 pub struct PowerPlant {
     pub plant_id: i32,
-    pub generation: Vec<GenerationMetric>,
+    pub generations: Vec<GenerationMetric>,
 }
 
 impl PowerPlant {
     pub fn add_generation(&mut self, generation: GenerationMetric) {
-        self.generation.push(generation);
+        self.generations.push(generation);
     }
 }
 

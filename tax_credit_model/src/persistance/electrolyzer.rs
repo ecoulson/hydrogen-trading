@@ -5,7 +5,7 @@ use crate::schema::{
     errors::{Error, Result},
 };
 
-pub trait ElectrolyzerPersistanceClient: Send + Sync {
+pub trait ElectrolyzerClient: Send + Sync {
     fn get_electrolyzer(&self, id: usize) -> Result<Electrolyzer>;
     fn create_electrolyzer(&self, electrolyzer: &Electrolyzer) -> Result<Electrolyzer>;
     fn list_electrolyzers(&self) -> Result<Vec<Electrolyzer>>;
@@ -23,7 +23,7 @@ impl InMemoryElectrolyzerPersistanceClient {
     }
 }
 
-impl ElectrolyzerPersistanceClient for InMemoryElectrolyzerPersistanceClient {
+impl ElectrolyzerClient for InMemoryElectrolyzerPersistanceClient {
     fn get_electrolyzer(&self, id: usize) -> Result<Electrolyzer> {
         Ok(self
             .electrolyzers_by_id

@@ -1,15 +1,14 @@
 use crate::{
     logic::excel::{ExcelSheet, ExcelWorkbook},
+    persistance::grid::GridClient,
     schema::{
         ercot::{ErcotFuelMix, ErcotRTMPrice, SettlementPointLocation},
         errors::{Error, Result},
         simulation_schema::{EnergySourcePortfolio, GenerationMetric},
         time::Timestamp,
-    }, persistance::db::DatabaseClient,
+    },
 };
 use chrono::{Duration, NaiveDateTime};
-use nanoid::nanoid;
-use serde_json::json;
 use std::collections::HashMap;
 
 const DATE_COLUNMN: usize = 0;
@@ -159,42 +158,10 @@ impl ErcotDataRetrieverJob {
             .collect()
     }
 
-    pub async fn load(client: &mut DatabaseClient, generations: Vec<GenerationMetric>) -> Result<()> {
-        let transaction = client
-            .transaction()
-            .await
-            .map_err(|err| Error::create_unknown_error(&err.to_string()))?;
-        let insert_query = transaction.prepare("INSERT INTO GenerationMetrics (id, plant_id, time_generated, sale_price, portfolio) VALUES ($1, $2, $3, $4, $5)")
-            .await
-            .map_err(|err| Error::create_unknown_error(&err.to_string()))?;
-
-        // TODO: Should spawn tasks instead of working on current thread
-        for generation in &generations {
-            let id = nanoid!();
-            let timestamp = json!(generation.time_generated);
-            let porfolio = json!(generation.portfolio);
-            transaction
-                .execute(
-                    &insert_query,
-                    &[
-                        &id,
-                        &generation.plant_id,
-                        &timestamp,
-                        &generation.sale_price_usd_per_mwh,
-                        &porfolio,
-                    ],
-                )
-                .await
-                .map_err(|err| {
-                    Error::create_invalid_argument_error(&format!("Invalid params {err}"))
-                })?;
-        }
-
-        transaction
-            .commit()
-            .await
-            .map_err(|err| Error::create_unknown_error(&err.to_string()))?;
-
-        Ok(())
+    pub fn load(
+        generations: Vec<GenerationMetric>,
+        grid_client: &Box<dyn GridClient>,
+    ) -> Result<()> {
+        grid_client.add_generations(generations)
     }
 }

@@ -47,7 +47,7 @@ impl std::fmt::Display for Error {
             Self::Parse(value) => write!(f, "Parse: {}", value),
             Self::NotFound(value) => write!(f, "NotFound: {}", value),
             Self::Poisoned(value) => write!(f, "Poisoned: {}", value),
-            Self::Unimplemented(value) => write!(f, "Uniplemented: {}", value),
+            Self::Unimplemented(value) => write!(f, "Unimplemented: {}", value),
             Self::InvalidArgument(value) => write!(f, "Invalid Argument: {}", value),
             Self::Unknown(value) => write!(f, "Unknown: {}", value),
         }

@@ -1,7 +1,7 @@
 use std::fs;
 
 use serde::Deserialize;
-use tax_credit_model_server::server::ServerConfiguration;
+use tax_credit_model_server::server::{Dependencies, ServerConfiguration};
 
 use super::test_server::TestServer;
 
@@ -23,9 +23,9 @@ impl TestEnv {
         toml::from_str(&content).expect("Should be valid config")
     }
 
-    pub async fn create_test_server(&self) -> TestServer {
-        let configuration = ServerConfiguration::new(&self.assets_directory);
-        TestServer::spawn(configuration).await
+    pub async fn create_test_server(&self, dependencies: Dependencies) -> TestServer {
+        let configuration = ServerConfiguration::new("", &self.assets_directory);
+        TestServer::spawn(configuration, dependencies).await
     }
 }
 
