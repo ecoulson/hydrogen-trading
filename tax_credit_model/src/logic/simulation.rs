@@ -45,6 +45,12 @@ pub fn simulate(
     let increment = Duration::hours(1);
     let mut state = SimulationState::new();
 
+    if current_timestamp.timestamp() > end_timestamp.timestamp() {
+        return Err(Error::create_invalid_argument_error(
+            "Simulation start must be before end time",
+        ));
+    }
+
     if current_timestamp.minute() % 15 != 0 {
         current_timestamp += Duration::minutes(15 - current_timestamp.minute() as i64 % 15);
     }
