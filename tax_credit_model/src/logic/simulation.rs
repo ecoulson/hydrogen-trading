@@ -5,7 +5,7 @@ use crate::schema::{
         EmissionEvent, EnergySourcePortfolio, EnergyTransaction, HydrogenProductionEvent,
         PowerGrid, PowerPlant, SimulationResult, SimulationStatus, TaxCredit45V,
     },
-    time::{TimeRange, Timestamp},
+    time::{DateTimeRange, Timestamp},
     time_series::{TimeSeries, TimeSeriesChart, TimeSeriesEntry},
 };
 use chrono::{Datelike, Duration, Timelike};
@@ -36,13 +36,22 @@ impl SimulationState {
 pub fn simulate(
     power_grid: &PowerGrid,
     electrolyzer: &Electrolyzer,
-    time_range: &TimeRange,
+    time_range: &DateTimeRange,
 ) -> Result<SimulationResult> {
     let simulation_id = 0;
+    let time_range = time_range.parse("%Y-%m-%dT%H:%M")?;
     let mut current_timestamp = time_range.start.to_utc_date_time()?;
-    let end_timestamp = time_range.end.to_utc_date_time()?;
+    let mut end_timestamp = time_range.end.to_utc_date_time()?;
     let increment = Duration::hours(1);
     let mut state = SimulationState::new();
+
+    if current_timestamp.minute() % 15 != 0 {
+        current_timestamp += Duration::minutes(15 - current_timestamp.minute() as i64 % 15);
+    }
+
+    if end_timestamp.minute() % 15 != 0 {
+        end_timestamp += Duration::minutes(15 - end_timestamp.minute() as i64 % 15);
+    }
 
     while current_timestamp < end_timestamp {
         let mut transactions = make_optimal_transactions(

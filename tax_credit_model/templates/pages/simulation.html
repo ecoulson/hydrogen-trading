@@ -69,26 +69,16 @@
                 </select>
             </div>
             <div class="p-4">
-                <label for="simulation_time_range.start.seconds">Start Seconds</label>
+                <label for="simulation_time_range.start">Start Datetime</label>
                 <br/>
-                <input class="border" id="simulation_time_range.start.seconds" name="simulation_time_range.start.seconds" />
+                <input type="datetime-local" class="border" id="simulation_time_range.start" step="900" name="simulation_time_range.start" />
             </div>
             <div class="p-4">
-                <label for="simulation_time_range.start.nanos">Start Nanos</label>
+                <label for="simulation_time_range.end">End Datetime</label>
                 <br/>
-                <input class="border" id="simulation_time_range.start.nanos" name="simulation_time_range.start.nanos" />
+                <input type="datetime-local" class="border" id="simulation_time_range.end" step="900" name="simulation_time_range.end" />
             </div>
-            <div class="p-4">
-                <label for="simulation_time_range.end.seconds">End Seconds</label>
-                <br/>
-                <input class="border" id="simulation_time_range.end.seconds" name="simulation_time_range.end.seconds" />
-            </div>
-            <div class="p-4">
-                <label for="simulation_time_range.end.nanos">End Nanos</label>
-                <br/>
-                <input class="border" id="simulation_time_range.end.nanos" name="simulation_time_range.end.nanos" />
-            </div>
-            <button class="border px-4 py-2" type="submit">Execute Simulation</button>
+            <button class="border border-white px-4 py-2" type="submit">Execute Simulation</button>
         </form>
     </div>
 </div>

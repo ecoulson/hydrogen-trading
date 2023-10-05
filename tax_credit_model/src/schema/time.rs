@@ -48,3 +48,23 @@ pub struct TimeRange {
     pub start: Timestamp,
     pub end: Timestamp,
 }
+
+#[derive(FromForm, Deserialize, Serialize, Default, Debug, PartialEq, Eq)]
+pub struct DateTimeRange {
+    pub start: String,
+    pub end: String,
+}
+
+impl DateTimeRange {
+    pub fn parse(&self, format: &str) -> Result<TimeRange> {
+        let start = NaiveDateTime::parse_from_str(&self.start, format)
+            .map_err(|err| Error::create_invalid_argument_error(&err.to_string()))?;
+        let end = NaiveDateTime::parse_from_str(&self.end, format)
+            .map_err(|err| Error::create_invalid_argument_error(&err.to_string()))?;
+
+        Ok(TimeRange {
+            start: Timestamp::new(start.timestamp(), start.timestamp_subsec_nanos()),
+            end: Timestamp::new(end.timestamp(), end.timestamp_subsec_nanos()),
+        })
+    }
+}

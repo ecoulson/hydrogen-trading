@@ -6,20 +6,20 @@ use serde::{Deserialize, Serialize};
 
 use super::{
     errors::{Error, Result},
-    time::{TimeRange, Timestamp},
+    time::{DateTimeRange, Timestamp},
     time_series::TimeSeriesChart,
 };
 
 #[derive(FromForm, Deserialize, Serialize, Default, Debug, PartialEq)]
 pub struct ExecuteSimulationRequest {
     pub electrolyzer_id: usize,
-    pub simulation_time_range: TimeRange,
+    pub simulation_time_range: DateTimeRange,
 }
 
 impl ExecuteSimulationRequest {
     pub fn new(
         electrolyzer_id: usize,
-        simulation_time_range: TimeRange,
+        simulation_time_range: DateTimeRange,
     ) -> ExecuteSimulationRequest {
         ExecuteSimulationRequest {
             electrolyzer_id,

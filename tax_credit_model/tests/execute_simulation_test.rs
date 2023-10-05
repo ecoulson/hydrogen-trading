@@ -6,7 +6,7 @@ use tax_credit_model_server::{
             EnergySourcePortfolio, ExecuteSimulationRequest, ExecuteSimulationResponse,
             GenerationMetric,
         },
-        time::{TimeRange, Timestamp},
+        time::{TimeRange, Timestamp, DateTimeRange},
         time_series::TimeSeriesEntry,
     },
     server::Dependencies,
@@ -82,7 +82,10 @@ async fn test_simulate_for_simple_model() {
         start += 15 * 60; // 15 minutes in seconds
     }
     dependencies.grid_client.add_generations(generations).unwrap();
-    let request = ExecuteSimulationRequest::new(0, time_range);
+    let request = ExecuteSimulationRequest::new(0, DateTimeRange {
+        start: String::from("1970-01-01T00:00"),
+        end: String::from("1970-01-01T00:15")
+    });
 
     let server = TestEnv::load().create_test_server(dependencies).await;
     let response = server
