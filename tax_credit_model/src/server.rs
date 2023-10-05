@@ -4,6 +4,7 @@ use crate::{
     handlers::{
         create_electrolyzer_handler::create_electrolyzer_handler,
         execute_simulation_handler::execute_simulation,
+        get_simulation_form_handler::get_simulation_form_handler,
         list_electrolyzers_handler::list_electrolyzers_handler,
         simulation_handler::simulation_handler,
     },
@@ -54,7 +55,8 @@ pub fn init_service(
                 execute_simulation,
                 create_electrolyzer_handler,
                 simulation_handler,
-                list_electrolyzers_handler
+                list_electrolyzers_handler,
+                get_simulation_form_handler
             ],
         )
 }

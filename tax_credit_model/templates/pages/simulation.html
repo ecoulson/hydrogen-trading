@@ -61,25 +61,7 @@
     </div>
     <div class="w-3/4 bg-slate-200 px-4 py-2">
         <h1 class="text-3xl font-bold underline">Execute Simulation</h1>
-        <form hx-post="/execute_simulation">
-            <div class="p-4">
-                <label for="electrolyzer_id">Electrolyzer Id</label>
-                <br/>
-                <select id="electrolyzer_id" class="border" hx-swap="outerHTML" disabled hx-get="/list_electrolyzers" hx-trigger="electrolyzer_created from:body" name="electrolyzer_id">
-                </select>
-            </div>
-            <div class="p-4">
-                <label for="simulation_time_range.start">Start Datetime</label>
-                <br/>
-                <input type="datetime-local" class="border" id="simulation_time_range.start" step="900" min="{{ generation_range.start }}" max="{{ generation_range.end }}" name="simulation_time_range.start" />
-            </div>
-            <div class="p-4">
-                <label for="simulation_time_range.end">End Datetime</label>
-                <br/>
-                <input type="datetime-local" class="border" id="simulation_time_range.end" step="900" min="{{ generation_range.start }}" max="{{ generation_range.end }}" name="simulation_time_range.end" />
-            </div>
-            <button class="border border-white px-4 py-2" type="submit">Execute Simulation</button>
-        </form>
+        {{ simulation_form|safe }}
     </div>
 </div>
 {% endblock %}

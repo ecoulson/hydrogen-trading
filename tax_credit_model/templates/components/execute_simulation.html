@@ -1,5 +1,7 @@
 <p>Simulation Complete</p>
 <p>status: {{ simulation_result.status }}</p>
+<button class="border border-white px-4 py-2" hx-target="closest form" hx-swap="outerHTML" hx-get="/simulation_form">Run
+    New Simulation</button>
 
 <div>{{ simulation_result.emissions|safe }}</div>
 <div>{{ simulation_result.hydrogen_productions|safe }}</div>

@@ -1,27 +1,20 @@
-use askama::Template;
 use rocket::{get, State};
 
 use crate::{
-    persistance::electrolyzer::ElectrolyzerClient,
-    responders::htmx_responder::HtmxTemplate,
-    schema::{electrolyzer::Electrolyzer, errors::BannerError},
+    persistance::electrolyzer::ElectrolyzerClient, responders::htmx_responder::HtmxTemplate,
+    schema::errors::BannerError,
+    templates::list_electrolyzers_template::ElectrolyzerSelectorTemplate,
 };
-
-#[derive(Template)]
-#[template(path = "components/list_electrolyzers.html")]
-pub struct ListElectrolyzerTemplate {
-    electrolyzers: Vec<Electrolyzer>,
-}
 
 #[get("/list_electrolyzers")]
 pub fn list_electrolyzers_handler(
     electrolyzer_client: &State<Box<dyn ElectrolyzerClient>>,
-) -> Result<HtmxTemplate<ListElectrolyzerTemplate>, HtmxTemplate<BannerError>> {
+) -> Result<HtmxTemplate<ElectrolyzerSelectorTemplate>, HtmxTemplate<BannerError>> {
     let electrolyzers = electrolyzer_client
         .list_electrolyzers()
         .map_err(|err| BannerError {
             message: err.to_string(),
         })?;
 
-    Ok(ListElectrolyzerTemplate { electrolyzers }.into())
+    Ok(ElectrolyzerSelectorTemplate { electrolyzers }.into())
 }

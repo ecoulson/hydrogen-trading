@@ -7,3 +7,4 @@ pub mod responders;
 pub mod jobs;
 pub mod parsers;
 pub mod data_retriever;
+pub mod templates;

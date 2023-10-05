@@ -1,0 +1,20 @@
+<form hx-post="/execute_simulation">
+    <div class="p-4">
+        <label for="electrolyzer_id">Electrolyzer Id</label>
+        <br />
+        {{ electrolyzer_selector|safe }}
+    </div>
+    <div class="p-4">
+        <label for="simulation_time_range.start">Start Datetime</label>
+        <br />
+        <input type="datetime-local" class="border" id="simulation_time_range.start" step="900"
+            min="{{ generation_range.start }}" max="{{ generation_range.end }}" name="simulation_time_range.start" />
+    </div>
+    <div class="p-4">
+        <label for="simulation_time_range.end">End Datetime</label>
+        <br />
+        <input type="datetime-local" class="border" id="simulation_time_range.end" step="900"
+            min="{{ generation_range.start }}" max="{{ generation_range.end }}" name="simulation_time_range.end" />
+    </div>
+    <button class="border border-white px-4 py-2" type="submit">Execute Simulation</button>
+</form>
