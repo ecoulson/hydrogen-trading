@@ -1,8 +1,7 @@
 use tax_credit_model_server::{
     persistance::{electrolyzer::InMemoryElectrolyzerPersistanceClient, grid::InMemoryGridFetcher},
-    responders::htmx_responder::HX_TRIGGER,
     schema::electrolyzer::{
-        ConstantProduction, CreateElectrolyzerRequest, CreateElectrolyzerResponse,
+        ConstantProduction, CreateElectrolyzerRequest, ElectrolyzerDetailsTemplate,
     },
     server::Dependencies,
 };
@@ -18,7 +17,7 @@ async fn create_electrolyzer_successfully() {
     };
     let mut request = CreateElectrolyzerRequest::default();
     request.production_method.conversion_rate_constant = Some(0.5);
-    let mut expected_response = CreateElectrolyzerResponse::default();
+    let mut expected_response = ElectrolyzerDetailsTemplate::default();
     expected_response.electrolyzer.constant_production = Some(ConstantProduction {
         conversion_rate: 0.5,
     });
@@ -32,9 +31,5 @@ async fn create_electrolyzer_successfully() {
         )
         .await;
 
-    assert_eq!(
-        response.headers.get(HX_TRIGGER),
-        Some(&String::from("electrolyzer_created"))
-    );
     assert_template_eq!(response.data, expected_response);
 }

@@ -1,5 +1,9 @@
-<select class="border" hx-get="/list_electrolyzers" hx-swap="outerHTML" hx-trigger="electrolyzer_created from:body" name="electrolyzer_id">
-    {% for electrolyzer in electrolyzers %}
-    <option>{{ electrolyzer.id }}</option>
-    {% endfor %}
-</select>
+<div class="flex gap-4">
+    <select class="border" hx-get="/get_electrolyzer" hx-target="#electrolyzer-details" hx-trigger="change"
+        name="electrolyzer_id" id="electrolyzer_selector">
+        {% for electrolyzer in electrolyzers %}
+        <option>{{ electrolyzer.id }}</option>
+        {% endfor %}
+    </select>
+    <a href="/create_electrolyzer" class="border border-white">Create Electrolyzer</a>
+</div>

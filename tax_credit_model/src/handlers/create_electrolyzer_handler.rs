@@ -2,11 +2,11 @@ use rocket::{form::Form, post, State};
 
 use crate::{
     persistance::electrolyzer::ElectrolyzerClient,
-    responders::htmx_responder::{HtmxHeaders, HtmxTemplate, HX_TRIGGER},
+    responders::htmx_responder::{HtmxHeaders, HtmxTemplate, HX_REDIRECT},
     schema::{
         electrolyzer::{
-            ConstantProduction, CreateElectrolyzerRequest, CreateElectrolyzerResponse,
-            Electrolyzer, ProductionType,
+            ConstantProduction, CreateElectrolyzerRequest, Electrolyzer,
+            ElectrolyzerDetailsTemplate, ProductionType,
         },
         errors::BannerError,
     },
@@ -16,7 +16,7 @@ use crate::{
 pub fn create_electrolyzer_handler(
     request: Form<CreateElectrolyzerRequest>,
     electrolyzer_client: &State<Box<dyn ElectrolyzerClient>>,
-) -> Result<HtmxTemplate<CreateElectrolyzerResponse>, HtmxTemplate<BannerError>> {
+) -> Result<HtmxTemplate<ElectrolyzerDetailsTemplate>, HtmxTemplate<BannerError>> {
     let electrolyzer = electrolyzer_client
         .create_electrolyzer(&Electrolyzer {
             id: 0,
@@ -40,10 +40,10 @@ pub fn create_electrolyzer_handler(
             message: err.to_string(),
         })?;
     let mut headers = HtmxHeaders::default();
-    headers.set_header(HX_TRIGGER, "electrolyzer_created");
+    headers.set_header(HX_REDIRECT, "/");
 
     Ok(HtmxTemplate::new(
-        CreateElectrolyzerResponse { electrolyzer },
+        ElectrolyzerDetailsTemplate { electrolyzer },
         headers,
     ))
 }

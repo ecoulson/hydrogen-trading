@@ -1,20 +1,22 @@
 use askama::Template;
 use rocket::{get, State};
+use serde::{Deserialize, Serialize};
 
 use crate::{
     persistance::electrolyzer::ElectrolyzerClient,
     responders::htmx_responder::HtmxTemplate,
-    schema::{errors::BannerError, time::DateTimeRange},
+    schema::{electrolyzer::ElectrolyzerDetailsTemplate, errors::BannerError, time::DateTimeRange},
     templates::{
         list_electrolyzers_template::ElectrolyzerSelectorTemplate,
         simulation_form_template::SimulationFormTemplate,
     },
 };
 
-#[derive(Template)]
+#[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq)]
 #[template(path = "pages/simulation.html")]
 pub struct CreateSimulationTemplate {
-    simulation_form: SimulationFormTemplate,
+    simulation_form: Option<SimulationFormTemplate>,
+    electrolyzer_details: Option<ElectrolyzerDetailsTemplate>,
 }
 
 #[get("/")]
@@ -27,14 +29,25 @@ pub fn simulation_handler(
             message: err.to_string(),
         })?;
 
+    if electrolyzers.is_empty() {
+        return Ok(CreateSimulationTemplate {
+            simulation_form: None,
+            electrolyzer_details: None,
+        }
+        .into());
+    }
+
     Ok(CreateSimulationTemplate {
-        simulation_form: SimulationFormTemplate {
+        electrolyzer_details: Some(ElectrolyzerDetailsTemplate {
+            electrolyzer: electrolyzers.get(0).unwrap().clone(),
+        }),
+        simulation_form: Some(SimulationFormTemplate {
             generation_range: DateTimeRange {
                 start: String::from("2023-01-01T00:00"),
                 end: String::from("2023-07-31T23:59"),
             },
             electrolyzer_selector: ElectrolyzerSelectorTemplate { electrolyzers },
-        },
+        }),
     }
     .into())
 }

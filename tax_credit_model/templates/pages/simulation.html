@@ -9,59 +9,22 @@
 
 {% block content %}
 <div class="container mx-auto flex">
-    <div class="w-1/4 bg-slate-400 px-4 py-2">
-    <h1 class="text-3xl font-bold underline">Create Simulation</h1>
-        <form hx-post="/create_electrolyzer">
-            <div class="p-4">
-                <label for="replacement_threshold" >Replacement Threshold</label>
-                <br/>
-                <input class="border" id="replacement_threshold" name="replacement_threshold" />
-            </div>
-            <div class="p-4">
-                <label for="degredation_rate">Degredation Rate</label>
-                <br/>
-                <input class="border"id="degredation_rate" name="degredation_rate" />
-            </div>
-            <div class="p-4">
-                <label for="cacpacity_mw">Capacity MW</label>
-                <br/>
-                <input class="border" id="capacity_mw" name="capacity_mw" />
-            </div>
-            <div class="p-4">
-                <label for="capex">Capex</label>
-                <br/>
-                <input class="border" id="capex" name="capex" />
-            </div>
-            <div class="p-4">
-                <label for="opex">Opex</label>
-                <br/>
-                <input class="border" id="opex" name="opex" />
-            </div>
-            <div class="p-4">
-                <label for="replacement_cost">Replacement Cost</label>
-                <br/>
-                <input class="border" id="replacement_cost" name="replacement_cost" />
-            </div>
-            <div class="p-4">
-                <label for="production_method.production_type">Production Type</label>
-                <br/>
-                <select class="border" id="Constant" value="Constant" name="production_method.production_type">
-                    <option>Constant</option>
-                </select>
-            </div>
-            <div class="p-4">
-                <label for="production_method.conversion_rate_constant">Production Rate</label>
-                <br/>
-                <input class="border" id="production_method.conversion_rate_constant" name="production_method.conversion_rate_constant" />
-            </div>
-            <button class="border px-4 py-2" type="submit">
-                Create
-            </button>
-        </form>
+    <div class="w-1/4 bg-slate-200 px-4 py-2">
+        <h1 class="text-3xl font-bold underline">Electrolyzer Details</h1>
+        {% if electrolyzer_details.as_ref().is_none() %}
+        <p>No Electrolyzer selected</p>
+        {% else %}
+        {{ electrolyzer_details.unwrap()|safe }}
+        {% endif %}
     </div>
+
     <div class="w-3/4 bg-slate-200 px-4 py-2">
         <h1 class="text-3xl font-bold underline">Execute Simulation</h1>
-        {{ simulation_form|safe }}
+        {% if simulation_form.is_none() %}
+        <a class="border border-white px-4 py-2" href="/create_electrolyzer">Electrolyzer</a>
+        {% else %}
+        {{ simulation_form.as_ref().unwrap()|safe }}
+        {% endif %}
     </div>
 </div>
 {% endblock %}

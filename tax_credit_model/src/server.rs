@@ -3,7 +3,9 @@ use rocket::{fs::FileServer, routes, Build, Rocket};
 use crate::{
     handlers::{
         create_electrolyzer_handler::create_electrolyzer_handler,
+        create_electrolyzer_page_handler::create_electrolyzer_page_handler,
         execute_simulation_handler::execute_simulation,
+        get_electrolyzer_handler::get_electrolyzer_handler,
         get_simulation_form_handler::get_simulation_form_handler,
         list_electrolyzers_handler::list_electrolyzers_handler,
         simulation_handler::simulation_handler,
@@ -56,7 +58,9 @@ pub fn init_service(
                 create_electrolyzer_handler,
                 simulation_handler,
                 list_electrolyzers_handler,
-                get_simulation_form_handler
+                get_simulation_form_handler,
+                create_electrolyzer_page_handler,
+                get_electrolyzer_handler
             ],
         )
 }

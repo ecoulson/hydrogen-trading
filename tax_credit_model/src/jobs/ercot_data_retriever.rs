@@ -1,5 +1,5 @@
 use crate::{
-    logic::excel::{ExcelSheet, ExcelWorkbook},
+    parsers::excel::{ExcelSheet, ExcelWorkbook},
     persistance::grid::GridClient,
     schema::{
         ercot::{ErcotFuelMix, ErcotRTMPrice, SettlementPointLocation},
