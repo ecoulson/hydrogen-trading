@@ -49,9 +49,18 @@ impl std::fmt::Display for SimulationStatus {
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq)]
+pub struct TaxCreditSummary {
+    pub credit_hours_full: f64,
+    pub credit_hours_33: f64,
+    pub credit_hours_25: f64,
+    pub credit_hours_20: f64,
+    pub credit_hours_none: f64,
+}
+
+#[derive(Deserialize, Serialize, Default, Debug, PartialEq)]
 pub struct SimulationResult {
     pub status: SimulationStatus,
-    pub tax_credit: TaxCredit45V,
+    pub tax_credit_summary: TaxCreditSummary,
     pub emissions: TimeSeriesChart,
     pub hydrogen_productions: TimeSeriesChart,
     pub energy_costs: TimeSeriesChart

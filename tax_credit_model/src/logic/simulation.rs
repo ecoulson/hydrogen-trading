@@ -5,7 +5,7 @@ use crate::schema::{
     errors::{Error, Result},
     simulation_schema::{
         EmissionEvent, EnergySourcePortfolio, EnergyTransaction, HydrogenProductionEvent,
-        PowerGrid, PowerPlant, SimulationResult, SimulationStatus, TaxCredit45V,
+        PowerGrid, PowerPlant, SimulationResult, SimulationStatus, TaxCredit45V, TaxCreditSummary,
     },
     time::{DateTimeRange, Timestamp},
     time_series::{TimeSeries, TimeSeriesChart, TimeSeriesEntry},
@@ -17,12 +17,18 @@ const COAL_MWH_TO_CO2: f64 = 353.88;
 const NATURAL_GAS_MWH_TO_CO2: f64 = 201.96;
 const PETROLEUM_MWH_TO_CO2: f64 = 266.76;
 const TAX_CREDIT_45V_MAX_VALUE_USD: f64 = 3.0;
+const TAX_CREDIT_45V_33_VALUE_USD: f64 = 3.0 * 0.334;
+const TAX_CREDIT_45V_25_VALUE_USD: f64 = 3.0 * 0.25;
+const TAX_CREDIT_45V_20_VALUE_USD: f64 = 3.0 * 0.20;
+const TAX_CREDIT_45V_NO_VALUE_USD: f64 = 0.0;
 const BIOMASS_MWH_TO_CO2: f64 = 530.82;
 
 struct SimulationState {
     emissions: Vec<EmissionEvent>,
     hydrogen_productions: Vec<HydrogenProductionEvent>,
     transactions: Vec<EnergyTransaction>,
+    tax_credit: Vec<TaxCredit45V>,
+    tax_credit_summary: TaxCreditSummary,
 }
 
 impl SimulationState {
@@ -31,6 +37,8 @@ impl SimulationState {
             emissions: vec![],
             hydrogen_productions: vec![],
             transactions: vec![],
+            tax_credit: vec![],
+            tax_credit_summary: TaxCreditSummary::default(),
         }
     }
 }
@@ -44,7 +52,7 @@ pub fn simulate(
     let time_range = time_range.parse("%Y-%m-%dT%H:%M")?;
     let mut current_timestamp = time_range.start.to_utc_date_time()?;
     let mut end_timestamp = time_range.end.to_utc_date_time()?;
-    let increment = Duration::hours(1);
+    let increment = Duration::minutes(15);
     let mut state = SimulationState::new();
 
     if current_timestamp.timestamp() > end_timestamp.timestamp() {
@@ -81,15 +89,27 @@ pub fn simulate(
             electrolyzer,
             &portfolio,
         )?;
+        let tax_credit = calculate_tax_credit(&emission_event, &hydrogen_production_event);
+
+        if tax_credit.amount_usd_per_kg == TAX_CREDIT_45V_MAX_VALUE_USD {
+            state.tax_credit_summary.credit_hours_full += 0.25;
+        } else if tax_credit.amount_usd_per_kg == TAX_CREDIT_45V_33_VALUE_USD {
+            state.tax_credit_summary.credit_hours_33 += 0.25;
+        } else if tax_credit.amount_usd_per_kg == TAX_CREDIT_45V_25_VALUE_USD {
+            state.tax_credit_summary.credit_hours_25 += 0.25;
+        } else if tax_credit.amount_usd_per_kg == TAX_CREDIT_45V_20_VALUE_USD {
+            state.tax_credit_summary.credit_hours_20 += 0.25;
+        } else {
+            state.tax_credit_summary.credit_hours_none += 0.25;
+        }
 
         state.transactions.append(&mut transactions);
         state.emissions.push(emission_event);
         state.hydrogen_productions.push(hydrogen_production_event);
+        state.tax_credit.push(tax_credit);
 
         current_timestamp += increment;
     }
-
-    let tax_credit = calculate_tax_credit(&state.emissions, &state.hydrogen_productions);
 
     let emission_time_series = TimeSeries {
         label: String::from("Emissions"),
@@ -146,11 +166,10 @@ pub fn simulate(
     energy_costs_time_series
         .data_points
         .sort_by(|a, b| a.date.cmp(&b.date));
-    dbg!(&energy_costs_time_series);
 
     Ok(SimulationResult {
         status: SimulationStatus::Complete,
-        tax_credit,
+        tax_credit_summary: state.tax_credit_summary,
         emissions: TimeSeriesChart {
             id: String::from("emissions"),
             title: String::from("Emission time series"),
@@ -266,33 +285,25 @@ fn create_hydrogen_production_event(
 }
 
 fn calculate_tax_credit(
-    emissions: &Vec<EmissionEvent>,
-    hydrogen_productions: &Vec<HydrogenProductionEvent>,
+    emission: &EmissionEvent,
+    hydrogen_production: &HydrogenProductionEvent,
 ) -> TaxCredit45V {
-    let mut amount_usd_per_kg = 0.0;
-    let total_co2_emitted = emissions
-        .iter()
-        .fold(0.0, |sum, emission| sum + emission.amount_emitted_kg);
-    let total_h2_produced = hydrogen_productions
-        .iter()
-        .fold(0.0, |sum, hydrogen_production| {
-            sum + hydrogen_production.kg_hydrogen
-        });
-    let co2_per_h2 = total_co2_emitted / total_h2_produced;
+    let mut amount_usd_per_kg = TAX_CREDIT_45V_NO_VALUE_USD;
+    let co2_per_h2 = emission.amount_emitted_kg / hydrogen_production.kg_hydrogen;
 
     if 2.5 <= co2_per_h2 && co2_per_h2 < 4.0 {
-        amount_usd_per_kg = TAX_CREDIT_45V_MAX_VALUE_USD * 0.2
+        amount_usd_per_kg = TAX_CREDIT_45V_20_VALUE_USD
     } else if 1.5 <= co2_per_h2 && co2_per_h2 < 2.5 {
-        amount_usd_per_kg = TAX_CREDIT_45V_MAX_VALUE_USD * 0.25
+        amount_usd_per_kg = TAX_CREDIT_45V_25_VALUE_USD
     } else if 0.45 <= co2_per_h2 && co2_per_h2 < 1.5 {
-        amount_usd_per_kg = TAX_CREDIT_45V_MAX_VALUE_USD * 0.334
+        amount_usd_per_kg = TAX_CREDIT_45V_33_VALUE_USD
     } else if co2_per_h2 < 0.45 {
         amount_usd_per_kg = TAX_CREDIT_45V_MAX_VALUE_USD
     }
 
     TaxCredit45V {
         amount_usd_per_kg,
-        total_usd: amount_usd_per_kg * total_h2_produced,
+        total_usd: amount_usd_per_kg * hydrogen_production.kg_hydrogen,
     }
 }
 
