@@ -54,6 +54,7 @@ pub struct SimulationResult {
     pub tax_credit: TaxCredit45V,
     pub emissions: TimeSeriesChart,
     pub hydrogen_productions: TimeSeriesChart,
+    pub energy_costs: TimeSeriesChart
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq)]

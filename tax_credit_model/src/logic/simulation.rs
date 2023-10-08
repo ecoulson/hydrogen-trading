@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::schema::{
     electrolyzer::Electrolyzer,
     errors::{Error, Result},
@@ -118,6 +120,33 @@ pub fn simulate(
             })
             .collect::<Result<Vec<TimeSeriesEntry>>>()?,
     };
+    let mut energy_costs_time_series = TimeSeries {
+        label: String::from("Energy Cost"),
+        data_points: state
+            .transactions
+            .iter()
+            .fold(HashMap::new(), |mut aggregation, transaction| {
+                if let Some(current_price) = aggregation.get_mut(&transaction.timestamp) {
+                    *current_price += transaction.price_usd;
+                } else {
+                    aggregation.insert(transaction.timestamp, transaction.price_usd);
+                }
+
+                aggregation
+            })
+            .iter()
+            .map(|(key, value)| {
+                Ok(TimeSeriesEntry {
+                    date: key.to_utc_date_time()?.to_rfc3339(),
+                    value: *value,
+                })
+            })
+            .collect::<Result<Vec<TimeSeriesEntry>>>()?,
+    };
+    energy_costs_time_series
+        .data_points
+        .sort_by(|a, b| a.date.cmp(&b.date));
+    dbg!(&energy_costs_time_series);
 
     Ok(SimulationResult {
         status: SimulationStatus::Complete,
@@ -131,6 +160,11 @@ pub fn simulate(
             id: String::from("hydrogen-produced"),
             title: String::from("Hydrogen Production over time"),
             time_series: hydrogen_production_time_series,
+        },
+        energy_costs: TimeSeriesChart {
+            id: String::from("energy-costs"),
+            title: String::from("Energy Costs Over Time"),
+            time_series: energy_costs_time_series,
         },
     })
 }
