@@ -5,10 +5,11 @@ use crate::schema::{
     errors::{Error, Result},
     simulation_schema::{
         EmissionEvent, EnergySourcePortfolio, EnergyTransaction, HydrogenProductionEvent,
-        PowerGrid, PowerPlant, SimulationResult, SimulationStatus, TaxCredit45V, TaxCreditSummary,
+        PowerGrid, PowerPlant, SimulationResult, SimulationStatus, TaxCredit45V, TaxCredit45VTier,
+        TaxCreditSummary,
     },
     time::{DateTimeRange, Timestamp},
-    time_series::{TimeSeries, TimeSeriesChart, TimeSeriesEntry},
+    time_series::{ChartColor, TimeSeries, TimeSeriesChart, TimeSeriesEntry},
 };
 use chrono::{Datelike, Duration, Timelike};
 
@@ -16,11 +17,6 @@ use chrono::{Datelike, Duration, Timelike};
 const COAL_MWH_TO_CO2: f64 = 353.88;
 const NATURAL_GAS_MWH_TO_CO2: f64 = 201.96;
 const PETROLEUM_MWH_TO_CO2: f64 = 266.76;
-const TAX_CREDIT_45V_MAX_VALUE_USD: f64 = 3.0;
-const TAX_CREDIT_45V_33_VALUE_USD: f64 = 3.0 * 0.334;
-const TAX_CREDIT_45V_25_VALUE_USD: f64 = 3.0 * 0.25;
-const TAX_CREDIT_45V_20_VALUE_USD: f64 = 3.0 * 0.20;
-const TAX_CREDIT_45V_NO_VALUE_USD: f64 = 0.0;
 const BIOMASS_MWH_TO_CO2: f64 = 530.82;
 
 struct SimulationState {
@@ -91,16 +87,12 @@ pub fn simulate(
         )?;
         let tax_credit = calculate_tax_credit(&emission_event, &hydrogen_production_event);
 
-        if tax_credit.amount_usd_per_kg == TAX_CREDIT_45V_MAX_VALUE_USD {
-            state.tax_credit_summary.credit_hours_full += 0.25;
-        } else if tax_credit.amount_usd_per_kg == TAX_CREDIT_45V_33_VALUE_USD {
-            state.tax_credit_summary.credit_hours_33 += 0.25;
-        } else if tax_credit.amount_usd_per_kg == TAX_CREDIT_45V_25_VALUE_USD {
-            state.tax_credit_summary.credit_hours_25 += 0.25;
-        } else if tax_credit.amount_usd_per_kg == TAX_CREDIT_45V_20_VALUE_USD {
-            state.tax_credit_summary.credit_hours_20 += 0.25;
-        } else {
-            state.tax_credit_summary.credit_hours_none += 0.25;
+        match tax_credit.tier {
+            TaxCredit45VTier::Max => state.tax_credit_summary.credit_hours_full += 0.25,
+            TaxCredit45VTier::Tier1 => state.tax_credit_summary.credit_hours_33 += 0.25,
+            TaxCredit45VTier::Tier2 => state.tax_credit_summary.credit_hours_25 += 0.25,
+            TaxCredit45VTier::Tier3 => state.tax_credit_summary.credit_hours_20 += 0.25,
+            TaxCredit45VTier::None => state.tax_credit_summary.credit_hours_none += 0.25,
         }
 
         state.transactions.append(&mut transactions);
@@ -111,26 +103,15 @@ pub fn simulate(
         current_timestamp += increment;
     }
 
-    let emission_time_series = TimeSeries {
-        label: String::from("Emissions"),
-        data_points: state
-            .emissions
-            .iter()
-            .map(|emission| {
-                Ok(TimeSeriesEntry {
-                    date: emission.emission_timestamp.to_utc_date_time()?.to_rfc3339(),
-                    value: emission.amount_emitted_kg,
-                })
-            })
-            .collect::<Result<Vec<TimeSeriesEntry>>>()?,
-    };
     let hydrogen_production_time_series = TimeSeries {
         label: String::from("Hydrogen Produced"),
+        color: ChartColor::Blue,
         data_points: state
             .hydrogen_productions
             .iter()
             .map(|production| {
                 Ok(TimeSeriesEntry {
+                    color: ChartColor::Blue,
                     date: production
                         .production_timestamp
                         .to_utc_date_time()?
@@ -142,6 +123,7 @@ pub fn simulate(
     };
     let mut energy_costs_time_series = TimeSeries {
         label: String::from("Energy Cost"),
+        color: ChartColor::Blue,
         data_points: state
             .transactions
             .iter()
@@ -157,6 +139,7 @@ pub fn simulate(
             .iter()
             .map(|(key, value)| {
                 Ok(TimeSeriesEntry {
+                    color: ChartColor::Blue,
                     date: key.to_utc_date_time()?.to_rfc3339(),
                     value: *value,
                 })
@@ -170,21 +153,52 @@ pub fn simulate(
     Ok(SimulationResult {
         status: SimulationStatus::Complete,
         tax_credit_summary: state.tax_credit_summary,
-        emissions: TimeSeriesChart {
-            id: String::from("emissions"),
-            title: String::from("Emission time series"),
-            time_series: emission_time_series,
-        },
+        emissions: produce_emissions_graph(&state.emissions, &state.tax_credit)?,
         hydrogen_productions: TimeSeriesChart {
             id: String::from("hydrogen-produced"),
             title: String::from("Hydrogen Production over time"),
-            time_series: hydrogen_production_time_series,
+            time_series: vec![hydrogen_production_time_series],
         },
         energy_costs: TimeSeriesChart {
             id: String::from("energy-costs"),
             title: String::from("Energy Costs Over Time"),
-            time_series: energy_costs_time_series,
+            time_series: vec![energy_costs_time_series],
         },
+    })
+}
+
+fn produce_emissions_graph(
+    emissions: &Vec<EmissionEvent>,
+    tax_credits: &Vec<TaxCredit45V>,
+) -> Result<TimeSeriesChart> {
+    let data = emissions
+        .iter()
+        .zip(tax_credits)
+        .map(|(emission, tax_credit)| {
+            Ok(TimeSeriesEntry {
+                date: emission.emission_timestamp.to_utc_date_time()?.to_rfc3339(),
+                value: emission.amount_emitted_kg,
+                color: match tax_credit.tier {
+                    TaxCredit45VTier::Max => ChartColor::Green,
+                    TaxCredit45VTier::Tier1 => ChartColor::Chartreuse,
+                    TaxCredit45VTier::Tier2 => ChartColor::Yellow,
+                    TaxCredit45VTier::Tier3 => ChartColor::Orange,
+                    TaxCredit45VTier::None => ChartColor::Red,
+
+                },
+            })
+        })
+        .collect::<Result<Vec<TimeSeriesEntry>>>()?;
+    let time_series = TimeSeries {
+        label: String::from("Emissions"),
+        color: ChartColor::Blue,
+        data_points: data,
+    };
+
+    Ok(TimeSeriesChart {
+        id: String::from("emissions"),
+        title: String::from("Emissions over time"),
+        time_series: vec![time_series],
     })
 }
 
@@ -288,22 +302,24 @@ fn calculate_tax_credit(
     emission: &EmissionEvent,
     hydrogen_production: &HydrogenProductionEvent,
 ) -> TaxCredit45V {
-    let mut amount_usd_per_kg = TAX_CREDIT_45V_NO_VALUE_USD;
+    let mut tier = TaxCredit45VTier::None;
     let co2_per_h2 = emission.amount_emitted_kg / hydrogen_production.kg_hydrogen;
 
     if 2.5 <= co2_per_h2 && co2_per_h2 < 4.0 {
-        amount_usd_per_kg = TAX_CREDIT_45V_20_VALUE_USD
+        tier = TaxCredit45VTier::Tier3;
     } else if 1.5 <= co2_per_h2 && co2_per_h2 < 2.5 {
-        amount_usd_per_kg = TAX_CREDIT_45V_25_VALUE_USD
+        tier = TaxCredit45VTier::Tier2;
     } else if 0.45 <= co2_per_h2 && co2_per_h2 < 1.5 {
-        amount_usd_per_kg = TAX_CREDIT_45V_33_VALUE_USD
+        tier = TaxCredit45VTier::Tier1;
     } else if co2_per_h2 < 0.45 {
-        amount_usd_per_kg = TAX_CREDIT_45V_MAX_VALUE_USD
+        tier = TaxCredit45VTier::Max
     }
 
+    let value = tier.value();
+
     TaxCredit45V {
-        amount_usd_per_kg,
-        total_usd: amount_usd_per_kg * hydrogen_production.kg_hydrogen,
+        tier,
+        total_usd: value * hydrogen_production.kg_hydrogen,
     }
 }
 
@@ -315,7 +331,7 @@ mod test {
         electrolyzer::{ConstantProduction, Electrolyzer, ProductionType},
         simulation_schema::{
             EmissionEvent, EnergySourcePortfolio, EnergyTransaction, GenerationMetric,
-            HydrogenProductionEvent, PowerGrid, PowerPlant, TaxCredit45V,
+            HydrogenProductionEvent, PowerGrid, PowerPlant, TaxCredit45V, TaxCredit45VTier,
         },
         time::Timestamp,
     };
@@ -500,16 +516,14 @@ mod test {
         let mut emission_event = EmissionEvent::default();
         emission_event.emission_timestamp = Timestamp::default();
         emission_event.amount_emitted_kg = 0.2 * NATURAL_GAS_MWH_TO_CO2;
-        let emissions = vec![emission_event];
         let mut hydrogen_production_event = HydrogenProductionEvent::default();
         hydrogen_production_event.production_timestamp = Timestamp::default();
         hydrogen_production_event.kg_hydrogen = 100.0;
-        let hydrogen_productions = vec![hydrogen_production_event];
         let mut expected_tax_credit = TaxCredit45V::default();
         expected_tax_credit.total_usd = 300.0;
-        expected_tax_credit.amount_usd_per_kg = 3.0;
+        expected_tax_credit.tier = TaxCredit45VTier::Max;
 
-        let tax_credit = calculate_tax_credit(&emissions, &hydrogen_productions);
+        let tax_credit = calculate_tax_credit(&emission_event, &hydrogen_production_event);
 
         assert_eq!(tax_credit, expected_tax_credit);
     }
@@ -519,16 +533,14 @@ mod test {
         let mut emission_event = EmissionEvent::default();
         emission_event.emission_timestamp = Timestamp::default();
         emission_event.amount_emitted_kg = 2.0 * NATURAL_GAS_MWH_TO_CO2;
-        let emissions = vec![emission_event];
         let mut hydrogen_production_event = HydrogenProductionEvent::default();
         hydrogen_production_event.production_timestamp = Timestamp::default();
         hydrogen_production_event.kg_hydrogen = 800.0;
-        let hydrogen_productions = vec![hydrogen_production_event];
         let mut expected_tax_credit = TaxCredit45V::default();
         expected_tax_credit.total_usd = 801.6;
-        expected_tax_credit.amount_usd_per_kg = 1.002;
+        expected_tax_credit.tier = TaxCredit45VTier::Tier1;
 
-        let tax_credit = calculate_tax_credit(&emissions, &hydrogen_productions);
+        let tax_credit = calculate_tax_credit(&emission_event, &hydrogen_production_event);
 
         assert_eq!(tax_credit, expected_tax_credit);
     }
@@ -538,16 +550,14 @@ mod test {
         let mut emission_event = EmissionEvent::default();
         emission_event.emission_timestamp = Timestamp::default();
         emission_event.amount_emitted_kg = 3.0 * NATURAL_GAS_MWH_TO_CO2;
-        let emissions = vec![emission_event];
         let mut hydrogen_production_event = HydrogenProductionEvent::default();
         hydrogen_production_event.production_timestamp = Timestamp::default();
         hydrogen_production_event.kg_hydrogen = 300.0;
-        let hydrogen_productions = vec![hydrogen_production_event];
         let mut expected_tax_credit = TaxCredit45V::default();
         expected_tax_credit.total_usd = 225.0;
-        expected_tax_credit.amount_usd_per_kg = 0.75;
+        expected_tax_credit.tier = TaxCredit45VTier::Tier2;
 
-        let tax_credit = calculate_tax_credit(&emissions, &hydrogen_productions);
+        let tax_credit = calculate_tax_credit(&emission_event, &hydrogen_production_event);
 
         assert_eq!(tax_credit, expected_tax_credit);
     }
@@ -557,16 +567,14 @@ mod test {
         let mut emission_event = EmissionEvent::default();
         emission_event.emission_timestamp = Timestamp::default();
         emission_event.amount_emitted_kg = 4.0 * NATURAL_GAS_MWH_TO_CO2;
-        let emissions = vec![emission_event];
         let mut hydrogen_production_event = HydrogenProductionEvent::default();
         hydrogen_production_event.production_timestamp = Timestamp::default();
         hydrogen_production_event.kg_hydrogen = 500.0;
-        let hydrogen_productions = vec![hydrogen_production_event];
         let mut expected_tax_credit = TaxCredit45V::default();
         expected_tax_credit.total_usd = 375.0;
-        expected_tax_credit.amount_usd_per_kg = 0.75;
+        expected_tax_credit.tier = TaxCredit45VTier::Tier3;
 
-        let tax_credit = calculate_tax_credit(&emissions, &hydrogen_productions);
+        let tax_credit = calculate_tax_credit(&emission_event, &hydrogen_production_event);
 
         assert_eq!(tax_credit, expected_tax_credit);
     }

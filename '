@@ -63,7 +63,7 @@ pub struct SimulationResult {
     pub tax_credit_summary: TaxCreditSummary,
     pub emissions: TimeSeriesChart,
     pub hydrogen_productions: TimeSeriesChart,
-    pub energy_costs: TimeSeriesChart,
+    pub energy_costs: TimeSeriesChart
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq)]
@@ -276,31 +276,25 @@ impl PowerPlant {
     }
 }
 
-#[derive(Deserialize, Serialize, Default, Debug, PartialEq, Eq, Hash)]
 pub enum TaxCredit45VTier {
     Max,
     Tier1,
     Tier2,
     Tier3,
-    #[default]
-    None,
+    None
 }
 
-impl TaxCredit45VTier {
-    pub fn value(&self) -> f64 {
-        match self {
+pub impl TaxCredit45VTier {
+    fn value(&self) -> f64 {
+        return match self {
             Self::Max => 3.0,
-            Self::Tier1 => 3.0 * 0.334,
-            Self::Tier2 => 3.0 * 0.25,
-            Self::Tier3 => 3.0 * 0.2,
-            Self::None => 0.0,
         }
     }
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq)]
 pub struct TaxCredit45V {
-    pub tier: TaxCredit45VTier,
+    pub amount_usd_per_kg: f64,
     pub total_usd: f64,
 }
 

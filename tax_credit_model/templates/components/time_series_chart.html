@@ -3,18 +3,37 @@
   new Chart(document.getElementById('{{ id }}'), {
     type: 'line',
     data: {
-      datasets: [{
-        label: "{{ time_series.label }}",
-        data: [
-            {% for data_point in time_series.data_points %}
-            {
-                x: "{{ data_point.date }}",
-                y: {{ data_point.value }}
+      datasets: [
+          {% for time_series in time_series %}
+          {
+            label: "{{ time_series.label }}",
+           segment: {
+                borderColor: function(context) {
+                    return context.p0.raw.color;
+                }
             },
-            {% endfor %}
+            borderColor: function(context) {
+                switch (context.type) {
+                    case "data":
+                        return context.dataset.data[context.dataIndex].color;
+                    case "dataset":
+                        return context.dataset.color;
+                }
+            },
+            data: [
+                {% for data_point in time_series.data_points %}
+                {
+                    x: "{{ data_point.date }}",
+                    y: {{ data_point.value }},
+                    color: "{{ data_point.color }}",
+                },
+                {% endfor %}
+            ],
+            borderWidth: 2,
+            color: "{{ time_series.color }}"
+          },
+          {% endfor %}
         ],
-        borderWidth: 1
-      }]
     },
     options: {
       scales: {
