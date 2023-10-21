@@ -123,7 +123,7 @@ pub fn simulate(
         energy_costs: TimeSeriesChart {
             id: String::from("energy-costs"),
             title: String::from("Energy Costs Over Time"),
-            data_set_endpoints: vec![format!("fetch_hydrogen_production/{simulation_id}")],
+            data_set_endpoints: vec![format!("fetch_energy_costs/{simulation_id}")],
         },
     })
 }
