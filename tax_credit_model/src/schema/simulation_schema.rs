@@ -34,7 +34,7 @@ pub struct ExecuteSimulationResponse {
     pub simulation_result: SimulationResult,
 }
 
-#[derive(Deserialize, Serialize, Default, Debug, PartialEq)]
+#[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
 pub enum SimulationStatus {
     #[default]
     Complete,
@@ -48,7 +48,7 @@ impl std::fmt::Display for SimulationStatus {
     }
 }
 
-#[derive(Deserialize, Serialize, Default, Debug, PartialEq)]
+#[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
 pub struct TaxCreditSummary {
     pub credit_hours_full: f64,
     pub credit_hours_33: f64,
@@ -57,7 +57,7 @@ pub struct TaxCreditSummary {
     pub credit_hours_none: f64,
 }
 
-#[derive(Deserialize, Serialize, Default, Debug, PartialEq)]
+#[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
 pub struct SimulationResult {
     pub status: SimulationStatus,
     pub tax_credit_summary: TaxCreditSummary,
@@ -66,7 +66,7 @@ pub struct SimulationResult {
     pub energy_costs: TimeSeriesChart,
 }
 
-#[derive(Deserialize, Serialize, Default, Debug, PartialEq)]
+#[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
 pub struct EmissionEvent {
     pub simulation_id: i32,
     pub electrolyzer_id: usize,
@@ -74,7 +74,7 @@ pub struct EmissionEvent {
     pub amount_emitted_kg: f64,
 }
 
-#[derive(Deserialize, Serialize, Default, Debug, PartialEq)]
+#[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
 pub struct HydrogenProductionEvent {
     pub simulation_id: i32,
     pub electrolyzer_id: usize,
@@ -276,7 +276,7 @@ impl PowerPlant {
     }
 }
 
-#[derive(Deserialize, Serialize, Default, Debug, PartialEq, Eq, Hash)]
+#[derive(Deserialize, Serialize, Default, Debug, PartialEq, Eq, Hash, Clone)]
 pub enum TaxCredit45VTier {
     Max,
     Tier1,
@@ -298,13 +298,13 @@ impl TaxCredit45VTier {
     }
 }
 
-#[derive(Deserialize, Serialize, Default, Debug, PartialEq)]
+#[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
 pub struct TaxCredit45V {
     pub tier: TaxCredit45VTier,
     pub total_usd: f64,
 }
 
-#[derive(Deserialize, Serialize, Default, Debug, PartialEq)]
+#[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
 pub struct EnergyTransaction {
     pub simulation_id: i32,
     pub electrolyzer_id: usize,

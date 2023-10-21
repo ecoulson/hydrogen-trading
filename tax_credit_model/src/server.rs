@@ -5,12 +5,15 @@ use crate::{
         create_electrolyzer_handler::create_electrolyzer_handler,
         create_electrolyzer_page_handler::create_electrolyzer_page_handler,
         execute_simulation_handler::execute_simulation,
+        fetch_emissions_handler::fetch_emissions_handler,
+        fetch_energy_costs_handler::fetch_energy_costs_handler,
+        fetch_hydrogen_production_handler::fetch_hydrogen_production_handler,
         get_electrolyzer_handler::get_electrolyzer_handler,
         get_simulation_form_handler::get_simulation_form_handler,
         list_electrolyzers_handler::list_electrolyzers_handler,
         simulation_handler::simulation_handler,
     },
-    persistance::{electrolyzer::ElectrolyzerClient, grid::GridClient},
+    persistance::{electrolyzer::ElectrolyzerClient, grid::GridClient, simulation::SimulationClient},
 };
 
 #[derive(Debug, Clone)]
@@ -38,6 +41,7 @@ impl ServerConfiguration {
 pub struct Dependencies {
     pub electrolyzer_client: Box<dyn ElectrolyzerClient>,
     pub grid_client: Box<dyn GridClient>,
+    pub simulation_client: Box<dyn SimulationClient>
 }
 
 pub fn init_service(
@@ -50,6 +54,7 @@ pub fn init_service(
         .manage(configuration)
         .manage(dependencies.grid_client)
         .manage(dependencies.electrolyzer_client)
+        .manage(dependencies.simulation_client)
         .mount("/assets", static_files)
         .mount(
             "/",
@@ -60,7 +65,10 @@ pub fn init_service(
                 list_electrolyzers_handler,
                 get_simulation_form_handler,
                 create_electrolyzer_page_handler,
-                get_electrolyzer_handler
+                get_electrolyzer_handler,
+                fetch_emissions_handler,
+                fetch_hydrogen_production_handler,
+                fetch_energy_costs_handler
             ],
         )
 }

@@ -2,7 +2,9 @@ use rocket::{form::Form, post, State};
 
 use crate::{
     logic::simulation::simulate,
-    persistance::{electrolyzer::ElectrolyzerClient, grid::GridClient},
+    persistance::{
+        electrolyzer::ElectrolyzerClient, grid::GridClient, simulation::SimulationClient,
+    },
     responders::htmx_responder::HtmxTemplate,
     schema::{
         errors::BannerError,
@@ -15,6 +17,7 @@ pub fn execute_simulation(
     request: Form<ExecuteSimulationRequest>,
     power_grid_fetcher: &State<Box<dyn GridClient>>,
     electrolyzer_client: &State<Box<dyn ElectrolyzerClient>>,
+    simulation_client: &State<Box<dyn SimulationClient>>,
 ) -> Result<HtmxTemplate<ExecuteSimulationResponse>, HtmxTemplate<BannerError>> {
     let electrolyzer = electrolyzer_client
         .get_electrolyzer(request.electrolyzer_id)
@@ -28,10 +31,15 @@ pub fn execute_simulation(
         })?;
 
     Ok(ExecuteSimulationResponse {
-        simulation_result: simulate(&power_grid, &electrolyzer, &request.simulation_time_range)
-            .map_err(|err| BannerError {
-                message: err.to_string(),
-            })?,
+        simulation_result: simulate(
+            &power_grid,
+            &electrolyzer,
+            &request.simulation_time_range,
+            simulation_client.inner(),
+        )
+        .map_err(|err| BannerError {
+            message: err.to_string(),
+        })?,
     }
     .into())
 }

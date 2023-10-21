@@ -10,19 +10,19 @@ pub trait GridClient: Send + Sync {
     fn add_generations(&self, generations: Vec<GenerationMetric>) -> Result<()>;
 }
 
-pub struct InMemoryGridFetcher {
+pub struct InMemoryGridClient {
     generations_store: Mutex<HashMap<i32, Vec<GenerationMetric>>>,
 }
 
-impl InMemoryGridFetcher {
-    pub fn new() -> InMemoryGridFetcher {
-        InMemoryGridFetcher {
+impl InMemoryGridClient {
+    pub fn new() -> InMemoryGridClient {
+        InMemoryGridClient {
             generations_store: Mutex::new(HashMap::new()),
         }
     }
 }
 
-impl GridClient for InMemoryGridFetcher {
+impl GridClient for InMemoryGridClient {
     fn get_power_grid(&self) -> Result<PowerGrid> {
         let plant_id = 0;
         let generations = self

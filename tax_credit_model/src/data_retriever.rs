@@ -9,7 +9,7 @@ const MONTHS: [&'static str; 12] = [
 ];
 
 pub fn fill_generations(configuration: ServerConfiguration, dependencies: &Dependencies) {
-    for month in MONTHS {
+    for month in MONTHS[6..7].iter() {
         let input = ErcotDataRetrieverJob::extract(&configuration.data_directory, month)
             .unwrap_or_else(|err| {
                 eprintln!("{err}");

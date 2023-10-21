@@ -39,10 +39,10 @@ pub struct TimeSeriesEntry {
     pub value: f64,
 }
 
-#[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq)]
+#[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
 #[template(path = "components/time_series_chart.html")]
 pub struct TimeSeriesChart {
     pub title: String,
     pub id: String,
-    pub time_series: Vec<TimeSeries>,
+    pub data_set_endpoints: Vec<String>,
 }
