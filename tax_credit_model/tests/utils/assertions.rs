@@ -4,4 +4,3 @@ macro_rules! assert_template_eq {
         pretty_assertions::assert_eq!($str, $template.to_string())
     };
 }
-

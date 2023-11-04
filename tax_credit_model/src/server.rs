@@ -13,7 +13,9 @@ use crate::{
         list_electrolyzers_handler::list_electrolyzers_handler,
         simulation_handler::simulation_handler,
     },
-    persistance::{electrolyzer::ElectrolyzerClient, grid::GridClient, simulation::SimulationClient},
+    persistance::{
+        electrolyzer::ElectrolyzerClient, grid::GridClient, simulation::SimulationClient,
+    },
 };
 
 #[derive(Debug, Clone)]
@@ -41,7 +43,7 @@ impl ServerConfiguration {
 pub struct Dependencies {
     pub electrolyzer_client: Box<dyn ElectrolyzerClient>,
     pub grid_client: Box<dyn GridClient>,
-    pub simulation_client: Box<dyn SimulationClient>
+    pub simulation_client: Box<dyn SimulationClient>,
 }
 
 pub fn init_service(

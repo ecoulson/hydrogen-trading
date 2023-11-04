@@ -1,5 +1,8 @@
 use tax_credit_model_server::{
-    persistance::{electrolyzer::InMemoryElectrolyzerPersistanceClient, grid::InMemoryGridFetcher},
+    persistance::{
+        electrolyzer::InMemoryElectrolyzerPersistanceClient, grid::InMemoryGridClient,
+        simulation::InMemorySimulationClient,
+    },
     schema::electrolyzer::{
         ConstantProduction, CreateElectrolyzerRequest, ElectrolyzerDetailsTemplate,
     },
@@ -13,7 +16,8 @@ mod utils;
 async fn create_electrolyzer_successfully() {
     let dependencies = Dependencies {
         electrolyzer_client: Box::new(InMemoryElectrolyzerPersistanceClient::new()),
-        grid_client: Box::new(InMemoryGridFetcher::new()),
+        grid_client: Box::new(InMemoryGridClient::new()),
+        simulation_client: Box::new(InMemorySimulationClient::new()),
     };
     let mut request = CreateElectrolyzerRequest::default();
     request.production_method.conversion_rate_constant = Some(0.5);

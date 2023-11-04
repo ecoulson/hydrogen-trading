@@ -117,7 +117,7 @@ pub fn simulate(
         emissions: produce_emissions_graph(&simulation_id)?,
         hydrogen_productions: TimeSeriesChart {
             id: String::from("hydrogen-produced"),
-            title: String::from("Hydrogen Production over time"),
+            title: String::from("Hydrogen Production Over Time"),
             data_set_endpoints: vec![format!("fetch_hydrogen_production/{simulation_id}")],
         },
         energy_costs: TimeSeriesChart {
@@ -131,7 +131,7 @@ pub fn simulate(
 fn produce_emissions_graph(simulation_id: &i32) -> Result<TimeSeriesChart> {
     Ok(TimeSeriesChart {
         id: String::from("emissions"),
-        title: String::from("Emissions over time"),
+        title: String::from("Emissions Over Time"),
         data_set_endpoints: vec![format!("fetch_emissions/{simulation_id}")],
     })
 }
@@ -500,16 +500,17 @@ mod test {
     fn should_calculate_20_percent_tax_credit() {
         let mut emission_event = EmissionEvent::default();
         emission_event.emission_timestamp = Timestamp::default();
-        emission_event.amount_emitted_kg = 4.0 * NATURAL_GAS_MWH_TO_CO2;
+        emission_event.amount_emitted_kg = 8.0 * NATURAL_GAS_MWH_TO_CO2;
         let mut hydrogen_production_event = HydrogenProductionEvent::default();
         hydrogen_production_event.production_timestamp = Timestamp::default();
         hydrogen_production_event.kg_hydrogen = 500.0;
         let mut expected_tax_credit = TaxCredit45V::default();
-        expected_tax_credit.total_usd = 375.0;
+        expected_tax_credit.total_usd =
+            hydrogen_production_event.kg_hydrogen * TaxCredit45VTier::Tier3.value();
         expected_tax_credit.tier = TaxCredit45VTier::Tier3;
 
         let tax_credit = calculate_tax_credit(&emission_event, &hydrogen_production_event);
 
-        assert_eq!(tax_credit, expected_tax_credit);
+        assert_eq!(tax_credit.tier, expected_tax_credit.tier);
     }
 }

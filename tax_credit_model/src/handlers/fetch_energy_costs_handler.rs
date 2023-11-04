@@ -39,7 +39,7 @@ pub fn fetch_energy_costs_handler(
                 })
             })
             .collect::<crate::schema::errors::Result<Vec<TimeSeriesEntry>>>()
-            .map_err(|err| err.to_string())?
+            .map_err(|err| err.to_string())?,
     };
     energy_costs_time_series
         .data_points

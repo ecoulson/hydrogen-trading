@@ -6,7 +6,7 @@ use super::{errors::Error, simulation_schema::EnergySource, time::Timestamp};
 pub enum Settlement {
     #[default]
     Final,
-    Initial
+    Initial,
 }
 
 impl FromStr for Settlement {

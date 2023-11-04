@@ -1,10 +1,11 @@
-pub mod server;
-pub mod schema;
+pub mod data_retriever;
 pub mod handlers;
+pub mod jobs;
 pub mod logic;
+pub mod parsers;
 pub mod persistance;
 pub mod responders;
-pub mod jobs;
-pub mod parsers;
-pub mod data_retriever;
+pub mod schema;
+pub mod server;
 pub mod templates;
+pub mod files;
