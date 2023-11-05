@@ -1,5 +1,5 @@
 use std::{
-    fs::OpenOptions,
+    fs::{Metadata, OpenOptions},
     io::{Read, Write},
 };
 
@@ -34,6 +34,27 @@ pub struct Permissions {
 }
 
 impl Permissions {
+    pub fn readable() -> Permissions {
+        Permissions {
+            read: ReadMode::Enabled,
+            write: WriteMode::Disabled,
+        }
+    }
+
+    pub fn writeable(create_mode: CreateMode) -> Permissions {
+        Permissions {
+            read: ReadMode::Disabled,
+            write: WriteMode::Overwrite(create_mode),
+        }
+    }
+
+    pub fn appendable(create_mode: CreateMode) -> Permissions {
+        Permissions {
+            read: ReadMode::Disabled,
+            write: WriteMode::Append(create_mode),
+        }
+    }
+
     pub fn new(read: ReadMode, write: WriteMode) -> Permissions {
         Permissions { read, write }
     }
@@ -66,8 +87,6 @@ impl Permissions {
             }
         };
 
-        dbg!(&open_options);
-
         open_options
     }
 
@@ -89,10 +108,10 @@ pub struct File {
 }
 
 impl File {
-    pub fn new(path: &str, permissions: Permissions) -> File {
+    pub fn new(path: &str, permissions: &Permissions) -> File {
         File {
             path: String::from(path),
-            permissions,
+            permissions: permissions.clone(),
         }
     }
 
@@ -105,6 +124,31 @@ impl File {
     }
 }
 
+#[derive(Default, Debug, Eq, PartialEq)]
+pub struct FileMetadata {
+    size: u64,
+}
+
+impl FileMetadata {
+    pub fn new(size: u64) -> FileMetadata {
+        FileMetadata {
+            size
+        }
+    }
+
+    pub fn from_metadata(metadata: &Metadata) -> FileMetadata {
+        FileMetadata {
+            size: metadata.len(),
+        }
+    }
+}
+
+pub fn open_file_handle(file: &File) -> Result<std::fs::File> {
+    Permissions::create_open_options(file.permissions())
+        .open(file.path())
+        .map_err(|err| Error::create_invalid_argument_error(&err.to_string()))
+}
+
 pub fn read_file(file: &File) -> Result<Vec<u8>> {
     if !Permissions::can_read(file.permissions()) {
         return Err(Error::create_invalid_argument_error(
@@ -113,11 +157,7 @@ pub fn read_file(file: &File) -> Result<Vec<u8>> {
     }
 
     let mut buffer = Vec::new();
-    dbg!(file);
-    let mut file_handle = Permissions::create_open_options(file.permissions())
-        .open(file.path())
-        .map_err(|err| Error::create_invalid_argument_error(&err.to_string()))?;
-    file_handle
+    open_file_handle(file)?
         .read_to_end(&mut buffer)
         .map_err(|err| Error::create_invalid_argument_error(&err.to_string()))?;
 
@@ -131,12 +171,24 @@ pub fn write_file<'f>(file: &'f File, content: &[u8]) -> Result<&'f File> {
         ));
     }
 
-    let mut file_handle = Permissions::create_open_options(file.permissions())
-        .open(file.path())
-        .map_err(|err| Error::create_invalid_argument_error(&err.to_string()))?;
-    file_handle
+    open_file_handle(file)?
         .write_all(content)
         .map_err(|err| Error::create_invalid_argument_error(&err.to_string()))?;
 
     Ok(file)
+}
+
+pub fn delete_file(file: &File) -> Result<&File> {
+    std::fs::remove_file(file.path())
+        .map_err(|err| Error::create_invalid_argument_error(&err.to_string()))?;
+
+    Ok(file)
+}
+
+pub fn file_metadata(file: &File) -> Result<FileMetadata> {
+    let metadata = open_file_handle(file)?
+        .metadata()
+        .map_err(|err| Error::create_invalid_argument_error(&err.to_string()))?;
+
+    Ok(FileMetadata::from_metadata(&metadata))
 }
