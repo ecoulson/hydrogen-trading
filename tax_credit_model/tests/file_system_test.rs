@@ -6,7 +6,8 @@ use std::{
 };
 
 use tax_credit_model_server::files::file_system::{
-    delete_file, read_file, write_file, CreateMode, Permissions, file_metadata, FileMetadata,
+    delete_file, file_metadata, read_file, write_file, CreateMode, FileMetadata, Permissions,
+    ReadMode, WriteMode,
 };
 
 use utils::temp_dir::TempDirectory;
@@ -73,7 +74,10 @@ fn should_get_metadata() {
     let input_file = TempDirectory::create_file(
         &directory,
         "file.txt",
-        &Permissions::appendable(CreateMode::CreateOrRead),
+        &Permissions::new(
+            ReadMode::Enabled,
+            WriteMode::Append(CreateMode::CreateOrRead),
+        ),
     );
     let data = &"Hello world!".bytes().collect::<Vec<u8>>();
     let expected_metadata = FileMetadata::new(data.len() as u64);

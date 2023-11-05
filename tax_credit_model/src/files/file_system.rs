@@ -131,9 +131,11 @@ pub struct FileMetadata {
 
 impl FileMetadata {
     pub fn new(size: u64) -> FileMetadata {
-        FileMetadata {
-            size
-        }
+        FileMetadata { size }
+    }
+
+    pub fn size(&self) -> u64 {
+        self.size
     }
 
     pub fn from_metadata(metadata: &Metadata) -> FileMetadata {
@@ -143,9 +145,9 @@ impl FileMetadata {
     }
 }
 
-pub fn open_file_handle(file: &File) -> Result<std::fs::File> {
-    Permissions::create_open_options(file.permissions())
-        .open(file.path())
+pub fn open_file_handle(path: &str, permissions: &Permissions) -> Result<std::fs::File> {
+    Permissions::create_open_options(permissions)
+        .open(path)
         .map_err(|err| Error::create_invalid_argument_error(&err.to_string()))
 }
 
@@ -157,7 +159,7 @@ pub fn read_file(file: &File) -> Result<Vec<u8>> {
     }
 
     let mut buffer = Vec::new();
-    open_file_handle(file)?
+    open_file_handle(file.path(), &Permissions::readable())?
         .read_to_end(&mut buffer)
         .map_err(|err| Error::create_invalid_argument_error(&err.to_string()))?;
 
@@ -171,7 +173,7 @@ pub fn write_file<'f>(file: &'f File, content: &[u8]) -> Result<&'f File> {
         ));
     }
 
-    open_file_handle(file)?
+    open_file_handle(file.path(), file.permissions())?
         .write_all(content)
         .map_err(|err| Error::create_invalid_argument_error(&err.to_string()))?;
 
@@ -186,7 +188,11 @@ pub fn delete_file(file: &File) -> Result<&File> {
 }
 
 pub fn file_metadata(file: &File) -> Result<FileMetadata> {
-    let metadata = open_file_handle(file)?
+    if !Permissions::can_read(file.permissions()) {
+        return Err(Error::create_invalid_argument_error("File must be readable"));
+    }
+
+    let metadata = open_file_handle(file.path(), &Permissions::readable())?
         .metadata()
         .map_err(|err| Error::create_invalid_argument_error(&err.to_string()))?;
 
