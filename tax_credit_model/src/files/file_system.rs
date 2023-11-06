@@ -1,5 +1,5 @@
 use std::{
-    fs::{Metadata, OpenOptions},
+    fs::{create_dir_all, Metadata, OpenOptions},
     io::{Read, Write},
 };
 
@@ -122,6 +122,16 @@ impl File {
     pub fn permissions(&self) -> &Permissions {
         &self.permissions
     }
+
+    pub fn directory_path(file: &File) -> &str {
+        for (i, char) in file.path.chars().rev().enumerate() {
+            if char == '/' {
+                return &file.path[0..file.path().len() - i - 1];
+            }
+        }
+
+        "/"
+    }
 }
 
 #[derive(Default, Debug, Eq, PartialEq)]
@@ -189,7 +199,9 @@ pub fn delete_file(file: &File) -> Result<&File> {
 
 pub fn file_metadata(file: &File) -> Result<FileMetadata> {
     if !Permissions::can_read(file.permissions()) {
-        return Err(Error::create_invalid_argument_error("File must be readable"));
+        return Err(Error::create_invalid_argument_error(
+            "File must be readable",
+        ));
     }
 
     let metadata = open_file_handle(file.path(), &Permissions::readable())?
@@ -198,3 +210,27 @@ pub fn file_metadata(file: &File) -> Result<FileMetadata> {
 
     Ok(FileMetadata::from_metadata(&metadata))
 }
+
+#[derive(Default, Debug, Eq, PartialEq)]
+pub struct Directory {
+    path: String,
+}
+
+impl Directory {
+    pub fn new(path: &str) -> Directory {
+        Directory {
+            path: String::from(path),
+        }
+    }
+
+    pub fn path(&self) -> &str {
+        &self.path
+    }
+}
+
+pub fn create_directory(path: &str) -> Result<Directory> {
+    create_dir_all(path).map_err(|err| Error::create_invalid_argument_error(&err.to_string()))?;
+
+    Ok(Directory::new(path))
+}
+

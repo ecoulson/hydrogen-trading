@@ -1,7 +1,7 @@
 use tax_credit_model_server::{
     persistance::{
         electrolyzer::InMemoryElectrolyzerPersistanceClient, grid::InMemoryGridClient,
-        simulation::InMemorySimulationClient,
+        simulation::InMemorySimulationClient, generation::DiskGenerationPersistanceClient,
     },
     schema::{
         electrolyzer::{ConstantProduction, Electrolyzer},
@@ -24,6 +24,7 @@ async fn test_simulate_for_simple_model() {
         electrolyzer_client: Box::new(InMemoryElectrolyzerPersistanceClient::new()),
         grid_client: Box::new(InMemoryGridClient::new()),
         simulation_client: Box::new(InMemorySimulationClient::new()),
+        generation_client: Box::new(DiskGenerationPersistanceClient::new("").unwrap()),
     };
     let mut time_range = TimeRange::default();
     time_range.end.seconds = 3600;

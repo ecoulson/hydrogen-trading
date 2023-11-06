@@ -14,7 +14,7 @@ use crate::{
         simulation_handler::simulation_handler,
     },
     persistance::{
-        electrolyzer::ElectrolyzerClient, grid::GridClient, simulation::SimulationClient,
+        electrolyzer::ElectrolyzerClient, grid::GridClient, simulation::SimulationClient, generation::GenerationClient,
     },
 };
 
@@ -44,6 +44,7 @@ pub struct Dependencies {
     pub electrolyzer_client: Box<dyn ElectrolyzerClient>,
     pub grid_client: Box<dyn GridClient>,
     pub simulation_client: Box<dyn SimulationClient>,
+    pub generation_client: Box<dyn GenerationClient>,
 }
 
 pub fn init_service(
@@ -57,6 +58,7 @@ pub fn init_service(
         .manage(dependencies.grid_client)
         .manage(dependencies.electrolyzer_client)
         .manage(dependencies.simulation_client)
+        .manage(dependencies.generation_client)
         .mount("/assets", static_files)
         .mount(
             "/",

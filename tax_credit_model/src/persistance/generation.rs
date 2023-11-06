@@ -1,8 +1,10 @@
+use std::sync::Arc;
+
 use serde_json::{from_str, to_string};
 
 use crate::{
     files::file_system::{
-        read_file, write_file, CreateMode, File, Permissions, ReadMode, WriteMode, delete_file,
+        create_directory, read_file, write_file, CreateMode, File, Permissions, ReadMode, WriteMode,
     },
     schema::{
         errors::{Error, Result},
@@ -10,31 +12,35 @@ use crate::{
     },
 };
 
-pub trait GenerationPersistanceClient {
+pub trait GenerationClient: Send + Sync {
     fn list_generations(&self) -> Result<Vec<GenerationMetric>>;
     fn create_generation(&self, generation_metric: &GenerationMetric) -> Result<GenerationMetric>;
     fn remove_all_generations(&self) -> Result<()>;
 }
 
 pub struct DiskGenerationPersistanceClient {
-    file: File,
+    file: Arc<File>,
 }
 
 impl DiskGenerationPersistanceClient {
-    pub fn new(path: &str) -> DiskGenerationPersistanceClient {
-        DiskGenerationPersistanceClient {
-            file: File::new(
+    pub fn new(path: &str) -> Result<DiskGenerationPersistanceClient> {
+        let data_file = File::new(path, &Permissions::appendable(CreateMode::CreateOrRead));
+        create_directory(File::directory_path(&data_file))?;
+        write_file(&data_file, &vec![])?;
+
+        Ok(DiskGenerationPersistanceClient {
+            file: Arc::new(File::new(
                 path,
                 &Permissions::new(
                     ReadMode::Enabled,
                     WriteMode::Append(CreateMode::CreateOrRead),
                 ),
-            ),
-        }
+            )),
+        })
     }
 }
 
-impl GenerationPersistanceClient for DiskGenerationPersistanceClient {
+impl GenerationClient for DiskGenerationPersistanceClient {
     fn list_generations(&self) -> Result<Vec<GenerationMetric>> {
         let data = String::from_utf8(read_file(&self.file)?)
             .map_err(|err| Error::create_invalid_argument_error(&err.to_string()))?;
@@ -49,10 +55,13 @@ impl GenerationPersistanceClient for DiskGenerationPersistanceClient {
     fn create_generation(&self, generation_metric: &GenerationMetric) -> Result<GenerationMetric> {
         write_file(
             &self.file,
-            &to_string(generation_metric)
-                .map_err(|err| Error::create_invalid_argument_error(&err.to_string()))?
-                .bytes()
-                .collect::<Vec<u8>>(),
+            &format!(
+                "{}\n",
+                to_string(generation_metric)
+                    .map_err(|err| Error::create_invalid_argument_error(&err.to_string()))?
+            )
+            .bytes()
+            .collect::<Vec<u8>>(),
         )?;
 
         Ok(generation_metric.clone())

@@ -1,7 +1,7 @@
 use std::fs::{self, remove_dir_all};
 
 use tax_credit_model_server::{
-    files::file_system::{File, Permissions},
+    files::file_system::{File, Permissions, Directory},
     schema::errors::{Error, Result},
 };
 
@@ -26,8 +26,8 @@ impl TempDirectory {
         }
     }
 
-    pub fn create_file(directory: &TempDirectory, name: &str, permissions: &Permissions) -> File {
-        File::new(&format!("{}/{}", directory.path(), name), permissions)
+    pub fn canonicalize_path(directory: &TempDirectory, path: &str) -> String {
+        format!("{}/{}", directory.path, path)
     }
 
     pub fn path(&self) -> &str {

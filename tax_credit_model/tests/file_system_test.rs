@@ -1,13 +1,13 @@
 mod utils;
 
 use std::{
-    fs::{self},
+    fs::{self, create_dir_all, metadata},
     path::Path,
 };
 
 use tax_credit_model_server::files::file_system::{
-    delete_file, file_metadata, read_file, write_file, CreateMode, FileMetadata, Permissions,
-    ReadMode, WriteMode,
+    create_directory, delete_file, file_metadata, read_file, write_file, CreateMode, Directory,
+    File, FileMetadata, Permissions, ReadMode, WriteMode,
 };
 
 use utils::temp_dir::TempDirectory;
@@ -16,10 +16,12 @@ use utils::temp_dir::TempDirectory;
 fn write_file_to_disk() {
     let directory =
         TempDirectory::create_from_env("TMPDIR", "write").expect("Failed to create temp dir");
-    let expected_file = TempDirectory::create_file(&directory, "file.txt", &Permissions::default());
-    let input_file = TempDirectory::create_file(
-        &directory,
-        "file.txt",
+    let expected_file = File::new(
+        &TempDirectory::canonicalize_path(&directory, "file.txt"),
+        &Permissions::default(),
+    );
+    let input_file = File::new(
+        &TempDirectory::canonicalize_path(&directory, "file.txt"),
         &Permissions::writeable(CreateMode::CreateOnly),
     );
     let data = &"Hello world!".bytes().collect::<Vec<u8>>();
@@ -35,7 +37,10 @@ fn write_file_to_disk() {
 fn read_from_file() {
     let directory =
         TempDirectory::create_from_env("TMPDIR", "read").expect("Failed to create temp dir");
-    let input_file = TempDirectory::create_file(&directory, "file.txt", &Permissions::readable());
+    let input_file = File::new(
+        &TempDirectory::canonicalize_path(&directory, "file.txt"),
+        &Permissions::readable(),
+    );
     let expected_data = &"Hello world!".bytes().collect::<Vec<u8>>();
     std::fs::write(input_file.path(), expected_data).expect("Failed to write test data");
     let stored_data = fs::read(input_file.path()).expect("Failed to read written data");
@@ -50,9 +55,8 @@ fn read_from_file() {
 fn successfully_remove_file() {
     let directory =
         TempDirectory::create_from_env("TMPDIR", "delete").expect("Failed to create temp dir");
-    let input_file = TempDirectory::create_file(
-        &directory,
-        "file.txt",
+    let input_file = File::new(
+        &TempDirectory::canonicalize_path(&directory, "file.txt"),
         &Permissions::writeable(CreateMode::CreateOrRead),
     );
     let data = &"Hello world!".bytes().collect::<Vec<u8>>();
@@ -71,9 +75,8 @@ fn successfully_remove_file() {
 fn should_get_metadata() {
     let directory =
         TempDirectory::create_from_env("TMPDIR", "metadata").expect("Failed to create temp dir");
-    let input_file = TempDirectory::create_file(
-        &directory,
-        "file.txt",
+    let input_file = File::new(
+        &TempDirectory::canonicalize_path(&directory, "file.txt"),
         &Permissions::new(
             ReadMode::Enabled,
             WriteMode::Append(CreateMode::CreateOrRead),
@@ -86,4 +89,48 @@ fn should_get_metadata() {
     let actual_metadata = file_metadata(&input_file).unwrap();
 
     assert_eq!(actual_metadata, expected_metadata);
+}
+
+#[test]
+fn should_create_directory() {
+    let root_dir =
+        TempDirectory::create_from_env("TMPDIR", "create_dir").expect("Failed to create temp dir");
+    let directory_path = TempDirectory::canonicalize_path(&root_dir, "create_dir");
+    let expected_directory = Directory::new(&directory_path);
+
+    let directory = create_directory(&directory_path).unwrap();
+    let directory_metadata = metadata(expected_directory.path()).unwrap();
+
+    assert!(directory_metadata.is_dir());
+    assert_eq!(directory, expected_directory);
+}
+
+#[test]
+fn create_existing_directory() {
+    let root_dir = TempDirectory::create_from_env("TMPDIR", "existing_dir")
+        .expect("Failed to create temp dir");
+    let directory_path = TempDirectory::canonicalize_path(&root_dir, "existing_dir");
+    let expected_directory = Directory::new(&directory_path);
+    create_dir_all(expected_directory.path()).unwrap();
+
+    let directory = create_directory(&directory_path).unwrap();
+    let directory_metadata = metadata(expected_directory.path()).unwrap();
+
+    assert!(directory_metadata.is_dir());
+    assert_eq!(directory, expected_directory);
+}
+
+#[test]
+fn correct_directory_path() {
+    let directory = TempDirectory::create_from_env("TMPDIR", "directory_path")
+        .expect("Failed to create temp dir");
+    let input_file = File::new(
+        &TempDirectory::canonicalize_path(&directory, "file.txt"),
+        &Permissions::writeable(CreateMode::CreateOrRead),
+    );
+    let expected_directory = directory.path();
+
+    let directory_path = File::directory_path(&input_file);
+
+    assert_eq!(directory_path, expected_directory);
 }

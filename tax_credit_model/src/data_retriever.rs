@@ -9,7 +9,23 @@ const MONTHS: [&'static str; 12] = [
 ];
 
 pub fn fill_generations(configuration: ServerConfiguration, dependencies: &Dependencies) {
-    for month in MONTHS[6..7].iter() {
+    let generations = dependencies
+        .generation_client
+        .list_generations()
+        .unwrap_or_else(|err| {
+            eprintln!("{err}");
+            exit(1)
+        });
+
+    if !generations.is_empty() {
+        ErcotDataRetrieverJob::load(generations, &dependencies.grid_client).unwrap_or_else(|err| {
+            eprintln!("{err}");
+            exit(1)
+        });
+        return;
+    }
+
+    for month in MONTHS {
         let input = ErcotDataRetrieverJob::extract(&configuration.data_directory, month)
             .unwrap_or_else(|err| {
                 eprintln!("{err}");
@@ -24,11 +40,19 @@ pub fn fill_generations(configuration: ServerConfiguration, dependencies: &Depen
             continue;
         }
 
+        for generation in &generations {
+            dependencies
+                .generation_client
+                .create_generation(generation)
+                .unwrap_or_else(|err| {
+                    eprintln!("{err}");
+                    exit(1)
+                });
+        }
+
         ErcotDataRetrieverJob::load(generations, &dependencies.grid_client).unwrap_or_else(|err| {
             eprintln!("{err}");
             exit(1)
         });
     }
-
-    println!("Completed data retrieval");
 }
