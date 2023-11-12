@@ -1,8 +1,12 @@
 use rocket::{post, State};
 
 use crate::{
-    persistance::electrolyzer::ElectrolyzerClient, responders::htmx_responder::HtmxTemplate,
-    schema::errors::BannerError, templates::list_electrolyzers_template::ListElectrolyzersTemplate,
+    persistance::electrolyzer::ElectrolyzerClient,
+    responders::htmx_responder::HtmxTemplate,
+    schema::errors::BannerError,
+    templates::list_electrolyzers_template::{
+        ElectrolyzerSearchResults, ListElectrolyzersTemplate,
+    },
 };
 
 #[post("/list_electrolyzers")]
@@ -13,5 +17,8 @@ pub fn list_electrolyzers_handler(
         .list_electrolyzers()
         .map_err(BannerError::create_from_error)?;
 
-    Ok(ListElectrolyzersTemplate { electrolyzers }.into())
+    Ok(ListElectrolyzersTemplate {
+        search_results: ElectrolyzerSearchResults { electrolyzers },
+    }
+    .into())
 }

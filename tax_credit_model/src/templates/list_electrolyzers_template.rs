@@ -13,5 +13,11 @@ pub struct ElectrolyzerSelectorTemplate {
 #[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq)]
 #[template(path = "components/list_electrolyzers.html")]
 pub struct ListElectrolyzersTemplate {
+    pub search_results: ElectrolyzerSearchResults
+}
+
+#[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq)]
+#[template(path = "components/electrolyzer_search_results.html")]
+pub struct ElectrolyzerSearchResults {
     pub electrolyzers: Vec<Electrolyzer>
 }

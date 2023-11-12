@@ -14,7 +14,7 @@ use crate::{
         get_simulation_form_handler::get_simulation_form_handler,
         list_electrolyzers_handler::list_electrolyzers_handler,
         select_electrolyzer_handler::select_electrolyzer_handler,
-        simulation_handler::simulation_handler,
+        simulation_handler::simulation_handler, search_electrolyzers_handler::search_electrolyzers_handler,
     },
     persistance::{
         electrolyzer::ElectrolyzerClient, generation::GenerationClient, grid::GridClient,
@@ -79,7 +79,8 @@ pub fn init_service(
                 close_error_handler,
                 list_electrolyzers_handler,
                 select_electrolyzer_handler,
-                electrolyzer_selector_handler
+                electrolyzer_selector_handler,
+                search_electrolyzers_handler
             ],
         )
 }

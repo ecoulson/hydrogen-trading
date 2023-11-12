@@ -11,3 +11,4 @@ pub mod simulation_handler;
 pub mod close_error_handler;
 pub mod select_electrolyzer_handler;
 pub mod electrolyzer_selector_handler;
+pub mod search_electrolyzers_handler;
