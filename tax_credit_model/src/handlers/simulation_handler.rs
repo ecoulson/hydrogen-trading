@@ -54,6 +54,7 @@ pub fn simulation_handler(
         initial_state: url_state,
         electrolyzer_details: Some(ElectrolyzerDetailsTemplate {
             electrolyzer: simulation_state.electrolyzer,
+            selected: true,
         }),
         simulation_form: Some(SimulationFormTemplate {
             generation_range: DateTimeRange {

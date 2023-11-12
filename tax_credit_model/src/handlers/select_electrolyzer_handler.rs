@@ -37,6 +37,7 @@ pub fn select_electrolyzer_handler(
             .build(),
         ElectrolyzerDetailsTemplate {
             electrolyzer: state.electrolyzer,
+            selected: true,
         },
     ))
 }

@@ -383,6 +383,9 @@
             <span class="text-xl">{{ electrolyzer.name }}</span>
             <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">{{ electrolyzer.city }}, {{ electrolyzer.state
                 }}</span>
+            {% if selected %}
+            <span class="bg-blue-600 text-white rounded-full px-2 py-1 text-sm">Selected</span>
+            {% endif %}
         </div>
     </div>
     <div class="px-2 py-4 w-full grow">

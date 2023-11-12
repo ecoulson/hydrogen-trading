@@ -17,6 +17,8 @@ pub fn create_electrolyzer_handler(
     request: Form<CreateElectrolyzerRequest>,
     electrolyzer_client: &State<Box<dyn ElectrolyzerClient>>,
 ) -> Result<HtmxTemplate<ElectrolyzerDetailsTemplate>, HtmxTemplate<BannerError>> {
+    let electrolyzers = electrolyzer_client.list_electrolyzers()
+        .map_err(BannerError::create_from_error)?;
     let electrolyzer = electrolyzer_client
         .create_electrolyzer(&Electrolyzer {
             id: 0,
@@ -42,7 +44,12 @@ pub fn create_electrolyzer_handler(
         .map_err(BannerError::create_from_error)?;
 
     Ok(HtmxTemplate::new(
-        HtmxHeadersBuilder::new().trigger("create-electrolyzer").build(),
-        ElectrolyzerDetailsTemplate { electrolyzer },
+        HtmxHeadersBuilder::new()
+            .trigger("create-electrolyzer")
+            .build(),
+        ElectrolyzerDetailsTemplate {
+            electrolyzer,
+            selected: electrolyzers.is_empty(),
+        },
     ))
 }
