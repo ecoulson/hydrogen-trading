@@ -2,8 +2,10 @@ use rocket::{fs::FileServer, routes, Build, Rocket};
 
 use crate::{
     handlers::{
+        close_error_handler::close_error_handler,
+        create_electrolyzer_form_handler::create_electrolyzer_form_handler,
         create_electrolyzer_handler::create_electrolyzer_handler,
-        create_electrolyzer_page_handler::create_electrolyzer_page_handler,
+        electrolyzer_selector_handler::electrolyzer_selector_handler,
         execute_simulation_handler::execute_simulation,
         fetch_emissions_handler::fetch_emissions_handler,
         fetch_energy_costs_handler::fetch_energy_costs_handler,
@@ -11,10 +13,12 @@ use crate::{
         get_electrolyzer_handler::get_electrolyzer_handler,
         get_simulation_form_handler::get_simulation_form_handler,
         list_electrolyzers_handler::list_electrolyzers_handler,
+        select_electrolyzer_handler::select_electrolyzer_handler,
         simulation_handler::simulation_handler,
     },
     persistance::{
-        electrolyzer::ElectrolyzerClient, grid::GridClient, simulation::SimulationClient, generation::GenerationClient,
+        electrolyzer::ElectrolyzerClient, generation::GenerationClient, grid::GridClient,
+        simulation::SimulationClient,
     },
 };
 
@@ -66,13 +70,16 @@ pub fn init_service(
                 execute_simulation,
                 create_electrolyzer_handler,
                 simulation_handler,
-                list_electrolyzers_handler,
                 get_simulation_form_handler,
-                create_electrolyzer_page_handler,
+                create_electrolyzer_form_handler,
                 get_electrolyzer_handler,
                 fetch_emissions_handler,
                 fetch_hydrogen_production_handler,
-                fetch_energy_costs_handler
+                fetch_energy_costs_handler,
+                close_error_handler,
+                list_electrolyzers_handler,
+                select_electrolyzer_handler,
+                electrolyzer_selector_handler
             ],
         )
 }

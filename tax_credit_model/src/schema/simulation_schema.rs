@@ -4,6 +4,8 @@ use askama::Template;
 use rocket::FromForm;
 use serde::{Deserialize, Serialize};
 
+use crate::templates::simulation_form_template::SimulationFormTemplate;
+
 use super::{
     errors::{Error, Result},
     time::{DateTimeRange, Timestamp},
@@ -29,9 +31,10 @@ impl ExecuteSimulationRequest {
 }
 
 #[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq)]
-#[template(path = "components/execute_simulation.html")]
+#[template(path = "components/simulation_view.html")]
 pub struct ExecuteSimulationResponse {
     pub simulation_result: SimulationResult,
+    pub simulation_form: SimulationFormTemplate
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]

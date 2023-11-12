@@ -1,8 +1,11 @@
-use std::{collections::HashMap, sync::Mutex};
+use std::collections::HashMap;
 
-use crate::schema::{
-    errors::{Error, Result},
-    simulation_schema::{GenerationMetric, PowerGrid, PowerPlant},
+use crate::{
+    concurrency::mutex::Mutex,
+    schema::{
+        errors::{Error, Result},
+        simulation_schema::{GenerationMetric, PowerGrid, PowerPlant},
+    },
 };
 
 pub trait GridClient: Send + Sync {
@@ -25,10 +28,7 @@ impl InMemoryGridClient {
 impl GridClient for InMemoryGridClient {
     fn get_power_grid(&self) -> Result<PowerGrid> {
         let plant_id = 0;
-        let generations = self
-            .generations_store
-            .lock()
-            .map_err(|err| Error::create_poison_error(&err.to_string()))?
+        let generations = Mutex::lock(&self.generations_store)?
             .get(&plant_id)
             .ok_or_else(|| Error::create_not_found_error("No generations found"))?
             .clone();
@@ -43,10 +43,7 @@ impl GridClient for InMemoryGridClient {
     }
 
     fn add_generations(&self, generations: Vec<GenerationMetric>) -> Result<()> {
-        let mut store = self
-            .generations_store
-            .lock()
-            .map_err(|err| Error::create_poison_error(&err.to_string()))?;
+        let mut store = Mutex::lock(&self.generations_store)?;
 
         for generation in generations {
             if let Some(exisiting) = store.get_mut(&generation.plant_id) {

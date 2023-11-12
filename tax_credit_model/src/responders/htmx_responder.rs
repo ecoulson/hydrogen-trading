@@ -3,17 +3,17 @@ use std::io::Cursor;
 use askama;
 use rocket::{http::ContentType, response::Responder, Response};
 
-pub const HX_TRIGGER: &str = "HX-Trigger";
-pub const HX_PUSH_URL: &str = "HX-Push-Url";
-pub const HX_LOCATION: &str = "HX-Location";
-pub const HX_RESWAP: &str = "HX-Reswap";
-pub const HX_REFRESH: &str = "HX-Refresh";
-pub const HX_REDIRECT: &str = "HX-Redirect";
-pub const HX_RETARGET: &str = "HX-Retarget";
-pub const HX_RESELECT: &str = "HX-Reselect";
-pub const HX_REPLACE_URL: &str = "HX-Replace-Url";
-pub const HX_TRIGGER_AFTER_SWAP: &str = "HX-Trigger-After-Swap";
-pub const HX_TRIGGER_AFTER_SETTLE: &str = "HX-Trigger-After-Settle";
+const HX_TRIGGER: &str = "HX-Trigger";
+const HX_PUSH_URL: &str = "HX-Push-Url";
+const HX_LOCATION: &str = "HX-Location";
+const HX_RESWAP: &str = "HX-Reswap";
+const HX_REFRESH: &str = "HX-Refresh";
+const HX_REDIRECT: &str = "HX-Redirect";
+const HX_RETARGET: &str = "HX-Retarget";
+const HX_RESELECT: &str = "HX-Reselect";
+const HX_REPLACE_URL: &str = "HX-Replace-Url";
+const HX_TRIGGER_AFTER_SWAP: &str = "HX-Trigger-After-Swap";
+const HX_TRIGGER_AFTER_SETTLE: &str = "HX-Trigger-After-Settle";
 
 pub struct HtmxTemplate<T>
 where
@@ -23,37 +23,101 @@ where
     headers: HtmxHeaders,
 }
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct HtmxHeaders {
-    pub location: Option<String>,
-    pub push_url: Option<String>,
-    pub redirect: Option<String>,
-    pub refresh: Option<String>,
-    pub replace_url: Option<String>,
-    pub reswap: Option<String>,
-    pub retarget: Option<String>,
-    pub reselect: Option<String>,
-    pub trigger: Option<String>,
-    pub trigger_after_settle: Option<String>,
-    pub trigger_after_swap: Option<String>,
+    location: Option<String>,
+    push_url: Option<String>,
+    redirect: Option<String>,
+    refresh: Option<String>,
+    replace_url: Option<String>,
+    reswap: Option<String>,
+    retarget: Option<String>,
+    reselect: Option<String>,
+    trigger: Option<String>,
+    trigger_after_settle: Option<String>,
+    trigger_after_swap: Option<String>,
 }
 
-impl HtmxHeaders {
-    pub fn set_header(&mut self, name: &str, value: &str) {
-        match name {
-            HX_TRIGGER => self.trigger = Some(String::from(value)),
-            HX_LOCATION => self.location = Some(String::from(value)),
-            HX_PUSH_URL => self.push_url = Some(String::from(value)),
-            HX_REDIRECT => self.redirect = Some(String::from(value)),
-            HX_REFRESH => self.refresh = Some(String::from(value)),
-            HX_REPLACE_URL => self.replace_url = Some(String::from(value)),
-            HX_RESWAP => self.reswap = Some(String::from(value)),
-            HX_RETARGET => self.retarget = Some(String::from(value)),
-            HX_RESELECT => self.reselect = Some(String::from(value)),
-            HX_TRIGGER_AFTER_SETTLE => self.trigger_after_settle = Some(String::from(value)),
-            HX_TRIGGER_AFTER_SWAP => self.trigger_after_swap = Some(String::from(value)),
-            _ => return,
+#[derive(Default, Debug)]
+pub struct HtmxHeadersBuilder {
+    headers: HtmxHeaders,
+}
+
+impl HtmxHeadersBuilder {
+    pub fn new() -> HtmxHeadersBuilder {
+        HtmxHeadersBuilder {
+            headers: HtmxHeaders::default(),
         }
+    }
+
+    pub fn location(mut self, value: &str) -> Self {
+        self.headers.location = Some(String::from(value));
+
+        self
+    }
+
+    pub fn push_url(mut self, value: &str) -> Self {
+        self.headers.push_url = Some(String::from(value));
+
+        self
+    }
+
+    pub fn redirect(mut self, value: &str) -> Self {
+        self.headers.redirect = Some(String::from(value));
+
+        self
+    }
+
+    pub fn refresh(mut self, value: &str) -> Self {
+        self.headers.refresh = Some(String::from(value));
+
+        self
+    }
+
+    pub fn replace_url(mut self, value: &str) -> Self {
+        self.headers.replace_url = Some(String::from(value));
+
+        self
+    }
+
+    pub fn reswap(mut self, value: &str) -> Self {
+        self.headers.reswap = Some(String::from(value));
+
+        self
+    }
+
+    pub fn retarget(mut self, value: &str) -> Self {
+        self.headers.retarget = Some(String::from(value));
+
+        self
+    }
+
+    pub fn reselect(mut self, value: &str) -> Self {
+        self.headers.reselect = Some(String::from(value));
+
+        self
+    }
+
+    pub fn trigger(mut self, value: &str) -> Self {
+        self.headers.trigger = Some(String::from(value));
+
+        self
+    }
+
+    pub fn trigger_after_settle(mut self, value: &str) -> Self {
+        self.headers.trigger_after_settle = Some(String::from(value));
+
+        self
+    }
+
+    pub fn trigger_after_swap(mut self, value: &str) -> Self {
+        self.headers.trigger_after_swap = Some(String::from(value));
+
+        self
+    }
+
+    pub fn build(self) -> HtmxHeaders {
+        self.headers
     }
 }
 
@@ -61,7 +125,7 @@ impl<T> HtmxTemplate<T>
 where
     T: askama::Template,
 {
-    pub fn new(template: T, headers: HtmxHeaders) -> HtmxTemplate<T> {
+    pub fn new(headers: HtmxHeaders, template: T) -> HtmxTemplate<T> {
         HtmxTemplate {
             html: template,
             headers,
@@ -74,7 +138,7 @@ where
     T: askama::Template,
 {
     fn from(value: T) -> Self {
-        HtmxTemplate::<T>::new(value, HtmxHeaders::default())
+        HtmxTemplate::<T>::new(HtmxHeaders::default(), value)
     }
 }
 
@@ -93,7 +157,7 @@ where
             response.set_raw_header(HX_TRIGGER, trigger);
         }
         if let Some(push_url) = self.headers.push_url {
-            response.set_raw_header(HX_LOCATION, push_url);
+            response.set_raw_header(HX_PUSH_URL, push_url);
         }
         if let Some(location) = self.headers.location {
             response.set_raw_header(HX_LOCATION, location);

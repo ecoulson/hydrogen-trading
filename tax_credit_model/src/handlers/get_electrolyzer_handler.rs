@@ -1,4 +1,4 @@
-use rocket::{get, State};
+use rocket::{form::Form, post, FromForm, State};
 
 use crate::{
     persistance::electrolyzer::ElectrolyzerClient,
@@ -6,16 +6,19 @@ use crate::{
     schema::{electrolyzer::ElectrolyzerDetailsTemplate, errors::BannerError},
 };
 
-#[get("/get_electrolyzer?<electrolyzer_id>")]
+#[derive(FromForm)]
+pub struct GetElectrolyzerRequest {
+    pub electrolyzer_id: usize,
+}
+
+#[post("/get_electrolyzer", data = "<request>")]
 pub fn get_electrolyzer_handler(
-    electrolyzer_id: usize,
+    request: Form<GetElectrolyzerRequest>,
     electrolyzer_client: &State<Box<dyn ElectrolyzerClient>>,
 ) -> Result<HtmxTemplate<ElectrolyzerDetailsTemplate>, HtmxTemplate<BannerError>> {
     Ok(electrolyzer_client
-        .get_electrolyzer(electrolyzer_id)
-        .map_err(|err| BannerError {
-            message: err.to_string(),
-        })
+        .get_electrolyzer(request.electrolyzer_id)
+        .map_err(BannerError::create_from_error)
         .map(|electrolyzer| ElectrolyzerDetailsTemplate { electrolyzer })?
         .into())
 }

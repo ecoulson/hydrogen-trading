@@ -1,6 +1,8 @@
 use askama::Template;
 use serde::{Deserialize, Serialize};
 
+use crate::responders::htmx_responder::{HtmxHeadersBuilder, HtmxTemplate};
+
 pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, Clone)]
@@ -57,5 +59,27 @@ impl std::fmt::Display for Error {
 #[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq)]
 #[template(path = "components/banner_error.html")]
 pub struct BannerError {
-    pub message: String,
+    message: String,
+}
+
+impl BannerError {
+    pub fn new(message: &str) -> BannerError {
+        BannerError {
+            message: String::from(message),
+        }
+    }
+
+    pub fn create_from_error(error: Error) -> HtmxTemplate<BannerError> {
+        BannerError::create_from_message(&error.to_string())
+    }
+
+    pub fn create_from_message(message: &str) -> HtmxTemplate<BannerError> {
+        HtmxTemplate::new(
+            HtmxHeadersBuilder::new()
+                .reswap("afterbegin")
+                .retarget("#banner-error")
+                .build(),
+            BannerError::new(message),
+        )
+    }
 }

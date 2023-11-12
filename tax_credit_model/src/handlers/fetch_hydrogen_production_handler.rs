@@ -1,11 +1,11 @@
-use rocket::{get, serde::json::Json, State};
+use rocket::{post, serde::json::Json, State};
 
 use crate::{
     persistance::simulation::SimulationClient,
     schema::time_series::{ChartColor, TimeSeries, TimeSeriesEntry},
 };
 
-#[get("/fetch_hydrogen_production/<simulation_id>")]
+#[post("/fetch_hydrogen_production/<simulation_id>")]
 pub fn fetch_hydrogen_production_handler(
     simulation_id: i32,
     simulation_client: &State<Box<dyn SimulationClient>>,

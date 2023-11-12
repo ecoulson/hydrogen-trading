@@ -1,20 +1,28 @@
-<form hx-post="/execute_simulation">
-    <div class="p-4">
-        <label for="electrolyzer_id">Electrolyzer Id</label>
-        <br />
+<form class="flex gap-4 justify-evenly items-center w-full bg-slate-100 sticky z-10 top-0 px-4" hx-swap="innerHTML"
+    hx-target="#simulation-result" hx-post="/execute_simulation">
+    <div class="py-2">
         {{ electrolyzer_selector|safe }}
     </div>
-    <div class="p-4">
+    <div class="py-2">
         <label for="simulation_time_range.start">Start Datetime</label>
         <br />
         <input type="datetime-local" class="border" id="simulation_time_range.start" step="900"
             min="{{ generation_range.start }}" max="{{ generation_range.end }}" name="simulation_time_range.start" />
     </div>
-    <div class="p-4">
+    <div class="py-2">
         <label for="simulation_time_range.end">End Datetime</label>
         <br />
         <input type="datetime-local" class="border" id="simulation_time_range.end" step="900"
             min="{{ generation_range.start }}" max="{{ generation_range.end }}" name="simulation_time_range.end" />
     </div>
-    <button class="border border-white px-4 py-2" type="submit">Execute Simulation</button>
+    <div class="grow"></div>
+    <button class="bg-gray-300 text-center h-10 max-w-48 rounded-sm font-semibold text-black-600 px-4 py-2">
+        View Runs</button>
+    <button type="submit" class="bg-green-600 rounded-sm text-center h-10 max-w-48 font-semibold text-white px-4 py-2">
+        Simulate</button>
 </form>
+<div id="simulation-result" class="grow">
+    <div class="h-full flex items-center justify-center">
+        <p class="text-lg font-bold">No recent simulation. Use the bar above to start a new simulation</p>
+    </div>
+</div>

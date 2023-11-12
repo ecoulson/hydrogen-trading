@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 
-use rocket::{get, serde::json::Json, State};
+use rocket::{post, serde::json::Json, State};
 
 use crate::{
     persistance::simulation::SimulationClient,
     schema::time_series::{ChartColor, TimeSeries, TimeSeriesEntry},
 };
 
-#[get("/fetch_energy_costs/<simulation_id>")]
+#[post("/fetch_energy_costs/<simulation_id>")]
 pub fn fetch_energy_costs_handler(
     simulation_id: i32,
     simulation_client: &State<Box<dyn SimulationClient>>,

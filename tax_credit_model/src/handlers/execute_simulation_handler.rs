@@ -9,6 +9,11 @@ use crate::{
     schema::{
         errors::BannerError,
         simulation_schema::{ExecuteSimulationRequest, ExecuteSimulationResponse},
+        time::DateTimeRange,
+    },
+    templates::{
+        list_electrolyzers_template::ElectrolyzerSelectorTemplate,
+        simulation_form_template::SimulationFormTemplate,
     },
 };
 
@@ -21,25 +26,29 @@ pub fn execute_simulation(
 ) -> Result<HtmxTemplate<ExecuteSimulationResponse>, HtmxTemplate<BannerError>> {
     let electrolyzer = electrolyzer_client
         .get_electrolyzer(request.electrolyzer_id)
-        .map_err(|err| BannerError {
-            message: err.to_string(),
-        })?;
+        .map_err(BannerError::create_from_error)?;
     let power_grid = power_grid_fetcher
         .get_power_grid()
-        .map_err(|err| BannerError {
-            message: err.to_string(),
-        })?;
+        .map_err(BannerError::create_from_error)?;
 
     Ok(ExecuteSimulationResponse {
+        simulation_form: SimulationFormTemplate {
+            generation_range: DateTimeRange::default(),
+            electrolyzer_selector: ElectrolyzerSelectorTemplate {
+                electrolyzers: electrolyzer_client
+                    .list_electrolyzers()
+                    .map_err(BannerError::create_from_error)?,
+                selected_id: electrolyzer.id,
+            },
+        },
         simulation_result: simulate(
+            0,
             &power_grid,
             &electrolyzer,
             &request.simulation_time_range,
             simulation_client.inner(),
         )
-        .map_err(|err| BannerError {
-            message: err.to_string(),
-        })?,
+        .map_err(BannerError::create_from_error)?,
     }
     .into())
 }

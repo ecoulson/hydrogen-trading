@@ -14,17 +14,19 @@ use tax_credit_model_server::{
     server::Dependencies,
 };
 
-use crate::utils::{test_env::TestEnv, test_server::Method};
+use crate::utils::{test_env::TestEnv, test_server::Method, temp_dir::TempDirectory};
 
 mod utils;
 
 #[rocket::async_test]
 async fn test_simulate_for_simple_model() {
+    let directory = TempDirectory::create_from_env("TMPDIR", "create_electrolyzer").unwrap();
+    let path = TempDirectory::canonicalize_path(&directory, "data.txt");
     let dependencies = Dependencies {
         electrolyzer_client: Box::new(InMemoryElectrolyzerPersistanceClient::new()),
         grid_client: Box::new(InMemoryGridClient::new()),
         simulation_client: Box::new(InMemorySimulationClient::new()),
-        generation_client: Box::new(DiskGenerationPersistanceClient::new("").unwrap()),
+        generation_client: Box::new(DiskGenerationPersistanceClient::new(&path).unwrap()),
     };
     let mut time_range = TimeRange::default();
     time_range.end.seconds = 3600;

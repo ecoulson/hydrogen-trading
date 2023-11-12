@@ -6,7 +6,7 @@
 
         for (let endpoint of endpoints) {
             requests.push(fetch(endpoint, {
-                method: "GET",
+                method: "POST",
                 headers: {
                     "Content-Type": "application/json"
                 }

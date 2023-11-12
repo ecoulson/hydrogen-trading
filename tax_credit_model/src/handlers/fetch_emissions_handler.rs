@@ -1,4 +1,4 @@
-use rocket::{get, serde::json::Json, State};
+use rocket::{post, serde::json::Json, State};
 
 use crate::{
     persistance::simulation::SimulationClient,
@@ -8,7 +8,7 @@ use crate::{
     },
 };
 
-#[get("/fetch_emissions/<simulation_id>")]
+#[post("/fetch_emissions/<simulation_id>")]
 pub fn fetch_emissions_handler(
     simulation_id: i32,
     simulation_client: &State<Box<dyn SimulationClient>>,

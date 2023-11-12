@@ -234,3 +234,33 @@ pub fn create_directory(path: &str) -> Result<Directory> {
     Ok(Directory::new(path))
 }
 
+#[cfg(test)]
+mod test {
+    use crate::files::file_system::{File, Permissions};
+
+    #[test]
+    fn parse_directory_path() {
+        let input_file = File::new(
+            "foo/bar/baz/file.txt",
+            &Permissions::readable(),
+        );
+        let expected_directory = "foo/bar/baz";
+
+        let directory_path = File::directory_path(&input_file);
+
+        assert_eq!(directory_path, expected_directory);
+    }
+
+    #[test]
+    fn parse_root_directory_path() {
+        let input_file = File::new(
+            "file.txt",
+            &Permissions::readable(),
+        );
+        let expected_directory = "/";
+
+        let directory_path = File::directory_path(&input_file);
+
+        assert_eq!(directory_path, expected_directory);
+    }
+}

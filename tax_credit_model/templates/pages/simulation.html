@@ -3,28 +3,47 @@
 {% block head %}
 <script async defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script async defer src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script>
+    let urlWithState = 
+        window.location.origin +
+        window.location.pathname +
+        "{{ initial_state }}";
+    if (window.location.href != urlWithState) {
+        window.location = urlWithState;
+    }
+</script>
 {% endblock %}
 
 {% block title %}Tax Credit Policy Modeling{% endblock %}
 
 {% block content %}
-<div class="container mx-auto flex">
-    <div class="w-1/4 bg-slate-200 px-4 py-2">
-        <h1 class="text-3xl font-bold underline">Electrolyzer Details</h1>
-        {% if electrolyzer_details.as_ref().is_none() %}
-        <p>No Electrolyzer selected</p>
-        {% else %}
-        {{ electrolyzer_details.unwrap()|safe }}
-        {% endif %}
+<div class="h-screen flex flex-col">
+    <div class="w-full bg-slate-300">
+        <h1 class="text-3xl font-thin py-4 px-4 text-gray-800">Green Hydrogen Modelling</h1>
     </div>
-
-    <div class="w-3/4 bg-slate-200 px-4 py-2">
-        <h1 class="text-3xl font-bold underline">Execute Simulation</h1>
-        {% if simulation_form.is_none() %}
-        <a class="border border-white px-4 py-2" href="/create_electrolyzer">Electrolyzer</a>
-        {% else %}
-        {{ simulation_form.as_ref().unwrap()|safe }}
-        {% endif %}
+    <div class="grid grid-cols-4 grow min-h-0 shrink">
+        <div id="sidebar" class="bg-gray-100 m-h-100 flex flex-col items-center m-h-full overflow-scroll">
+            {% if electrolyzer_details.as_ref().is_none() %}
+            <div class="h-full flex items-center px-4">
+                <p class="text-lg font-bold">No electrolyzers exist</p>
+            </div>
+            {% else %}
+            {{ electrolyzer_details.clone().unwrap()|safe }}
+            {% endif %}
+        </div>
+        <div class="col-span-3 overflow-scroll m-h-full flex flex-col" 
+            hx-trigger="create-electrolyzer from:body" hx-post="/simulation_form">
+            {% if simulation_form.is_none() %}
+            <div class="h-full flex flex-col gap-y-5 justify-center items-center">
+                <p class="text-lg font-bold">Create an electrolyzer to get started</p>
+                <button hx-post="/create_electrolyzer_form" hx-target="#sidebar" hx-swap="innerHTML"
+                    class="h-10 bg-blue-600 font-semibold text-center text-white rounded-sm px-4 py-2">
+                    Create Electrolyzer</button>
+            </div>
+            {% else %}
+            {{ simulation_form.as_ref().unwrap()|safe }}
+            {% endif %}
+        </div>
     </div>
 </div>
 {% endblock %}

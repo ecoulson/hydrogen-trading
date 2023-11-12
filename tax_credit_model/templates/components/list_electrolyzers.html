@@ -1,13 +1,13 @@
-<form class="flex items-center flex-col h-full w-full relative">
-    <div class="flex items-center w-full">
-        <div class="px-4 cursor-pointer" hx-post="/list_electrolyzers" hx-trigger="click" hx-target="#sidebar"
-            hx-swap="innerHTML">
-            <svg width="17" height="16" viewBox="0 0 17 16" class="fill-black" xmlns="http://www.w3.org/2000/svg">
-                <path
-                    d="M16.8333 7H4.15621L9.97913 1.41L8.49996 0L0.166626 8L8.49996 16L9.96871 14.59L4.15621 9H16.8333V7Z" />
-            </svg>
-        </div>
-        <div class="flex gap-x-4 w-full items-center">
+<div class="h-full w-full relative">
+    <div class="py-2">
+        <h1 class="text-3xl text-center">Electrolyzers</h1>
+    </div>
+    <div class="px-4 py-2 flex flex-col gap-y-4">
+        {% for (i, electrolyzer) in electrolyzers.iter().enumerate() %}
+        <form class="py-2 px-4 bg-gray-200 hover:bg-gray-300 cursor-pointer rounded-md flex items-center gap-x-4"
+            hx-trigger="click" hx-post="/get_electrolyzer" hx-target="#sidebar" hx-swap="innerHTML">
+            <input name="electrolyzer_id" hidden value="{{ electrolyzer.id }}" />
+            <span>{{ i + 1 }}</span>
             <div class="w-10 h-10">
                 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px"
                     y="0px" viewBox="0 0 864 1080" style="enable-background:new 0 0 864 864;" xml:space="preserve">
@@ -380,54 +380,17 @@
                     </g>
                 </svg>
             </div>
-            <span class="text-xl">{{ electrolyzer.name }}</span>
-            <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">{{ electrolyzer.city }}, {{ electrolyzer.state
-                }}</span>
-        </div>
+            <div class="flex flex-col">
+                <span>{{ electrolyzer.name }}</span>
+                <span class="text-sm text-gray-600">
+                    {{ electrolyzer.city }}, {{ electrolyzer.state }}
+                </span>
+            </div>
+        </form>
+        {% endfor %}
     </div>
-    <div class="px-2 py-4 w-full grow">
-        <table id="electrolyzer-details">
-            <input hidden name="electrolyzer_id" value="{{ electrolyzer.id }}" />
-            <tr>
-                <td>Replacement Threshold</td>
-                <td>{{ electrolyzer.replacement_threshold }}</td>
-            </tr>
-            <tr>
-                <td>Degredation Rate</td>
-                <td>{{ electrolyzer.degredation_rate }}</td>
-            </tr>
-            <tr>
-                <td>Capacity MW</td>
-                <td>{{ electrolyzer.capacity_mw }}</td>
-            </tr>
-            <tr>
-                <td>Production Method</td>
-                <td>Constant</td>
-            </tr>
-            <tr>
-                <td>Production Rate (kg h2 / mw)</td>
-                <td>{{ electrolyzer
-                    .constant_production
-                    .expect("Only constant production supported")
-                    .conversion_rate }}
-                </td>
-            </tr>
-            <tr>
-                <td>Capex</td>
-                <td>{{ electrolyzer.capex }}</td>
-            </tr>
-            <tr>
-                <td>Opex ($/hr)</td>
-                <td>{{ electrolyzer.opex }}</td>
-            </tr>
-            <tr>
-                <td>Replacement Cost</td>
-                <td>{{ electrolyzer.replacement_cost }}</td>
-            </tr>
-        </table>
-    </div>
-    <div class="sticky w-full bottom-0 py-4 left-0 flex justify-center bg-gray-200">
-        <button class="h-10 bg-blue-600 w-48 rounded-sm text-center font-semibold text-white px-4 py-2" type="submit"
-            hx-post="/select_electrolyzer" hx-target="#sidebar" hx-swap="innerHTML">Use</button>
-    </div>
-</form>
+</div>
+<div class="sticky w-full bottom-0 py-4 left-0 flex justify-center bg-gray-200">
+    <button class="h-10 bg-blue-600 w-48 rounded-sm text-center font-semibold text-white px-4 py-2"
+        hx-post="/create_electrolyzer_form" hx-target="#sidebar" hx-swap="innerHTML">Create Electrolyzer</button>
+</div>

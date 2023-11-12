@@ -120,17 +120,3 @@ fn create_existing_directory() {
     assert_eq!(directory, expected_directory);
 }
 
-#[test]
-fn correct_directory_path() {
-    let directory = TempDirectory::create_from_env("TMPDIR", "directory_path")
-        .expect("Failed to create temp dir");
-    let input_file = File::new(
-        &TempDirectory::canonicalize_path(&directory, "file.txt"),
-        &Permissions::writeable(CreateMode::CreateOrRead),
-    );
-    let expected_directory = directory.path();
-
-    let directory_path = File::directory_path(&input_file);
-
-    assert_eq!(directory_path, expected_directory);
-}

@@ -26,3 +26,4 @@ function parseScriptParameters() {
 
     return queryParameters;
 }
+

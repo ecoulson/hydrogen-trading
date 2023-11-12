@@ -24,6 +24,7 @@ const BIOMASS_MWH_TO_CO2: f64 = 530.82;
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
 pub struct SimulationState {
     pub id: i32,
+    pub electrolyzer: Electrolyzer,
     pub emissions: Vec<EmissionEvent>,
     pub hydrogen_productions: Vec<HydrogenProductionEvent>,
     pub transactions: Vec<EnergyTransaction>,
@@ -31,31 +32,19 @@ pub struct SimulationState {
     pub tax_credit_summary: TaxCreditSummary,
 }
 
-impl SimulationState {
-    fn new(simulation_id: i32) -> SimulationState {
-        SimulationState {
-            id: simulation_id,
-            emissions: vec![],
-            hydrogen_productions: vec![],
-            transactions: vec![],
-            tax_credit: vec![],
-            tax_credit_summary: TaxCreditSummary::default(),
-        }
-    }
-}
-
 pub fn simulate(
+    simulation_id: i32,
     power_grid: &PowerGrid,
     electrolyzer: &Electrolyzer,
     time_range: &DateTimeRange,
     simulation_client: &Box<dyn SimulationClient>,
 ) -> Result<SimulationResult> {
-    let simulation_id = simulation_client.get_next_id()?;
     let time_range = time_range.parse("%Y-%m-%dT%H:%M")?;
     let mut current_timestamp = time_range.start.to_utc_date_time()?;
     let mut end_timestamp = time_range.end.to_utc_date_time()?;
     let increment = Duration::minutes(15);
-    let mut state = SimulationState::new(simulation_id);
+    let mut state = simulation_client.get_simulation_state(&simulation_id)?;
+    state.electrolyzer = electrolyzer.clone();
 
     if current_timestamp.timestamp() > end_timestamp.timestamp() {
         return Err(Error::create_invalid_argument_error(
@@ -109,7 +98,7 @@ pub fn simulate(
         current_timestamp += increment;
     }
 
-    simulation_client.insert_simulation_state(&state)?;
+    simulation_client.create_simulation_state(&state)?;
 
     Ok(SimulationResult {
         status: SimulationStatus::Complete,

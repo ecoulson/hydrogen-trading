@@ -9,3 +9,4 @@ pub mod schema;
 pub mod server;
 pub mod templates;
 pub mod files;
+pub mod concurrency;

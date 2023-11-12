@@ -1,8 +1,11 @@
-use std::{collections::HashMap, sync::Mutex};
+use std::collections::HashMap;
 
-use crate::schema::{
-    electrolyzer::Electrolyzer,
-    errors::{Error, Result},
+use crate::{
+    concurrency::mutex::Mutex,
+    schema::{
+        electrolyzer::Electrolyzer,
+        errors::{Error, Result},
+    },
 };
 
 pub trait ElectrolyzerClient: Send + Sync {
@@ -25,10 +28,7 @@ impl InMemoryElectrolyzerPersistanceClient {
 
 impl ElectrolyzerClient for InMemoryElectrolyzerPersistanceClient {
     fn get_electrolyzer(&self, id: usize) -> Result<Electrolyzer> {
-        Ok(self
-            .electrolyzers_by_id
-            .lock()
-            .map_err(|err| Error::create_poison_error(&err.to_string()))?
+        Ok(Mutex::lock(&self.electrolyzers_by_id)?
             .get(&id)
             .ok_or_else(|| Error::create_not_found_error(&id.to_string()))?
             .clone())
@@ -36,21 +36,15 @@ impl ElectrolyzerClient for InMemoryElectrolyzerPersistanceClient {
 
     fn create_electrolyzer(&self, electrolyzer: &Electrolyzer) -> Result<Electrolyzer> {
         let mut electrolyzer = electrolyzer.clone();
-        let mut locked_map = self
-            .electrolyzers_by_id
-            .lock()
-            .map_err(|err| Error::create_poison_error(&err.to_string()))?;
+        let mut locked_map = Mutex::lock(&self.electrolyzers_by_id)?;
         electrolyzer.id = locked_map.len();
-        locked_map.insert(electrolyzer.id, electrolyzer);
+        locked_map.insert(electrolyzer.id, electrolyzer.clone());
 
         Ok(electrolyzer)
     }
 
     fn list_electrolyzers(&self) -> Result<Vec<Electrolyzer>> {
-        Ok(self
-            .electrolyzers_by_id
-            .lock()
-            .map_err(|err| Error::create_poison_error(&err.to_string()))?
+        Ok(Mutex::lock(&self.electrolyzers_by_id)?
             .values()
             .map(|value| value.clone())
             .collect())
