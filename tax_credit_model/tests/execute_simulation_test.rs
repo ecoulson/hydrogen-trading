@@ -1,7 +1,8 @@
 use tax_credit_model_server::{
     persistance::{
-        electrolyzer::InMemoryElectrolyzerPersistanceClient, grid::InMemoryGridClient,
-        simulation::InMemorySimulationClient, generation::DiskGenerationPersistanceClient,
+        electrolyzer::InMemoryElectrolyzerPersistanceClient,
+        generation::DiskGenerationPersistanceClient, grid::InMemoryGridClient,
+        simulation::InMemorySimulationClient,
     },
     schema::{
         electrolyzer::{ConstantProduction, Electrolyzer},
@@ -14,7 +15,7 @@ use tax_credit_model_server::{
     server::Dependencies,
 };
 
-use crate::utils::{test_env::TestEnv, test_server::Method, temp_dir::TempDirectory};
+use crate::utils::{temp_dir::TempDirectory, test_env::TestEnv, test_server::Method};
 
 mod utils;
 
@@ -61,9 +62,9 @@ async fn test_simulate_for_simple_model() {
         .push(String::from("fetch_energy_costs/0"));
     let mut electrolyzer = Electrolyzer::default();
     electrolyzer.capacity_mw = 100.0;
-    electrolyzer.constant_production = Some(ConstantProduction {
+    electrolyzer.production = ConstantProduction {
         conversion_rate: 20.0,
-    });
+    };
     dependencies
         .electrolyzer_client
         .create_electrolyzer(&electrolyzer)

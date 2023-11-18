@@ -3,15 +3,6 @@
 {% block head %}
 <script async defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script async defer src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-<script>
-    let urlWithState = 
-        window.location.origin +
-        window.location.pathname +
-        "{{ initial_state }}";
-    if (window.location.href != urlWithState) {
-        window.location = urlWithState;
-    }
-</script>
 {% endblock %}
 
 {% block title %}Tax Credit Policy Modeling{% endblock %}
@@ -22,7 +13,7 @@
         <h1 class="text-3xl font-thin py-4 px-4 text-gray-800">Green Hydrogen Modelling</h1>
     </div>
     <div class="grid grid-cols-4 grow min-h-0 shrink">
-        <div id="sidebar" class="bg-gray-100 m-h-100 flex flex-col items-center m-h-full overflow-scroll">
+        <div id="sidebar" class="bg-gray-100 flex flex-col items-center">
             {% if electrolyzer_details.as_ref().is_none() %}
             <div class="h-full flex items-center px-4">
                 <p class="text-lg font-bold">No electrolyzers exist</p>
@@ -31,10 +22,11 @@
             {{ electrolyzer_details.clone().unwrap()|safe }}
             {% endif %}
         </div>
-        <div class="col-span-3 overflow-scroll m-h-full flex flex-col" 
-            hx-trigger="create-electrolyzer from:body" hx-post="/simulation_form">
+        <div id="dataplane" class="col-span-3 overflow-y-scroll m-h-full flex flex-col">
             {% if simulation_form.is_none() %}
-            <div class="h-full flex flex-col gap-y-5 justify-center items-center">
+            <form class="h-full flex flex-col gap-y-5 justify-center items-center"
+                hx-trigger="create-electrolyzer from:body" hx-post="/simulation_form" hx-swap="outerHTML">
+                <input name="simulation_id" value="{{ simulation_id }}" hidden />
                 <p class="text-lg font-bold">Create an electrolyzer to get started</p>
                 <button hx-post="/create_electrolyzer_form" hx-target="#sidebar" hx-swap="innerHTML"
                     class="h-10 bg-blue-600 font-semibold text-center text-white rounded-sm px-4 py-2">

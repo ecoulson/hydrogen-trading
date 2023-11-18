@@ -7,17 +7,20 @@ use crate::schema::electrolyzer::Electrolyzer;
 #[template(path = "components/electrolyzer_selector.html")]
 pub struct ElectrolyzerSelectorTemplate {
     pub selected_id: usize,
+    pub simulation_id: i32,
     pub electrolyzers: Vec<Electrolyzer>,
 }
 
 #[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq)]
 #[template(path = "components/list_electrolyzers.html")]
 pub struct ListElectrolyzersTemplate {
+    pub simulation_id: i32,
     pub search_results: ElectrolyzerSearchResults
 }
 
 #[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq)]
 #[template(path = "components/electrolyzer_search_results.html")]
 pub struct ElectrolyzerSearchResults {
+    pub simulation_id: i32,
     pub electrolyzers: Vec<Electrolyzer>
 }

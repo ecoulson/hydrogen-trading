@@ -24,7 +24,7 @@ const BIOMASS_MWH_TO_CO2: f64 = 530.82;
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
 pub struct SimulationState {
     pub id: i32,
-    pub electrolyzer: Electrolyzer,
+    pub electrolyzer_id: usize,
     pub emissions: Vec<EmissionEvent>,
     pub hydrogen_productions: Vec<HydrogenProductionEvent>,
     pub transactions: Vec<EnergyTransaction>,
@@ -44,7 +44,7 @@ pub fn simulate(
     let mut end_timestamp = time_range.end.to_utc_date_time()?;
     let increment = Duration::minutes(15);
     let mut state = simulation_client.get_simulation_state(&simulation_id)?;
-    state.electrolyzer = electrolyzer.clone();
+    state.electrolyzer_id = electrolyzer.id;
 
     if current_timestamp.timestamp() > end_timestamp.timestamp() {
         return Err(Error::create_invalid_argument_error(
@@ -97,8 +97,6 @@ pub fn simulate(
 
         current_timestamp += increment;
     }
-
-    simulation_client.create_simulation_state(&state)?;
 
     Ok(SimulationResult {
         status: SimulationStatus::Complete,
@@ -212,12 +210,7 @@ fn create_hydrogen_production_event(
         electrolyzer_id: electrolyzer.id,
         production_timestamp: timestamp.clone(),
         kg_hydrogen: f64::min(portfolio.total_electricity_mwh, electrolyzer.capacity_mw)
-            * electrolyzer
-                .constant_production
-                .ok_or_else(|| {
-                    Error::create_unimplemented_error("Only constant production supported")
-                })?
-                .conversion_rate,
+            * electrolyzer.production.conversion_rate,
     })
 }
 
@@ -386,9 +379,9 @@ mod test {
         let mut electrolyzer = Electrolyzer::default();
         electrolyzer.capacity_mw = 10.0;
         electrolyzer.production_type = ProductionType::Constant;
-        electrolyzer.constant_production = Some(ConstantProduction {
+        electrolyzer.production = ConstantProduction {
             conversion_rate: 2.0,
-        });
+        };
         let timestamp = Timestamp::default();
         let mut portfolio = EnergySourcePortfolio::default();
         portfolio.total_electricity_mwh = 4.0;
@@ -413,9 +406,9 @@ mod test {
         let mut electrolyzer = Electrolyzer::default();
         electrolyzer.capacity_mw = 10.0;
         electrolyzer.production_type = ProductionType::Constant;
-        electrolyzer.constant_production = Some(ConstantProduction {
+        electrolyzer.production = ConstantProduction {
             conversion_rate: 2.0,
-        });
+        };
         let timestamp = Timestamp::default();
         let mut portfolio = EnergySourcePortfolio::default();
         portfolio.total_electricity_mwh = 14.0;

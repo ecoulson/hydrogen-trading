@@ -17,7 +17,8 @@ pub fn create_electrolyzer_handler(
     request: Form<CreateElectrolyzerRequest>,
     electrolyzer_client: &State<Box<dyn ElectrolyzerClient>>,
 ) -> Result<HtmxTemplate<ElectrolyzerDetailsTemplate>, HtmxTemplate<BannerError>> {
-    let electrolyzers = electrolyzer_client.list_electrolyzers()
+    let electrolyzers = electrolyzer_client
+        .list_electrolyzers()
         .map_err(BannerError::create_from_error)?;
     let electrolyzer = electrolyzer_client
         .create_electrolyzer(&Electrolyzer {
@@ -28,14 +29,14 @@ pub fn create_electrolyzer_handler(
             capacity_mw: request.capacity_mw,
             opex: request.opex,
             capex: request.capex,
-            constant_production: Some(ConstantProduction {
+            production: ConstantProduction {
                 conversion_rate: request
                     .production_method
                     .conversion_rate_constant
                     .ok_or_else(|| {
                         BannerError::create_from_message("Only constant production is allowed")
                     })?,
-            }),
+            },
             production_type: ProductionType::Constant,
             replacement_cost: request.replacement_cost,
             city: String::from("Huston"),
@@ -48,6 +49,7 @@ pub fn create_electrolyzer_handler(
             .trigger("create-electrolyzer")
             .build(),
         ElectrolyzerDetailsTemplate {
+            simulation_id: 0,
             electrolyzer,
             selected: electrolyzers.is_empty(),
         },

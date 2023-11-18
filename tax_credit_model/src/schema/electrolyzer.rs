@@ -14,7 +14,7 @@ pub struct Electrolyzer {
     pub degredation_rate: f64,
     pub capacity_mw: f64,
     pub production_type: ProductionType,
-    pub constant_production: Option<ConstantProduction>,
+    pub production: ConstantProduction,
     pub capex: f64,
     pub opex: f64,
     pub replacement_cost: f64,
@@ -43,9 +43,9 @@ impl Electrolyzer {
             degredation_rate,
             capacity_mw,
             production_type: ProductionType::Constant,
-            constant_production: Some(ConstantProduction {
+            production: ConstantProduction {
                 conversion_rate: production_rate,
-            }),
+            },
             capex,
             opex,
             city: String::from("Huston"),
@@ -83,5 +83,6 @@ pub struct CreateElectrolyzerRequest {
 #[template(path = "components/electrolyzer_details.html")]
 pub struct ElectrolyzerDetailsTemplate {
     pub electrolyzer: Electrolyzer,
-    pub selected: bool
+    pub simulation_id: i32,
+    pub selected: bool,
 }

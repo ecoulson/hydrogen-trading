@@ -7,29 +7,95 @@ use rocket::{
 
 use crate::schema::errors::Error;
 
-#[derive(Debug)]
-pub struct Context {
-    simulation_id: i32,
-    location: String
+#[derive(Debug, Default)]
+pub struct Context<'r> {
+    location: Url<'r>,
 }
 
-impl Context {
-    pub fn simulation_id(&self) -> i32 {
-        self.simulation_id
-    }
-
-    pub fn location(&self) -> &str {
+impl<'r> Context<'r> {
+    pub fn location(&self) -> &'r Url {
         &self.location
     }
+
+    pub fn mut_location(&mut self) -> &'r mut Url {
+        &mut self.location
+    }
 }
 
+pub enum UrlParseState {
+    Scheme,
+    Authority,
+    Path,
+    Parameters,
+}
+
+#[derive(Debug, Default)]
+pub struct Url<'r> {
+    scheme: &'r str,
+    authority: &'r str,
+    path: &'r str,
+    parameters: &'r str,
+}
+
+impl<'r> Url<'r> {
+    pub fn set_path(&mut self, path: &'r str) {
+        self.path = path;
+    }
+
+    pub fn build_url(&self) -> String {
+        format!(
+            "{}://{}/{}{}",
+            self.scheme, self.authority, self.path, self.parameters
+        )
+    }
+}
 #[rocket::async_trait]
-impl<'r> FromRequest<'r> for Context {
+impl<'r> FromRequest<'r> for Context<'r> {
     type Error = Error;
 
     async fn from_request(request: &'r Request<'_>) -> request::Outcome<Self, Self::Error> {
         if let Some(current_url) = request.headers().get_one("Hx-Current-Url") {
-            return Outcome::Success(Context { simulation_id: 0, location: String::from(current_url) });
+            let mut location = Url::default();
+            let mut start = 0;
+            let mut state = UrlParseState::Scheme;
+            let url_iterator = current_url.chars().enumerate();
+
+            for (i, ch) in url_iterator {
+                match state {
+                    UrlParseState::Scheme => {
+                        if ch == ':' {
+                            location.scheme = &current_url[start..i];
+                            state = UrlParseState::Authority;
+                            start = i + 3;
+                        }
+                    }
+                    UrlParseState::Authority => {
+                        if ch == '/' && start <= i {
+                            location.authority = &current_url[start..i];
+                            state = UrlParseState::Path;
+                            start = i;
+                        }
+                    }
+                    UrlParseState::Path => {
+                        if ch == '?' {
+                            location.path = &current_url[start..i];
+                            state = UrlParseState::Parameters;
+                            start = i;
+                        }
+                    }
+                    UrlParseState::Parameters => break,
+                }
+            }
+
+            match state {
+                UrlParseState::Path => location.path = &current_url[start..current_url.len()],
+                UrlParseState::Parameters => {
+                    location.parameters = &current_url[start..current_url.len()]
+                }
+                _ => (),
+            }
+
+            return Outcome::Success(Context { location });
         }
 
         Outcome::Failure((

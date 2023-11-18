@@ -13,6 +13,7 @@ pub trait SimulationClient: Send + Sync {
         simulation_state: &SimulationState,
     ) -> Result<SimulationState>;
     fn ensure_simulation_exists(&self, simulation_id: &i32) -> Result<SimulationState>;
+    fn list_simulations(&self) -> Result<Vec<SimulationState>>;
     fn update(&self, simulation_state: &SimulationState) -> Result<SimulationState>;
 }
 
@@ -74,5 +75,12 @@ impl SimulationClient for InMemorySimulationClient {
         Mutex::lock(&self.simulation_store)?.insert(simulation_state.id, simulation_state.clone());
 
         Ok(simulation_state.clone())
+    }
+
+    fn list_simulations(&self) -> Result<Vec<SimulationState>> {
+        Ok(Mutex::lock(&self.simulation_store)?
+            .iter()
+            .map(|(_, state)| state.clone())
+            .collect())
     }
 }

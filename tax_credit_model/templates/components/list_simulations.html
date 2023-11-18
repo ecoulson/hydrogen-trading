@@ -1,0 +1,9 @@
+<div class="max-w-75 py-2 px-4">
+    {% for simulation in simulations %}
+    <form class="py-2 px-4 bg-gray-200 hover:bg-gray-300 cursor-pointer rounded-md flex items-center gap-x-4"
+        hx-trigger="click" hx-post="/simulation_form" hx-target="#dataplane" hx-swap="innerHTML">
+        <input name="simulation_id" hidden value="{{ simulation.id }}" />
+        <span>Simulation {{ simulation.id }}</span>
+    </form>
+    {% endfor %}
+</div>

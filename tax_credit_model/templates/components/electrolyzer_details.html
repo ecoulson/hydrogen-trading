@@ -1,4 +1,5 @@
 <form class="flex items-center flex-col h-full w-full relative">
+    <input name="simulation_id" value="{{ simulation_id }}" hidden />
     <div class="flex items-center w-full">
         <div class="px-4 cursor-pointer" hx-post="/list_electrolyzers" hx-trigger="click" hx-target="#sidebar"
             hx-swap="innerHTML">
@@ -409,10 +410,7 @@
             </tr>
             <tr>
                 <td>Production Rate (kg h2 / mw)</td>
-                <td>{{ electrolyzer
-                    .constant_production
-                    .expect("Only constant production supported")
-                    .conversion_rate }}
+                <td>{{ electrolyzer.production.conversion_rate }}
                 </td>
             </tr>
             <tr>
@@ -430,7 +428,12 @@
         </table>
     </div>
     <div class="sticky w-full bottom-0 py-4 left-0 flex justify-center bg-gray-200">
+        {% if selected %}
+        <button class="h-10 bg-gray-700 w-48 rounded-sm text-center font-semibold text-white px-4 py-2" type="submit"
+            hx-post="/select_electrolyzer" disabled hx-target="#sidebar" hx-swap="innerHTML">Use</button>
+        {% else %}
         <button class="h-10 bg-blue-600 w-48 rounded-sm text-center font-semibold text-white px-4 py-2" type="submit"
             hx-post="/select_electrolyzer" hx-target="#sidebar" hx-swap="innerHTML">Use</button>
+        {% endif %}
     </div>
 </form>
