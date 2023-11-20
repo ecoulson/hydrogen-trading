@@ -7,7 +7,6 @@ use crate::{
 
 #[derive(FromForm)]
 pub struct SearchElectrolyzersRequest {
-    simulation_id: i32,
     query: String,
 }
 
@@ -18,7 +17,6 @@ pub fn search_electrolyzers_handler(
 ) -> Result<HtmxTemplate<ElectrolyzerSearchResults>, HtmxTemplate<BannerError>> {
     if request.query.trim().is_empty() {
         return Ok(ElectrolyzerSearchResults {
-            simulation_id: request.simulation_id,
             electrolyzers: electrolyzer_client
                 .list_electrolyzers()
                 .map_err(BannerError::create_from_error)?,
@@ -27,7 +25,6 @@ pub fn search_electrolyzers_handler(
     }
 
     Ok(ElectrolyzerSearchResults {
-        simulation_id: request.simulation_id,
         electrolyzers: electrolyzer_client
             .list_electrolyzers()
             .map_err(BannerError::create_from_error)?

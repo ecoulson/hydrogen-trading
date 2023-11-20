@@ -10,15 +10,19 @@ use crate::{
         fetch_emissions_handler::fetch_emissions_handler,
         fetch_energy_costs_handler::fetch_energy_costs_handler,
         fetch_hydrogen_production_handler::fetch_hydrogen_production_handler,
+        get_active_electrolyzer_handler::get_active_electrolyzer_handler,
         get_electrolyzer_handler::get_electrolyzer_handler,
-        get_simulation_form_handler::get_simulation_form_handler,
+        get_simulation_form_handler::get_simulation_form_handler, index_handler::index_handler,
         list_electrolyzers_handler::list_electrolyzers_handler,
+        list_simulation_handler::list_simulation_handler,
+        search_electrolyzers_handler::search_electrolyzers_handler,
         select_electrolyzer_handler::select_electrolyzer_handler,
-        simulation_handler::simulation_handler, search_electrolyzers_handler::search_electrolyzers_handler, list_simulation_handler::list_simulation_handler,
+        select_simulation_handler::select_simulation_handler,
+        simulation_handler::simulation_handler,
     },
     persistance::{
         electrolyzer::ElectrolyzerClient, generation::GenerationClient, grid::GridClient,
-        simulation::SimulationClient,
+        simulation::SimulationClient, user::UserClient,
     },
 };
 
@@ -49,6 +53,7 @@ pub struct Dependencies {
     pub grid_client: Box<dyn GridClient>,
     pub simulation_client: Box<dyn SimulationClient>,
     pub generation_client: Box<dyn GenerationClient>,
+    pub user_client: Box<dyn UserClient>,
 }
 
 pub fn init_service(
@@ -63,6 +68,7 @@ pub fn init_service(
         .manage(dependencies.electrolyzer_client)
         .manage(dependencies.simulation_client)
         .manage(dependencies.generation_client)
+        .manage(dependencies.user_client)
         .mount("/assets", static_files)
         .mount(
             "/",
@@ -81,7 +87,10 @@ pub fn init_service(
                 select_electrolyzer_handler,
                 electrolyzer_selector_handler,
                 search_electrolyzers_handler,
-                list_simulation_handler
+                list_simulation_handler,
+                index_handler,
+                select_simulation_handler,
+                get_active_electrolyzer_handler
             ],
         )
 }

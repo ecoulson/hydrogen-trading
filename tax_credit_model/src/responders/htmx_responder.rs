@@ -14,6 +14,7 @@ const HX_RESELECT: &str = "HX-Reselect";
 const HX_REPLACE_URL: &str = "HX-Replace-Url";
 const HX_TRIGGER_AFTER_SWAP: &str = "HX-Trigger-After-Swap";
 const HX_TRIGGER_AFTER_SETTLE: &str = "HX-Trigger-After-Settle";
+const SET_COOKIE: &str = "Set-Cookie";
 
 pub struct HtmxTemplate<T>
 where
@@ -36,6 +37,7 @@ pub struct HtmxHeaders {
     trigger: Option<String>,
     trigger_after_settle: Option<String>,
     trigger_after_swap: Option<String>,
+    set_cookie: Option<String>,
 }
 
 #[derive(Default, Debug)]
@@ -116,6 +118,20 @@ impl HtmxHeadersBuilder {
         self
     }
 
+    pub fn set_cookie(mut self, value: &str) -> Self {
+        self.headers.set_cookie = Some(String::from(value));
+
+        self
+    }
+
+    pub fn set_cookie_if(mut self, value: Option<String>) -> Self {
+        if value.is_some() {
+            self.headers.set_cookie = value;
+        }
+
+        self
+    }
+
     pub fn build(self) -> HtmxHeaders {
         self.headers
     }
@@ -185,6 +201,9 @@ where
         }
         if let Some(trigger_after_settle) = self.headers.trigger_after_settle {
             response.set_raw_header(HX_TRIGGER_AFTER_SETTLE, trigger_after_settle);
+        }
+        if let Some(cookie) = self.headers.set_cookie {
+            response.set_raw_header(SET_COOKIE, cookie);
         }
 
         Ok(response)

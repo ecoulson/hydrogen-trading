@@ -49,7 +49,6 @@ pub fn create_electrolyzer_handler(
             .trigger("create-electrolyzer")
             .build(),
         ElectrolyzerDetailsTemplate {
-            simulation_id: 0,
             electrolyzer,
             selected: electrolyzers.is_empty(),
         },

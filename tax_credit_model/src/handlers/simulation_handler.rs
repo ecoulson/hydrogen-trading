@@ -4,8 +4,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     logic::simulation::SimulationState,
-    persistance::{electrolyzer::ElectrolyzerClient, simulation::SimulationClient},
-    responders::htmx_responder::HtmxTemplate,
+    persistance::{
+        electrolyzer::ElectrolyzerClient, simulation::SimulationClient, user::UserClient,
+    },
+    responders::{htmx_responder::HtmxTemplate, user_context::UserContext},
     schema::{electrolyzer::ElectrolyzerDetailsTemplate, errors::BannerError, time::DateTimeRange},
     templates::{
         list_electrolyzers_template::ElectrolyzerSelectorTemplate,
@@ -23,10 +25,16 @@ pub struct SimulationPage {
 
 #[get("/simulation/<simulation_id>")]
 pub fn simulation_handler(
+    user_context: UserContext,
     simulation_id: Option<i32>,
     electrolyzer_client: &State<Box<dyn ElectrolyzerClient>>,
     simulation_client: &State<Box<dyn SimulationClient>>,
+    user_client: &State<Box<dyn UserClient>>,
 ) -> Result<HtmxTemplate<SimulationPage>, HtmxTemplate<BannerError>> {
+    let mut user_context = user_context;
+    let user = user_context
+        .user_mut()
+        .ok_or_else(|| BannerError::create_from_message("User not logged in"))?;
     let electrolyzers = electrolyzer_client
         .list_electrolyzers()
         .map_err(BannerError::create_from_error)?;
@@ -53,6 +61,10 @@ pub fn simulation_handler(
             .get_simulation_state(&id)
             .map_err(BannerError::create_from_error)?,
     };
+    user.set_simulation_id(simulation_state.id);
+    user_client
+        .update_user(&user)
+        .map_err(BannerError::create_from_error)?;
     let electrolyzer = electrolyzers
         .iter()
         .find(|electrolyzer| electrolyzer.id == simulation_state.electrolyzer_id)
@@ -63,7 +75,6 @@ pub fn simulation_handler(
     Ok(SimulationPage {
         simulation_id: simulation_state.id,
         electrolyzer_details: Some(ElectrolyzerDetailsTemplate {
-            simulation_id: simulation_state.id,
             electrolyzer,
             selected: true,
         }),
@@ -75,9 +86,7 @@ pub fn simulation_handler(
             electrolyzer_selector: ElectrolyzerSelectorTemplate {
                 electrolyzers,
                 selected_id: electrolyzer_id,
-                simulation_id: simulation_state.id,
             },
-            simulation_id: simulation_state.id,
         }),
     }
     .into())

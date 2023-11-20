@@ -26,7 +26,6 @@
             {% if simulation_form.is_none() %}
             <form class="h-full flex flex-col gap-y-5 justify-center items-center"
                 hx-trigger="create-electrolyzer from:body" hx-post="/simulation_form" hx-swap="outerHTML">
-                <input name="simulation_id" value="{{ simulation_id }}" hidden />
                 <p class="text-lg font-bold">Create an electrolyzer to get started</p>
                 <button hx-post="/create_electrolyzer_form" hx-target="#sidebar" hx-swap="innerHTML"
                     class="h-10 bg-blue-600 font-semibold text-center text-white rounded-sm px-4 py-2">

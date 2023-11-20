@@ -1,5 +1,6 @@
-use rocket::{form::Form, post, FromForm, State};
+use rocket::{post, State};
 
+use crate::responders::user_context::UserContext;
 use crate::templates::list_electrolyzers_template::ElectrolyzerSelectorTemplate;
 use crate::{
     persistance::{electrolyzer::ElectrolyzerClient, simulation::SimulationClient},
@@ -7,24 +8,21 @@ use crate::{
     schema::errors::BannerError,
 };
 
-#[derive(FromForm)]
-pub struct ElectrolyzerSelectorRequest {
-    simulation_id: i32,
-}
-
-#[post("/electrolyzer_selector", data = "<request>")]
+#[post("/electrolyzer_selector")]
 pub fn electrolyzer_selector_handler(
-    request: Form<ElectrolyzerSelectorRequest>,
+    user_context: UserContext,
     electrolyzer_client: &State<Box<dyn ElectrolyzerClient>>,
     simulation_client: &State<Box<dyn SimulationClient>>,
 ) -> Result<HtmxTemplate<ElectrolyzerSelectorTemplate>, HtmxTemplate<BannerError>> {
+    let user = user_context
+        .user()
+        .ok_or_else(|| BannerError::create_from_message("User not logged in"))?;
     let simulation = simulation_client
-        .get_simulation_state(&request.simulation_id)
+        .get_simulation_state(&user.simulation_id())
         .map_err(BannerError::create_from_error)?;
 
     Ok(ElectrolyzerSelectorTemplate {
         selected_id: simulation.electrolyzer_id,
-        simulation_id: request.simulation_id,
         electrolyzers: electrolyzer_client
             .list_electrolyzers()
             .map_err(BannerError::create_from_error)?,

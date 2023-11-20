@@ -15,18 +15,15 @@ use super::{
 #[derive(FromForm, Deserialize, Serialize, Default, Debug, PartialEq)]
 pub struct ExecuteSimulationRequest {
     pub electrolyzer_id: usize,
-    pub simulation_id: i32,
     pub simulation_time_range: DateTimeRange,
 }
 
 impl ExecuteSimulationRequest {
     pub fn new(
         electrolyzer_id: usize,
-        simulation_id: i32,
         simulation_time_range: DateTimeRange,
     ) -> ExecuteSimulationRequest {
         ExecuteSimulationRequest {
-            simulation_id,
             electrolyzer_id,
             simulation_time_range,
         }
@@ -37,7 +34,7 @@ impl ExecuteSimulationRequest {
 #[template(path = "components/simulation_view.html")]
 pub struct ExecuteSimulationResponse {
     pub simulation_result: SimulationResult,
-    pub simulation_form: SimulationFormTemplate
+    pub simulation_form: SimulationFormTemplate,
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]

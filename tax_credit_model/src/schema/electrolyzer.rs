@@ -83,6 +83,5 @@ pub struct CreateElectrolyzerRequest {
 #[template(path = "components/electrolyzer_details.html")]
 pub struct ElectrolyzerDetailsTemplate {
     pub electrolyzer: Electrolyzer,
-    pub simulation_id: i32,
     pub selected: bool,
 }

@@ -1,8 +1,8 @@
-<form class="px-4 py-2 w-full" hx-trigger="keyup changed delay:500ms" hx-post="/search_electrolyzers"
-    hx-target="#electrolyzer-search-results">
-    <input class="border w-full" name="query" placeholder="Search for electrolyzer" />
-    <input name="simulation_id" hidden value="{{ simulation_id }}" />
-</form>
+<div class="px-4 py-2 w-full">
+    <input class="border w-full" name="query" placeholder="Search for electrolyzer"
+        hx-trigger="keyup changed delay:500ms" hx-post="/search_electrolyzers"
+        hx-target="#electrolyzer-search-results" />
+</div>
 <div id="electrolyzer-search-results" class="w-full flex flex-col gap-y-4 py-2 px-4 grow overflow-y-scroll">
     {{ search_results|safe }}
 </div>

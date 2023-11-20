@@ -25,11 +25,8 @@ pub struct DiskGenerationPersistanceClient {
 impl DiskGenerationPersistanceClient {
     pub fn new(path: &str) -> Result<DiskGenerationPersistanceClient> {
         let data_file = File::new(path, &Permissions::appendable(CreateMode::CreateOrRead));
-        println!("Creating");
         create_directory(File::directory_path(&data_file))?;
-        println!("Writing");
         write_file(&data_file, &vec![])?;
-        println!("Setup");
 
         Ok(DiskGenerationPersistanceClient {
             file: Arc::new(File::new(

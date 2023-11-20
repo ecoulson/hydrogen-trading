@@ -1,0 +1,25 @@
+{% extends "layouts/base.html" %}
+
+{% block head %}
+<script async defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script async defer
+    src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+{% endblock %}
+
+{% block title %}Tax Credit Policy Modeling{% endblock %}
+
+{% block content %}
+<div class="h-screen flex flex-col">
+    <div class="w-full bg-slate-300">
+        <h1 class="text-3xl font-thin py-4 px-4 text-gray-800">Green Hydrogen Modelling</h1>
+    </div>
+    <div class="grid grid-cols-4 grow min-h-0 shrink">
+        <div id="sidebar" class="bg-gray-100 flex flex-col items-center">
+            {{ electrolyzer_list|safe }}
+        </div>
+        <div id="dataplane" class="col-span-3 overflow-y-scroll m-h-full flex flex-col">
+            {{ simulation_list|safe }}
+        </div>
+    </div>
+</div>
+{% endblock %}

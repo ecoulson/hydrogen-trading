@@ -13,9 +13,8 @@ impl<T> Mutex<T> {
         }
     }
 
-    pub fn lock(mutex: &Mutex<T>) -> Result<MutexGuard<'_, T>> {
-        mutex
-            .lock
+    pub fn lock(&self) -> Result<MutexGuard<'_, T>> {
+        self.lock
             .lock()
             .map_err(|err| Error::create_invalid_argument_error(&err.to_string()))
     }

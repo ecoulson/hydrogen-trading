@@ -1,5 +1,6 @@
-<form class="flex items-center flex-col h-full w-full relative">
-    <input name="simulation_id" value="{{ simulation_id }}" hidden />
+<form class="flex items-center flex-col h-full w-full relative" hx-trigger="simulation-selected from:body"
+    hx-post="/get_active_electrolyzer">
+    <input hidden name="electrolyzer_id" value="{{ electrolyzer.id }}" />
     <div class="flex items-center w-full">
         <div class="px-4 cursor-pointer" hx-post="/list_electrolyzers" hx-trigger="click" hx-target="#sidebar"
             hx-swap="innerHTML">
@@ -391,7 +392,6 @@
     </div>
     <div class="px-2 py-4 w-full grow">
         <table id="electrolyzer-details">
-            <input hidden name="electrolyzer_id" value="{{ electrolyzer.id }}" />
             <tr>
                 <td>Replacement Threshold</td>
                 <td>{{ electrolyzer.replacement_threshold }}</td>

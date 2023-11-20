@@ -13,3 +13,6 @@ pub mod select_electrolyzer_handler;
 pub mod electrolyzer_selector_handler;
 pub mod search_electrolyzers_handler;
 pub mod list_simulation_handler;
+pub mod index_handler;
+pub mod select_simulation_handler;
+pub mod get_active_electrolyzer_handler;

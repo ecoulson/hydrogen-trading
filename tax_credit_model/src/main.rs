@@ -1,10 +1,12 @@
+use std::process::exit;
+
 use rocket::fs::relative;
 use tax_credit_model_server::{
     data_retriever::fill_generations,
     persistance::{
         electrolyzer::InMemoryElectrolyzerPersistanceClient,
         generation::DiskGenerationPersistanceClient, grid::InMemoryGridClient,
-        simulation::InMemorySimulationClient,
+        simulation::InMemorySimulationClient, user::InMemoryUserClient,
     },
     server::{init_service, Dependencies, ServerConfiguration},
 };
@@ -26,7 +28,11 @@ pub async fn rocket() -> _ {
         generation_client: Box::new(DiskGenerationPersistanceClient::new(&format!(
             "{}/{}/{}",
             data_directory, "generations", "generations.data"
-        )).unwrap()),
+        )).unwrap_or_else(|x| {
+            eprintln!("{}", x);
+            exit(1);
+        })),
+        user_client: Box::new(InMemoryUserClient::new())
     };
 
     fill_generations(configuration.clone(), &dependencies);

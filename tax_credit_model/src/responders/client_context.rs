@@ -8,11 +8,11 @@ use rocket::{
 use crate::schema::errors::Error;
 
 #[derive(Debug, Default)]
-pub struct Context<'r> {
+pub struct ClientContext<'r> {
     location: Url<'r>,
 }
 
-impl<'r> Context<'r> {
+impl<'r> ClientContext<'r> {
     pub fn location(&self) -> &'r Url {
         &self.location
     }
@@ -49,8 +49,9 @@ impl<'r> Url<'r> {
         )
     }
 }
+
 #[rocket::async_trait]
-impl<'r> FromRequest<'r> for Context<'r> {
+impl<'r> FromRequest<'r> for ClientContext<'r> {
     type Error = Error;
 
     async fn from_request(request: &'r Request<'_>) -> request::Outcome<Self, Self::Error> {
@@ -95,12 +96,12 @@ impl<'r> FromRequest<'r> for Context<'r> {
                 _ => (),
             }
 
-            return Outcome::Success(Context { location });
+            return Outcome::Success(ClientContext { location });
         }
 
         Outcome::Failure((
             Status::NotFound,
-            Error::create_not_found_error("No current url provided"),
+            Error::create_not_found_error("No client context"),
         ))
     }
 }

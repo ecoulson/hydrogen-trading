@@ -9,7 +9,7 @@ use crate::{
 #[derive(Debug, Template)]
 #[template(path = "components/list_simulations.html")]
 pub struct ListSimulationResponse {
-    simulations: Vec<SimulationState>,
+    pub simulations: Vec<SimulationState>,
 }
 
 #[post("/list_simulations")]
