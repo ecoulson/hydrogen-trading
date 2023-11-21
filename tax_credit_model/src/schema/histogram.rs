@@ -6,13 +6,20 @@ use serde::{Deserialize, Serialize};
 pub struct Histogram {
     pub title: String,
     pub id: String,
-    pub data_set_endpoints: Vec<String>,
+    pub histogram_end_point: String,
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq)]
 pub struct HistogramData {
-    pub labels: Vec<String>,
-    pub datasets: Vec<HistogramDataset>
+    pub labels: Labels,
+    pub keys: Vec<String>,
+    pub datasets: Vec<HistogramDataset>,
+}
+
+#[derive(Deserialize, Serialize, Default, Debug, PartialEq)]
+pub struct Labels {
+    pub x: String,
+    pub y: String,
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq)]

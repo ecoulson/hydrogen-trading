@@ -3,8 +3,9 @@ use rocket::{post, serde::json::Json, State};
 use crate::{
     persistance::simulation::SimulationClient,
     schema::{
+        histogram::Labels,
         simulation_schema::TaxCredit45VTier,
-        time_series::{ChartColor, TimeSeries, TimeSeriesEntry},
+        time_series::{ChartColor, TimeSeries, TimeSeriesData, TimeSeriesEntry},
     },
 };
 
@@ -12,7 +13,7 @@ use crate::{
 pub fn fetch_emissions_handler(
     simulation_id: i32,
     simulation_client: &State<Box<dyn SimulationClient>>,
-) -> Result<Json<TimeSeries>, String> {
+) -> Result<Json<TimeSeriesData>, String> {
     let simulation = simulation_client
         .get_simulation_state(&simulation_id)
         .map_err(|err| err.to_string())?;
@@ -36,9 +37,15 @@ pub fn fetch_emissions_handler(
         .collect::<crate::schema::errors::Result<Vec<TimeSeriesEntry>>>()
         .map_err(|err| err.to_string())?;
 
-    Ok(Json(TimeSeries {
-        color: ChartColor::Blue,
-        label: String::from("emissions (kg CO2)"),
-        data_points: data,
+    Ok(Json(TimeSeriesData {
+        labels: Labels {
+            x: String::from("kg (CO2)"),
+            y: String::from("Date"),
+        },
+        datasets: vec![TimeSeries {
+            color: ChartColor::Blue,
+            label: String::from("emissions (kg CO2)"),
+            data_points: data,
+        }],
     }))
 }

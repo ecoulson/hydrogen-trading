@@ -2,14 +2,17 @@ use rocket::{post, serde::json::Json, State};
 
 use crate::{
     persistance::simulation::SimulationClient,
-    schema::time_series::{ChartColor, TimeSeries, TimeSeriesEntry},
+    schema::{
+        histogram::Labels,
+        time_series::{ChartColor, TimeSeries, TimeSeriesData, TimeSeriesEntry},
+    },
 };
 
 #[post("/fetch_hydrogen_production/<simulation_id>")]
 pub fn fetch_hydrogen_production_handler(
     simulation_id: i32,
     simulation_client: &State<Box<dyn SimulationClient>>,
-) -> Result<Json<TimeSeries>, String> {
+) -> Result<Json<TimeSeriesData>, String> {
     let simulation = simulation_client
         .get_simulation_state(&simulation_id)
         .map_err(|err| err.to_string())?;
@@ -33,5 +36,11 @@ pub fn fetch_hydrogen_production_handler(
             .map_err(|err| err.to_string())?,
     };
 
-    Ok(Json(hydrogen_production_time_series))
+    Ok(Json(TimeSeriesData {
+        datasets: vec![hydrogen_production_time_series],
+        labels: Labels {
+            x: String::from("Date"),
+            y: String::from("kg (H2O)"),
+        },
+    }))
 }

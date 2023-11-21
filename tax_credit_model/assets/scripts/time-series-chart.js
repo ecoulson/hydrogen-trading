@@ -1,33 +1,23 @@
 (function() {
     const parameters = parseScriptParameters();
 
-    function retrieveDataset(endpoints, callback) {
-        const requests = [];
-
-        for (let endpoint of endpoints) {
-            requests.push(fetch(endpoint, {
+    function retrieveDataset(endpoint, callback) {
+        fetch(endpoint, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
                 }
             })
                 .then((response) => response.json())
-                .then((dataset) => dataset)
+                .then((timeSeries) => callback(timeSeries))
                 .catch((error) => console.error("Failed to parse response", error))
-            )
-        }
-
-        Promise
-            .all(requests)
-            .then((datasets) => callback(datasets))
-            .catch((error) => console.log("Failed to retrieve data set", error));
     }
 
-    retrieveDataset(parameters.endpoints.split(","), (datasets) => {
+    retrieveDataset(parameters.endpoint, (time_series) => {
         new Chart(document.getElementById(parameters.id), {
             type: 'line',
             data: {
-                datasets: datasets.map((dataset) => {
+                datasets: time_series.datasets.map((dataset) => {
                     return {
                         label: dataset.label,
                         segment: {
@@ -57,7 +47,17 @@
             options: {
                 scales: {
                     xAxes: {
-                        type: 'time'
+                        type: 'time',
+                        title: {
+                            display: true,
+                            text: time_series.labels.x
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: time_series.labels.y
+                        }
                     }
                 }
             }

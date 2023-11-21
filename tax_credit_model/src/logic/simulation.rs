@@ -107,17 +107,17 @@ pub fn simulate(
         hydrogen_productions: TimeSeriesChart {
             id: format!("hydrogen-produced-{}", &simulation_id),
             title: String::from("Hydrogen Production Over Time"),
-            data_set_endpoints: vec![format!("/fetch_hydrogen_production/{simulation_id}")],
+            endpoint: format!("/fetch_hydrogen_production/{simulation_id}"),
         },
         energy_costs: TimeSeriesChart {
             id: format!("energy-costs-{}", &simulation_id),
             title: String::from("Energy Costs Over Time"),
-            data_set_endpoints: vec![format!("/fetch_energy_costs/{simulation_id}")],
+            endpoint: format!("/fetch_energy_costs/{simulation_id}"),
         },
         hourly_histogram: Histogram {
             id: format!("hourly-histograms-{}", &simulation_id),
             title: String::from("Hourly Tax Credits"),
-            data_set_endpoints: vec![format!("/fetch_hourly_histogram/{simulation_id}")],
+            histogram_end_point: format!("/fetch_hourly_histogram/{simulation_id}"),
         },
     })
 }
@@ -126,7 +126,7 @@ fn produce_emissions_graph(simulation_id: &i32) -> Result<TimeSeriesChart> {
     Ok(TimeSeriesChart {
         id: format!("emissions-{}", simulation_id),
         title: String::from("Emissions Over Time"),
-        data_set_endpoints: vec![format!("/fetch_emissions/{simulation_id}")],
+        endpoint: format!("/fetch_emissions/{simulation_id}"),
     })
 }
 

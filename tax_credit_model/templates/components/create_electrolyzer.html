@@ -1,6 +1,6 @@
 <form class="w-full h-full flex flex-col" hx-post="/create_electrolyzer" hx-target="#sidebar" hx-swap="innerHTML">
-    <div class="sticky top-0 p-4 cursor-pointer flex items-center" hx-post="/list_electrolyzers" hx-trigger="click"
-        hx-target="#sidebar" hx-swap="innerHTML">
+    <div class="sticky bg-gray-100 z-10 top-0 p-4 cursor-pointer flex items-center" hx-post="/list_electrolyzers"
+        hx-trigger="click" hx-target="#sidebar" hx-swap="innerHTML">
         <svg width="17" height="16" viewBox="0 0 17 16" class="fill-black" xmlns="http://www.w3.org/2000/svg">
             <path
                 d="M16.8333 7H4.15621L9.97913 1.41L8.49996 0L0.166626 8L8.49996 16L9.96871 14.59L4.15621 9H16.8333V7Z" />
@@ -13,27 +13,45 @@
             <input placeholder="Name" autocomplete="name" class="border" id="name" name="name" />
         </div>
         <div class="flex flex-col p-4">
-            <label class="font-medium" for="replacement_threshold">Replacement Threshold</label>
+            <div class="flex justify-between py-2">
+                <label class="font-medium" for="replacement_threshold">Replacement Threshold</label>
+                <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">$ / Hour</span>
+            </div>
             <input value="0" class="border" id="replacement_threshold" name="replacement_threshold" />
         </div>
         <div class="flex flex-col p-4">
-            <label for="degredation_rate">Degredation Rate</label>
+            <div class="flex justify-between py-2">
+                <label for="degredation_rate">Degredation Rate</label>
+                <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">% / Year</span>
+            </div>
             <input value="0" class="border" id="degredation_rate" name="degredation_rate" />
         </div>
         <div class="flex flex-col p-4">
-            <label class="font-medium" for="capacity_mw">Capacity MW</label>
+            <div class="flex justify-between py-2">
+                <label class="font-medium" for="capacity_mw">Capacity</label>
+                <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">MW</span>
+            </div>
             <input value="0" class="border" id="capacity_mw" name="capacity_mw" />
         </div>
         <div class="flex flex-col p-4">
-            <label class="font-medium" for="capex">Capex</label>
+            <div class="flex justify-between py-2">
+                <label class="font-medium" for="capex">Capex</label>
+                <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">$</span>
+            </div>
             <input value="0" class="border" id="capex" name="capex" />
         </div>
         <div class="flex flex-col p-4">
-            <label class="font-medium" for="opex">Opex</label>
+            <div class="flex justify-between py-2">
+                <label class="font-medium" for="opex">Opex</label>
+                <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">$ / Hour</span>
+            </div>
             <input value="0" class="border" id="opex" name="opex" />
         </div>
         <div class="flex flex-col p-4">
-            <label class="font-medium" for="replacement_cost">Replacement Cost</label>
+            <div class="flex justify-between py-2">
+                <label class="font-medium" for="replacement_cost">Replacement Cost</label>
+                <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">$ / Replacement</span>
+            </div>
             <input value="0" class="border" id="replacement_cost" name="replacement_cost" />
         </div>
         <div class="flex flex-col p-4 hidden">
@@ -43,7 +61,10 @@
             </select>
         </div>
         <div class="flex flex-col p-4">
-            <label class="font-medium" for="production_method.conversion_rate_constant">Production Rate</label>
+            <div class="flex justify-between py-2">
+                <label class="font-medium" for="production_method.conversion_rate_constant">Production Rate</label>
+                <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">kg / MW</span>
+            </div>
             <input value="0" class="border" id="production_method.conversion_rate_constant"
                 name="production_method.conversion_rate_constant" />
         </div>

@@ -4,14 +4,17 @@ use rocket::{post, serde::json::Json, State};
 
 use crate::{
     persistance::simulation::SimulationClient,
-    schema::time_series::{ChartColor, TimeSeries, TimeSeriesEntry},
+    schema::{
+        histogram::Labels,
+        time_series::{ChartColor, TimeSeries, TimeSeriesData, TimeSeriesEntry},
+    },
 };
 
 #[post("/fetch_energy_costs/<simulation_id>")]
 pub fn fetch_energy_costs_handler(
     simulation_id: i32,
     simulation_client: &State<Box<dyn SimulationClient>>,
-) -> Result<Json<TimeSeries>, String> {
+) -> Result<Json<TimeSeriesData>, String> {
     let simulation = simulation_client
         .get_simulation_state(&simulation_id)
         .map_err(|err| err.to_string())?;
@@ -45,5 +48,11 @@ pub fn fetch_energy_costs_handler(
         .data_points
         .sort_by(|a, b| a.date.cmp(&b.date));
 
-    Ok(Json(energy_costs_time_series))
+    Ok(Json(TimeSeriesData {
+        labels: Labels {
+            x: String::from("Date"),
+            y: String::from("USD ($)"),
+        },
+        datasets: vec![energy_costs_time_series],
+    }))
 }

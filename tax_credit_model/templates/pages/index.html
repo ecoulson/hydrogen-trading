@@ -14,7 +14,7 @@
         <h1 class="text-3xl font-thin py-4 px-4 text-gray-800">Green Hydrogen Modelling</h1>
     </div>
     <div class="grid grid-cols-4 grow min-h-0 shrink">
-        <div id="sidebar" class="bg-gray-100 flex flex-col items-center">
+        <div id="sidebar" class="bg-gray-100 flex flex-col items-center overflow-y-scroll m-h-full">
             {{ electrolyzer_list|safe }}
         </div>
         <div id="dataplane" class="col-span-3 overflow-y-scroll m-h-full flex flex-col">

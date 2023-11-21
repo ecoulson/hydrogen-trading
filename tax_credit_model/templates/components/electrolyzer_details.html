@@ -392,15 +392,24 @@
     </div>
     <div class="px-2 py-4 w-full grow">
         <div class="w-full px-4 py-2 hover:bg-gray-200">
-            <h2 class="font-medium">Replacement Threshold</h2>
+            <div class="flex justify-between">
+                <h2 class="font-medium">Replacement Threshold</h2>
+                <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">%</span>
+            </div>
             <p>{{ electrolyzer.replacement_threshold }}</p>
         </div>
         <div class="px-4 py-2 hover:bg-gray-200">
-            <h2 class="font-medium">Degredation Rate</h2>
+            <div class="flex justify-between">
+                <h2 class="font-medium">Degredation Rate</h2>
+                <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">% / Year</span>
+            </div>
             <p>{{ electrolyzer.degredation_rate }}</p>
         </div>
         <div class="px-4 py-2 hover:bg-gray-200">
-            <h2 class="font-medium">Capacity MW</h2>
+            <div class="flex justify-between">
+                <h2 class="font-medium">Capacity</h2>
+                <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">MW</span>
+            </div>
             <p>{{ electrolyzer.capacity_mw }}</p>
         </div>
         <div class="px-4 py-2 hover:bg-gray-200">
@@ -408,17 +417,31 @@
             <p>Constant</p>
         </div>
         <div class="px-4 py-2 hover:bg-gray-200">
-            <h2 class="font-medium">Production Rate (kg h2 / mw)</h2>
+            <div class="flex justify-between">
+                <h2 class="font-medium">Production Rate</h2>
+                <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">kg / MW</span>
+            </div>
             <p>{{ electrolyzer.production.conversion_rate }}</p>
         </div>
         <div class="px-4 py-2 hover:bg-gray-200">
-            <h2 class="font-medium">Capex</h2 <p>{{ electrolyzer.capex }}</p>
+            <div class="flex justify-between">
+                <h2 class="font-medium">Capex</h2>
+                <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">$ / Hour</span>
+            </div>
+            <p>{{ electrolyzer.capex }}</p>
         </div>
         <div class="px-4 py-2 hover:bg-gray-200">
-            <h2 class="font-medium">Opex ($/hr)</h2 <p>{{ electrolyzer.opex }}</p>
+            <div class="flex justify-between">
+                <h2 class="font-medium">Opex ($/hr)</h2>
+                <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">$ / Hour</span>
+            </div>
+            <p>{{ electrolyzer.opex }}</p>
         </div>
         <div class="px-4 py-2 hover:bg-gray-200">
-            <h2 class="font-medium">Replacement Cost</h2>
+            <div class="flex justify-between">
+                <h2 class="font-medium">Replacement Cost</h2>
+                <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">$ / Replacement</span>
+            </div>
             <p>{{ electrolyzer.replacement_cost }}</p>
         </div>
     </div>

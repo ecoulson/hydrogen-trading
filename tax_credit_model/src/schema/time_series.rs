@@ -1,6 +1,8 @@
 use askama::Template;
 use serde::{Deserialize, Serialize};
 
+use super::histogram::Labels;
+
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq)]
 pub enum ChartColor {
     #[default]
@@ -26,6 +28,12 @@ impl std::fmt::Display for ChartColor {
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq)]
+pub struct TimeSeriesData {
+    pub labels: Labels,
+    pub datasets: Vec<TimeSeries>,
+}
+
+#[derive(Deserialize, Serialize, Default, Debug, PartialEq)]
 pub struct TimeSeries {
     pub color: ChartColor,
     pub label: String,
@@ -44,5 +52,5 @@ pub struct TimeSeriesEntry {
 pub struct TimeSeriesChart {
     pub title: String,
     pub id: String,
-    pub data_set_endpoints: Vec<String>,
+    pub endpoint: String,
 }
