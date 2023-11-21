@@ -37,7 +37,7 @@ pub fn simulation_handler(
 ) -> Result<HtmxTemplate<SimulationPage>, Status> {
     let mut cookie = None;
 
-    if user_context.user().is_none() {
+    if user_context.is_logged_out() {
         let user = user_client
             .create_user(&User::default())
             .map_err(|_| Status::InternalServerError)?;

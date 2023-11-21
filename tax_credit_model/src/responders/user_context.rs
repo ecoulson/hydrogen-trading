@@ -26,6 +26,14 @@ impl UserContext {
     pub fn user_mut(&mut self) -> Option<&mut User> {
         self.user.as_mut()
     }
+
+    pub fn is_logged_in(&self) -> bool {
+        self.user.is_some()
+    }
+
+    pub fn is_logged_out(&self) -> bool {
+        self.user.is_none()
+    }
 }
 
 #[rocket::async_trait]
@@ -63,5 +71,29 @@ impl<'r> FromRequest<'r> for UserContext {
             |err| Outcome::Failure((Status::Unauthorized, err)),
             |user| Outcome::Success(UserContext { user: Some(user) }),
         )
+    }
+}
+
+#[rocket::async_trait]
+impl<'r> FromRequest<'r> for User {
+    type Error = Error;
+
+    async fn from_request(request: &'r Request<'_>) -> request::Outcome<Self, Self::Error> {
+        let user_context_outcome = UserContext::from_request(request).await;
+
+        match user_context_outcome {
+            Outcome::Success(user_context) => {
+                if user_context.is_logged_in() {
+                    Outcome::Success(user_context.user.unwrap())
+                } else {
+                    Outcome::Failure((
+                        Status::Unauthorized,
+                        Error::create_unauthenticated_error("User is not authenticated"),
+                    ))
+                }
+            }
+            Outcome::Failure(reason) => Outcome::Failure(reason),
+            Outcome::Forward(reason) => Outcome::Forward(reason),
+        }
     }
 }

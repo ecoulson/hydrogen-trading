@@ -11,3 +11,4 @@ pub mod templates;
 pub mod files;
 pub mod concurrency;
 pub mod catchers;
+pub mod components;

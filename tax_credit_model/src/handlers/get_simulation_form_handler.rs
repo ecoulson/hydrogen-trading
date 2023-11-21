@@ -1,15 +1,13 @@
 use rocket::{post, State};
 
 use crate::{
+    components::component::{Component, ComponentResponse},
     logic::simulation::SimulationState,
     persistance::{
         electrolyzer::ElectrolyzerClient, simulation::SimulationClient, user::UserClient,
     },
-    responders::{
-        htmx_responder::{HtmxHeadersBuilder, HtmxTemplate},
-        user_context::UserContext,
-    },
-    schema::{errors::BannerError, time::DateTimeRange},
+    responders::htmx_responder::HtmxHeadersBuilder,
+    schema::{errors::BannerError, time::DateTimeRange, user::User},
     templates::{
         list_electrolyzers_template::ElectrolyzerSelectorTemplate,
         simulation_form_template::SimulationFormTemplate,
@@ -18,18 +16,13 @@ use crate::{
 
 #[post("/simulation_form")]
 pub fn get_simulation_form_handler(
-    user_context: UserContext,
+    user: User,
     electrolyzer_client: &State<Box<dyn ElectrolyzerClient>>,
     simulation_client: &State<Box<dyn SimulationClient>>,
     user_client: &State<Box<dyn UserClient>>,
-) -> Result<HtmxTemplate<SimulationFormTemplate>, HtmxTemplate<BannerError>> {
-    let mut user_context = user_context;
-    let user = user_context
-        .user_mut()
-        .ok_or_else(|| BannerError::create_from_message("User not logged in"))?;
-    let electrolyzers = electrolyzer_client
-        .list_electrolyzers()
-        .map_err(BannerError::create_from_error)?;
+) -> ComponentResponse<SimulationFormTemplate, BannerError> {
+    let mut user = user;
+    let electrolyzers = electrolyzer_client.list_electrolyzers()?;
 
     if electrolyzers.is_empty() {
         return Err(BannerError::create_from_message("No electrolyzers exist"));
@@ -37,15 +30,11 @@ pub fn get_simulation_form_handler(
 
     let mut simulation_state = SimulationState::default();
     simulation_state.electrolyzer_id = electrolyzers[0].id;
-    let simulation_state = simulation_client
-        .ensure_simulation_exists(&user.simulation_id())
-        .map_err(BannerError::create_from_error)?;
+    let simulation_state = simulation_client.ensure_simulation_exists(&user.simulation_id())?;
     user.set_simulation_id(simulation_state.id);
-    user_client
-        .update_user(user)
-        .map_err(BannerError::create_from_error)?;
+    user_client.update_user(&user)?;
 
-    Ok(HtmxTemplate::new(
+    Component::new(
         HtmxHeadersBuilder::new().build(),
         SimulationFormTemplate {
             generation_range: DateTimeRange {
@@ -57,5 +46,5 @@ pub fn get_simulation_form_handler(
                 selected_id: simulation_state.electrolyzer_id,
             },
         },
-    ))
+    )
 }

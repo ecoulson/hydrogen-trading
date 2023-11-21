@@ -1,12 +1,10 @@
 use rocket::{form::Form, post, FromForm, State};
 
 use crate::{
+    components::component::{Component, ComponentResponse},
     persistance::{electrolyzer::ElectrolyzerClient, simulation::SimulationClient},
-    responders::{
-        htmx_responder::{HtmxHeadersBuilder, HtmxTemplate},
-        user_context::UserContext,
-    },
-    schema::{electrolyzer::ElectrolyzerDetailsTemplate, errors::BannerError},
+    responders::htmx_responder::HtmxHeadersBuilder,
+    schema::{electrolyzer::ElectrolyzerDetailsTemplate, errors::BannerError, user::User},
 };
 
 #[derive(FromForm, Debug, Default)]
@@ -19,23 +17,14 @@ pub fn select_electrolyzer_handler(
     request: Form<SelectElectrolyzerHandlerRequest>,
     electrolyzer_client: &State<Box<dyn ElectrolyzerClient>>,
     simulation_client: &State<Box<dyn SimulationClient>>,
-    user_context: UserContext,
-) -> Result<HtmxTemplate<ElectrolyzerDetailsTemplate>, HtmxTemplate<BannerError>> {
-    let user = user_context
-        .user()
-        .ok_or_else(|| BannerError::create_from_message("User not logged in"))?;
-    let mut state = simulation_client
-        .get_simulation_state(&user.simulation_id())
-        .map_err(BannerError::create_from_error)?;
-    let electrolyzer = electrolyzer_client
-        .get_electrolyzer(request.electrolyzer_id)
-        .map_err(BannerError::create_from_error)?;
+    user: User,
+) -> ComponentResponse<ElectrolyzerDetailsTemplate, BannerError> {
+    let mut state = simulation_client.get_simulation_state(&user.simulation_id())?;
+    let electrolyzer = electrolyzer_client.get_electrolyzer(request.electrolyzer_id)?;
     state.electrolyzer_id = electrolyzer.id;
-    simulation_client
-        .update(&state)
-        .map_err(BannerError::create_from_error)?;
+    simulation_client.update(&state)?;
 
-    Ok(HtmxTemplate::new(
+    Component::new(
         HtmxHeadersBuilder::new()
             .trigger("electrolyzer-selected")
             .build(),
@@ -43,5 +32,5 @@ pub fn select_electrolyzer_handler(
             electrolyzer,
             selected: true,
         },
-    ))
+    )
 }

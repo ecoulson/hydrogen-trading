@@ -17,6 +17,6 @@ pub fn unauthorized_catcher(request: &Request) -> HtmxTemplate<UnauthorizedPage>
             UnauthorizedPage {},
         )
     } else {
-        UnauthorizedPage {}.into()
+        HtmxTemplate::template(UnauthorizedPage {})
     }
 }

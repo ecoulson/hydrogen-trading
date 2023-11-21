@@ -9,5 +9,5 @@ pub struct NotFoundPage;
 
 #[catch(404)]
 pub fn not_found_catcher() -> HtmxTemplate<NotFoundPage> {
-    NotFoundPage {}.into()
+    HtmxTemplate::template(NotFoundPage {})
 }

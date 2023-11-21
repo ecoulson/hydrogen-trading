@@ -147,14 +147,12 @@ where
             headers,
         }
     }
-}
 
-impl<T> From<T> for HtmxTemplate<T>
-where
-    T: askama::Template,
-{
-    fn from(value: T) -> Self {
-        HtmxTemplate::<T>::new(HtmxHeaders::default(), value)
+    pub fn template(template: T) -> HtmxTemplate<T> {
+        HtmxTemplate {
+            html: template,
+            headers: HtmxHeaders::default(),
+        }
     }
 }
 

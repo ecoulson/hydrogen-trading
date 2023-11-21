@@ -75,17 +75,21 @@ impl BannerError {
         }
     }
 
-    pub fn create_from_error(error: Error) -> HtmxTemplate<BannerError> {
-        BannerError::create_from_message(&error.to_string())
-    }
-
-    pub fn create_from_message(message: &str) -> HtmxTemplate<BannerError> {
+    pub fn to_htmx(self) -> HtmxTemplate<BannerError> {
         HtmxTemplate::new(
             HtmxHeadersBuilder::new()
                 .reswap("afterbegin")
                 .retarget("#banner-error")
                 .build(),
-            BannerError::new(message),
+            self,
         )
+    }
+
+    pub fn create_from_error(error: Error) -> HtmxTemplate<BannerError> {
+        BannerError::create_from_message(&error.to_string())
+    }
+
+    pub fn create_from_message(message: &str) -> HtmxTemplate<BannerError> {
+        BannerError::to_htmx(BannerError::new(message))
     }
 }

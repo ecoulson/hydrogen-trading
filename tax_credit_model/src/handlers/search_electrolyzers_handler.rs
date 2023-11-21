@@ -1,9 +1,10 @@
 use rocket::{form::Form, post, FromForm, State};
 
 use crate::{
+    components::component::{Component, ComponentResponse},
     persistance::{electrolyzer::ElectrolyzerClient, simulation::SimulationClient},
-    responders::{htmx_responder::HtmxTemplate, user_context::UserContext},
-    schema::errors::BannerError,
+    responders::htmx_responder::HtmxTemplate,
+    schema::{errors::BannerError, user::User},
     templates::list_electrolyzers_template::ElectrolyzerSearchResults,
 };
 
@@ -14,35 +15,26 @@ pub struct SearchElectrolyzersRequest {
 
 #[post("/search_electrolyzers", data = "<request>")]
 pub fn search_electrolyzers_handler(
-    user_context: UserContext,
+    user: User,
     request: Form<SearchElectrolyzersRequest>,
     electrolyzer_client: &State<Box<dyn ElectrolyzerClient>>,
     simulation_client: &State<Box<dyn SimulationClient>>,
-) -> Result<HtmxTemplate<ElectrolyzerSearchResults>, HtmxTemplate<BannerError>> {
-    let user = user_context
-        .user()
-        .ok_or_else(|| BannerError::create_from_message("User not logged in"))?;
-    // This will throw in some cases
+) -> ComponentResponse<ElectrolyzerSearchResults, BannerError> {
+    // This will throw in some cases because simulation id may not exist
     // Will eventually convert to simulation_client.get_active_simulation(user.id()) -> Option<Simulation>
-    let simulation = simulation_client
-        .get_simulation_state(&user.simulation_id())
-        .map_err(BannerError::create_from_error)?;
+    let simulation = simulation_client.get_simulation_state(&user.simulation_id())?;
 
     if request.query.trim().is_empty() {
-        return Ok(ElectrolyzerSearchResults {
-            electrolyzers: electrolyzer_client
-                .list_electrolyzers()
-                .map_err(BannerError::create_from_error)?,
+        return Ok(HtmxTemplate::template(ElectrolyzerSearchResults {
+            electrolyzers: electrolyzer_client.list_electrolyzers()?,
             selected_id: Some(simulation.electrolyzer_id),
-        }
-        .into());
+        }));
     }
 
-    Ok(ElectrolyzerSearchResults {
+    Component::htmx(ElectrolyzerSearchResults {
         selected_id: Some(simulation.electrolyzer_id),
         electrolyzers: electrolyzer_client
-            .list_electrolyzers()
-            .map_err(BannerError::create_from_error)?
+            .list_electrolyzers()?
             .into_iter()
             .filter(|electrolyzer| {
                 electrolyzer
@@ -51,6 +43,5 @@ pub fn search_electrolyzers_handler(
                     .starts_with(&request.query.to_lowercase())
             })
             .collect(),
-    }
-    .into())
+    })
 }

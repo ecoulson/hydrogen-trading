@@ -33,7 +33,7 @@ pub fn index_handler(
 ) -> Result<HtmxTemplate<IndexResponse>, Status> {
     let mut cookie = None;
 
-    if user_context.user().is_none() {
+    if user_context.is_logged_out() {
         let user = user_client
             .create_user(&User::default())
             .map_err(|_| Status::InternalServerError)?;

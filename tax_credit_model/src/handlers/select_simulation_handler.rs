@@ -1,15 +1,12 @@
 use rocket::{form::Form, post, FromForm, State};
 
 use crate::{
+    components::component::{Component, ComponentResponse},
     persistance::{
         electrolyzer::ElectrolyzerClient, simulation::SimulationClient, user::UserClient,
     },
-    responders::{
-        client_context::ClientContext,
-        htmx_responder::{HtmxHeadersBuilder, HtmxTemplate},
-        user_context::UserContext,
-    },
-    schema::{errors::BannerError, time::DateTimeRange},
+    responders::{client_context::ClientContext, htmx_responder::HtmxHeadersBuilder},
+    schema::{errors::BannerError, time::DateTimeRange, user::User},
     templates::{
         list_electrolyzers_template::ElectrolyzerSelectorTemplate,
         simulation_form_template::SimulationFormTemplate,
@@ -24,32 +21,23 @@ pub struct SelectSimulationRequest {
 #[post("/select_simulation", data = "<request>")]
 pub fn select_simulation_handler(
     request: Form<SelectSimulationRequest>,
-    user_context: UserContext,
+    user: User,
     user_client: &State<Box<dyn UserClient>>,
     client_context: ClientContext,
     simulation_client: &State<Box<dyn SimulationClient>>,
     electrolyzer_client: &State<Box<dyn ElectrolyzerClient>>,
-) -> Result<HtmxTemplate<SimulationFormTemplate>, HtmxTemplate<BannerError>> {
-    let mut user_context = user_context;
+) -> ComponentResponse<SimulationFormTemplate, BannerError> {
     let mut client_context = client_context;
-    let user = user_context
-        .user_mut()
-        .ok_or_else(|| BannerError::create_from_message("User not logged in"))?;
+    let mut user = user;
     user.set_simulation_id(request.simulation_id);
-    user_client
-        .update_user(user)
-        .map_err(BannerError::create_from_error)?;
-    let simulation = simulation_client
-        .get_simulation_state(&user.simulation_id())
-        .map_err(BannerError::create_from_error)?;
-    let electrolyzers = electrolyzer_client
-        .list_electrolyzers()
-        .map_err(BannerError::create_from_error)?;
+    user_client.update_user(&user)?;
+    let simulation = simulation_client.get_simulation_state(&user.simulation_id())?;
+    let electrolyzers = electrolyzer_client.list_electrolyzers()?;
     let next_url = &format!("simulation/{}", simulation.id);
     let location = client_context.mut_location();
     location.set_path(&next_url);
 
-    Ok(HtmxTemplate::new(
+    Component::new(
         HtmxHeadersBuilder::new()
             .replace_url(&location.build_url())
             .trigger("simulation-selected")
@@ -64,5 +52,5 @@ pub fn select_simulation_handler(
                 selected_id: simulation.electrolyzer_id,
             },
         },
-    ))
+    )
 }
