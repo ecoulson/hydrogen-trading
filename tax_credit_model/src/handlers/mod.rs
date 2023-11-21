@@ -16,3 +16,4 @@ pub mod list_simulation_handler;
 pub mod index_handler;
 pub mod select_simulation_handler;
 pub mod get_active_electrolyzer_handler;
+pub mod fetch_hourly_histogram_handler;

@@ -43,6 +43,7 @@ pub fn execute_simulation(
     let power_grid = power_grid_fetcher
         .get_power_grid()
         .map_err(BannerError::create_from_error)?;
+    let current_simulation_id = user.simulation_id();
     let mut next_simulation = SimulationState::default();
     next_simulation.electrolyzer_id = electrolyzer.id;
     let next_simulation = simulation_client
@@ -71,7 +72,7 @@ pub fn execute_simulation(
                 },
             },
             simulation_result: simulate(
-                user.simulation_id(),
+                current_simulation_id,
                 &power_grid,
                 &electrolyzer,
                 &request.simulation_time_range,

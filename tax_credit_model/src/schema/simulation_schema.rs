@@ -8,6 +8,7 @@ use crate::templates::simulation_form_template::SimulationFormTemplate;
 
 use super::{
     errors::{Error, Result},
+    histogram::Histogram,
     time::{DateTimeRange, Timestamp},
     time_series::TimeSeriesChart,
 };
@@ -62,7 +63,7 @@ pub struct TaxCreditSummary {
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
 pub struct SimulationResult {
-    pub status: SimulationStatus,
+    pub hourly_histogram: Histogram,
     pub tax_credit_summary: TaxCreditSummary,
     pub emissions: TimeSeriesChart,
     pub hydrogen_productions: TimeSeriesChart,

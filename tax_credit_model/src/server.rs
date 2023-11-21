@@ -18,7 +18,7 @@ use crate::{
         search_electrolyzers_handler::search_electrolyzers_handler,
         select_electrolyzer_handler::select_electrolyzer_handler,
         select_simulation_handler::select_simulation_handler,
-        simulation_handler::simulation_handler,
+        simulation_handler::simulation_handler, fetch_hourly_histogram_handler::fetch_hourly_histogram_handler,
     },
     persistance::{
         electrolyzer::ElectrolyzerClient, generation::GenerationClient, grid::GridClient,
@@ -90,7 +90,8 @@ pub fn init_service(
                 list_simulation_handler,
                 index_handler,
                 select_simulation_handler,
-                get_active_electrolyzer_handler
+                get_active_electrolyzer_handler,
+                fetch_hourly_histogram_handler
             ],
         )
 }
