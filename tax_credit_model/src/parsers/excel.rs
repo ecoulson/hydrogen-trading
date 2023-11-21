@@ -41,7 +41,7 @@ impl ExcelWorkbook {
     pub fn open(path: &str) -> Result<ExcelWorkbook> {
         Ok(ExcelWorkbook {
             workbook: open_workbook(path)
-                .map_err(|err: XlsxError| Error::create_not_found_error(&err.to_string()))?,
+                .map_err(|err: XlsxError| Error::not_found(&err.to_string()))?,
         })
     }
 
@@ -49,8 +49,8 @@ impl ExcelWorkbook {
         let sheet = self
             .workbook
             .worksheet_range(sheet_name)
-            .ok_or_else(|| Error::create_not_found_error("Sheet not found in work book"))?
-            .map_err(|err| Error::create_invalid_argument_error(&err.to_string()))?;
+            .ok_or_else(|| Error::not_found("Sheet not found in work book"))?
+            .map_err(|err| Error::invalid_argument(&err.to_string()))?;
 
         Ok(ExcelSheet { sheet })
     }
@@ -69,7 +69,7 @@ impl<'a> ExcelRow<'a> {
         Ok(self
             .row
             .get(column)
-            .ok_or_else(|| Error::create_not_found_error("Column not found"))?
+            .ok_or_else(|| Error::not_found("Column not found"))?
             .is_empty())
     }
 
@@ -81,38 +81,38 @@ impl<'a> ExcelRow<'a> {
         let date = self
             .row
             .get(column)
-            .ok_or_else(|| Error::create_not_found_error("Date column not found"))?;
+            .ok_or_else(|| Error::not_found("Date column not found"))?;
 
         if let calamine::DataType::DateTime(serial_number) = date {
             Ok(excel_epoch
                 .checked_add_days(Days::new(serial_number.clone() as u64))
-                .ok_or_else(|| Error::create_invalid_argument_error("Invalid days to add"))?)
+                .ok_or_else(|| Error::invalid_argument("Invalid days to add"))?)
         } else {
-            Err(Error::create_invalid_argument_error("Not a date time"))
+            Err(Error::invalid_argument("Not a date time"))
         }
     }
 
     pub fn get_string(&self, column: usize) -> Result<&str> {
         self.row
             .get(column)
-            .ok_or_else(|| Error::create_not_found_error("Settlement column not found"))?
+            .ok_or_else(|| Error::not_found("Settlement column not found"))?
             .get_string()
-            .ok_or_else(|| Error::create_invalid_argument_error("Column is not a string"))
+            .ok_or_else(|| Error::invalid_argument("Column is not a string"))
     }
 
     pub fn get_float(&self, column: usize) -> Result<f64> {
         self.row
             .get(column)
-            .ok_or_else(|| Error::create_not_found_error("Settlement column not found"))?
+            .ok_or_else(|| Error::not_found("Settlement column not found"))?
             .get_float()
-            .ok_or_else(|| Error::create_invalid_argument_error("Column is not a float"))
+            .ok_or_else(|| Error::invalid_argument("Column is not a float"))
     }
 
     pub fn get_int(&self, column: usize) -> Result<i64> {
         self.row
             .get(column)
-            .ok_or_else(|| Error::create_not_found_error("Settlement column not found"))?
+            .ok_or_else(|| Error::not_found("Settlement column not found"))?
             .get_int()
-            .ok_or_else(|| Error::create_invalid_argument_error("Column is not a int"))
+            .ok_or_else(|| Error::invalid_argument("Column is not a int"))
     }
 }

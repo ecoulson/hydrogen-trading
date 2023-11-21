@@ -101,7 +101,7 @@ impl<'r> FromRequest<'r> for ClientContext<'r> {
 
         Outcome::Failure((
             Status::NotFound,
-            Error::create_not_found_error("No client context"),
+            Error::not_found("No client context"),
         ))
     }
 }

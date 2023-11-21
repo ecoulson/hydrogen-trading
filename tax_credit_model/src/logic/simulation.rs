@@ -48,7 +48,7 @@ pub fn simulate(
     state.electrolyzer_id = electrolyzer.id;
 
     if current_timestamp.timestamp() > end_timestamp.timestamp() {
-        return Err(Error::create_invalid_argument_error(
+        return Err(Error::invalid_argument(
             "Simulation start must be before end time",
         ));
     }
@@ -166,7 +166,7 @@ fn purchase(
             )
         })
         .ok_or_else(|| {
-            Error::create_not_found_error(&format!("Generation not found for timestep"))
+            Error::not_found(&format!("Generation not found for timestep"))
         })?;
 
     Ok(EnergyTransaction {

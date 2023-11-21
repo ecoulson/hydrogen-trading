@@ -151,7 +151,7 @@ impl EnergySourcePortfolio {
         amount_mwh: f64,
     ) -> Result<EnergySourcePortfolio> {
         if amount_mwh > portfolio.total_electricity_mwh {
-            return Err(Error::create_invalid_argument_error(
+            return Err(Error::invalid_argument(
                 "Total electricity exceeded",
             ));
         }
@@ -237,7 +237,7 @@ impl FromStr for EnergySource {
             "Wind" => Ok(EnergySource::Wind),
             "WSL" => Ok(EnergySource::WholesaleStorageLoad),
             "Other" => Ok(EnergySource::Unknown),
-            _ => Err(Error::create_parse_error(value)),
+            _ => Err(Error::invalid_argument(value)),
         }
     }
 }

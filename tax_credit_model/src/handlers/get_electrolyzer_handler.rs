@@ -24,7 +24,7 @@ pub fn get_electrolyzer_handler(
         .get_electrolyzer(request.electrolyzer_id)
         .map_err(BannerError::create_from_error)
         .map(|electrolyzer| {
-            Component::htmx(ElectrolyzerDetailsTemplate {
+            Component::basic(ElectrolyzerDetailsTemplate {
                 electrolyzer,
                 selected: simulation.electrolyzer_id == request.electrolyzer_id,
             })

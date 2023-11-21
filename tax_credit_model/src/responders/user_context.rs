@@ -27,6 +27,10 @@ impl UserContext {
         self.user.as_mut()
     }
 
+    pub fn set_user(&mut self, user: User) {
+        self.user = Some(user);
+    }
+
     pub fn is_logged_in(&self) -> bool {
         self.user.is_some()
     }
@@ -53,7 +57,7 @@ impl<'r> FromRequest<'r> for UserContext {
         if user_client_outcome.is_failure() {
             return Outcome::Failure((
                 Status::InternalServerError,
-                Error::create_unknown_error("No user client found"),
+                Error::unknown("No user client found"),
             ));
         }
 
@@ -63,7 +67,7 @@ impl<'r> FromRequest<'r> for UserContext {
         if user_id.is_err() {
             return Outcome::Failure((
                 Status::BadRequest,
-                Error::create_invalid_argument_error("User id cookie is not a valid user id"),
+                Error::invalid_argument("User id cookie is not a valid user id"),
             ));
         }
 
@@ -88,7 +92,7 @@ impl<'r> FromRequest<'r> for User {
                 } else {
                     Outcome::Failure((
                         Status::Unauthorized,
-                        Error::create_unauthenticated_error("User is not authenticated"),
+                        Error::unauthenticated("User is not authenticated"),
                     ))
                 }
             }

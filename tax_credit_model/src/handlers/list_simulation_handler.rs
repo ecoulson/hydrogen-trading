@@ -18,7 +18,7 @@ pub struct ListSimulationResponse {
 pub fn list_simulation_handler(
     simulation_client: &State<Box<dyn SimulationClient>>,
 ) -> ComponentResponse<ListSimulationResponse, BannerError> {
-    Component::htmx(ListSimulationResponse {
+    Component::basic(ListSimulationResponse {
         simulations: simulation_client.list_simulations()?,
     })
 }

@@ -18,7 +18,7 @@ impl Timestamp {
     pub fn to_utc_date_time(&self) -> Result<DateTime<Utc>> {
         Utc.timestamp_opt(self.seconds, self.nanos)
             .single()
-            .ok_or_else(|| Error::create_parse_error("Invalid timestamp"))
+            .ok_or_else(|| Error::invalid_argument("Invalid timestamp"))
     }
 }
 
@@ -58,9 +58,9 @@ pub struct DateTimeRange {
 impl DateTimeRange {
     pub fn parse(&self, format: &str) -> Result<TimeRange> {
         let start = NaiveDateTime::parse_from_str(&self.start, format)
-            .map_err(|err| Error::create_invalid_argument_error(&err.to_string()))?;
+            .map_err(|err| Error::invalid_argument(&err.to_string()))?;
         let end = NaiveDateTime::parse_from_str(&self.end, format)
-            .map_err(|err| Error::create_invalid_argument_error(&err.to_string()))?;
+            .map_err(|err| Error::invalid_argument(&err.to_string()))?;
 
         Ok(TimeRange {
             start: Timestamp::new(start.timestamp(), start.timestamp_subsec_nanos()),

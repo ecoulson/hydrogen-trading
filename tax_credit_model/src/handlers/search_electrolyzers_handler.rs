@@ -31,7 +31,7 @@ pub fn search_electrolyzers_handler(
         }));
     }
 
-    Component::htmx(ElectrolyzerSearchResults {
+    Component::basic(ElectrolyzerSearchResults {
         selected_id: Some(simulation.electrolyzer_id),
         electrolyzers: electrolyzer_client
             .list_electrolyzers()?

@@ -24,7 +24,7 @@ pub fn select_electrolyzer_handler(
     state.electrolyzer_id = electrolyzer.id;
     simulation_client.update(&state)?;
 
-    Component::new(
+    Component::component(
         HtmxHeadersBuilder::new()
             .trigger("electrolyzer-selected")
             .build(),

@@ -18,7 +18,7 @@ pub fn list_electrolyzers_handler(
     let simulation = simulation_client.get_simulation_state(&user.simulation_id())?;
     let electrolyzers = electrolyzer_client.list_electrolyzers()?;
 
-    Component::htmx(ListElectrolyzersTemplate {
+    Component::basic(ListElectrolyzersTemplate {
         search_results: ElectrolyzerSearchResults {
             electrolyzers,
             selected_id: Some(simulation.electrolyzer_id),

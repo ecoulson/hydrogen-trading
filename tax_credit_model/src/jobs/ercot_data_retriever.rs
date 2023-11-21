@@ -108,7 +108,7 @@ impl ErcotDataRetrieverJob {
                 ),
                 "%m/%d/%Y %0H:%0M",
             )
-            .map_err(|err| Error::create_parse_error(&err.to_string()))?;
+            .map_err(|err| Error::invalid_argument(&err.to_string()))?;
             date += Duration::minutes(15);
             rtm_prices.push(ErcotRTMPrice {
                 delivery_timestamp: Timestamp::from(date),
@@ -135,7 +135,7 @@ impl ErcotDataRetrieverJob {
             .map(|price| {
                 let portfolio = fuel_mixes
                     .get(&price.delivery_timestamp)
-                    .ok_or_else(|| Error::create_not_found_error("No timestamp"))?
+                    .ok_or_else(|| Error::not_found("No timestamp"))?
                     .iter()
                     .fold(
                         EnergySourcePortfolio::default(),

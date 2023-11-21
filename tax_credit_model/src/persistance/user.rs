@@ -34,7 +34,7 @@ impl UserClient for InMemoryUserClient {
             .lock()?
             .get(user_id)
             .map(|user| user.clone())
-            .ok_or_else(|| Error::create_not_found_error("User not found"))
+            .ok_or_else(|| Error::not_found("User not found"))
     }
 
     fn update_user(&self, user: &User) -> Result<User> {
@@ -42,7 +42,7 @@ impl UserClient for InMemoryUserClient {
             .user_by_id
             .lock()?
             .get_mut(user.id())
-            .ok_or_else(|| Error::create_not_found_error("User not found"))? = user.clone();
+            .ok_or_else(|| Error::not_found("User not found"))? = user.clone();
 
         Ok(user.clone())
     }

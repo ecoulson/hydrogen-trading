@@ -44,7 +44,7 @@ pub fn execute_simulation(
     user.set_simulation_id(next_simulation.id);
     user_client.update_user(&user)?;
 
-    Component::new(
+    Component::component(
         HtmxHeadersBuilder::new()
             .replace_url(&location.build_url())
             .build(),

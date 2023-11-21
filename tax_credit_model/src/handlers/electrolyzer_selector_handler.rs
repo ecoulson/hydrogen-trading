@@ -15,7 +15,7 @@ pub fn electrolyzer_selector_handler(
 ) -> ComponentResponse<ElectrolyzerSelectorTemplate, BannerError> {
     let simulation = simulation_client.get_simulation_state(&user.simulation_id())?;
 
-    Component::htmx(ElectrolyzerSelectorTemplate {
+    Component::basic(ElectrolyzerSelectorTemplate {
         selected_id: simulation.electrolyzer_id,
         electrolyzers: electrolyzer_client.list_electrolyzers()?,
     })

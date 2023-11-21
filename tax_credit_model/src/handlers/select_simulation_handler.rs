@@ -37,7 +37,7 @@ pub fn select_simulation_handler(
     let location = client_context.mut_location();
     location.set_path(&next_url);
 
-    Component::new(
+    Component::component(
         HtmxHeadersBuilder::new()
             .replace_url(&location.build_url())
             .trigger("simulation-selected")

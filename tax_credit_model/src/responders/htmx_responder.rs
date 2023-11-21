@@ -3,6 +3,8 @@ use std::io::Cursor;
 use askama;
 use rocket::{http::ContentType, response::Responder, Response};
 
+use crate::schema::errors::Error;
+
 const HX_TRIGGER: &str = "HX-Trigger";
 const HX_PUSH_URL: &str = "HX-Push-Url";
 const HX_LOCATION: &str = "HX-Location";
@@ -165,7 +167,7 @@ where
         let mut response = Response::build()
             .header(ContentType::HTML)
             .sized_body(template.len(), Cursor::new(template))
-            .ok()?;
+            .ok::<Error>()?;
 
         if let Some(trigger) = self.headers.trigger {
             response.set_raw_header(HX_TRIGGER, trigger);

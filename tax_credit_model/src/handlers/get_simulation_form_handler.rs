@@ -34,7 +34,7 @@ pub fn get_simulation_form_handler(
     user.set_simulation_id(simulation_state.id);
     user_client.update_user(&user)?;
 
-    Component::new(
+    Component::component(
         HtmxHeadersBuilder::new().build(),
         SimulationFormTemplate {
             generation_range: DateTimeRange {

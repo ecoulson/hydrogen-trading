@@ -16,7 +16,7 @@ impl FromStr for Settlement {
         match value {
             "FINAL" => Ok(Settlement::Final),
             "INITIAL" => Ok(Settlement::Initial),
-            _ => Err(Error::create_parse_error(value)),
+            _ => Err(Error::invalid_argument(value)),
         }
     }
 }
@@ -35,7 +35,7 @@ impl FromStr for RepeatedHourFlag {
         match value {
             "N" => Ok(RepeatedHourFlag::Unrepeated),
             "Y" => Ok(RepeatedHourFlag::Repeated),
-            _ => Err(Error::create_parse_error(value)),
+            _ => Err(Error::invalid_argument(value)),
         }
     }
 }
@@ -80,7 +80,7 @@ impl FromStr for SettlementPointLocation {
             "LZ_RAYBN" => Ok(SettlementPointLocation::RayburnElectricCooperativeLoadingZone),
             "LZ_SOUTH" => Ok(SettlementPointLocation::SouthLoadingZone),
             "LZ_WEST" => Ok(SettlementPointLocation::WestLoadingZone),
-            _ => Err(Error::create_parse_error(value)),
+            _ => Err(Error::invalid_argument(value)),
         }
     }
 }
@@ -105,7 +105,7 @@ impl FromStr for SettlementPointType {
             "HU" => Ok(SettlementPointType::HU),
             "LZ" => Ok(SettlementPointType::LZ),
             "LZEW" => Ok(SettlementPointType::LZEW),
-            _ => Err(Error::create_parse_error(value)),
+            _ => Err(Error::invalid_argument(value)),
         }
     }
 }

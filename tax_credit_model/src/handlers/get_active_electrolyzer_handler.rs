@@ -15,7 +15,7 @@ pub fn get_active_electrolyzer_handler(
     let simulation = simulation_client.get_simulation_state(&user.simulation_id())?;
     let electrolyzer = electrolyzer_client.get_electrolyzer(simulation.electrolyzer_id)?;
 
-    Component::htmx(ElectrolyzerDetailsTemplate {
+    Component::basic(ElectrolyzerDetailsTemplate {
         electrolyzer,
         selected: true,
     })

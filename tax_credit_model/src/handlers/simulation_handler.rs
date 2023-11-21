@@ -3,16 +3,12 @@ use rocket::{get, http::Status, State};
 use serde::{Deserialize, Serialize};
 
 use crate::{
+    components::page::{Page, PageResponse},
     persistance::{
         electrolyzer::ElectrolyzerClient, simulation::SimulationClient, user::UserClient,
     },
-    responders::{
-        htmx_responder::{HtmxHeadersBuilder, HtmxTemplate},
-        user_context::UserContext,
-    },
-    schema::{
-        electrolyzer::ElectrolyzerDetailsTemplate, errors::Error, time::DateTimeRange, user::User,
-    },
+    responders::{htmx_responder::HtmxHeadersBuilder, user_context::UserContext},
+    schema::{electrolyzer::ElectrolyzerDetailsTemplate, time::DateTimeRange, user::User},
     templates::{
         list_electrolyzers_template::ElectrolyzerSelectorTemplate,
         simulation_form_template::SimulationFormTemplate,
@@ -34,34 +30,21 @@ pub fn simulation_handler(
     electrolyzer_client: &State<Box<dyn ElectrolyzerClient>>,
     simulation_client: &State<Box<dyn SimulationClient>>,
     user_client: &State<Box<dyn UserClient>>,
-) -> Result<HtmxTemplate<SimulationPage>, Status> {
+) -> PageResponse<SimulationPage> {
     let mut cookie = None;
+    let mut user_context = user_context;
 
     if user_context.is_logged_out() {
-        let user = user_client
-            .create_user(&User::default())
-            .map_err(|_| Status::InternalServerError)?;
-
-        cookie = Some(format!("user_id={}", user.id()))
+        let user = user_client.create_user(&User::default())?;
+        cookie = Some(format!("user_id={}", user.id()));
+        user_context.set_user(user);
     }
 
-    let mut user_context = user_context;
-    let user = user_context
-        .user_mut()
-        .ok_or_else(|| Status::Unauthorized)?;
-    let electrolyzers = electrolyzer_client
-        .list_electrolyzers()
-        .map_err(|_| Status::InternalServerError)?;
-    let simulation_state = simulation_client
-        .get_simulation_state(&simulation_id)
-        .map_err(|err| match err {
-            Error::NotFound(_) => Status::NotFound,
-            _ => Status::InternalServerError,
-        })?;
+    let user = user_context.user_mut().unwrap();
+    let electrolyzers = electrolyzer_client.list_electrolyzers()?;
+    let simulation_state = simulation_client.get_simulation_state(&simulation_id)?;
     user.set_simulation_id(simulation_state.id);
-    user_client
-        .update_user(&user)
-        .map_err(|_| Status::InternalServerError)?;
+    user_client.update_user(&user)?;
     let electrolyzer = electrolyzers
         .iter()
         .find(|electrolyzer| electrolyzer.id == simulation_state.electrolyzer_id)
@@ -69,7 +52,7 @@ pub fn simulation_handler(
         .clone();
     let electrolyzer_id = electrolyzer.id.clone();
 
-    Ok(HtmxTemplate::new(
+    Page::page(
         HtmxHeadersBuilder::new().set_cookie_if(cookie).build(),
         SimulationPage {
             simulation_id: simulation_state.id,
@@ -88,5 +71,5 @@ pub fn simulation_handler(
                 },
             },
         },
-    ))
+    )
 }

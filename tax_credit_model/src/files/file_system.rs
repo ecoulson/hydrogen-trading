@@ -158,12 +158,12 @@ impl FileMetadata {
 pub fn open_file_handle(path: &str, permissions: &Permissions) -> Result<std::fs::File> {
     Permissions::create_open_options(permissions)
         .open(path)
-        .map_err(|err| Error::create_invalid_argument_error(&err.to_string()))
+        .map_err(|err| Error::invalid_argument(&err.to_string()))
 }
 
 pub fn read_file(file: &File) -> Result<Vec<u8>> {
     if !Permissions::can_read(file.permissions()) {
-        return Err(Error::create_invalid_argument_error(
+        return Err(Error::invalid_argument(
             "File must be readable",
         ));
     }
@@ -171,42 +171,42 @@ pub fn read_file(file: &File) -> Result<Vec<u8>> {
     let mut buffer = Vec::new();
     open_file_handle(file.path(), &Permissions::readable())?
         .read_to_end(&mut buffer)
-        .map_err(|err| Error::create_invalid_argument_error(&err.to_string()))?;
+        .map_err(|err| Error::invalid_argument(&err.to_string()))?;
 
     Ok(buffer)
 }
 
 pub fn write_file<'f>(file: &'f File, content: &[u8]) -> Result<&'f File> {
     if !Permissions::can_write(file.permissions()) {
-        return Err(Error::create_invalid_argument_error(
+        return Err(Error::invalid_argument(
             "File must be writeable",
         ));
     }
 
     open_file_handle(file.path(), file.permissions())?
         .write_all(content)
-        .map_err(|err| Error::create_invalid_argument_error(&err.to_string()))?;
+        .map_err(|err| Error::invalid_argument(&err.to_string()))?;
 
     Ok(file)
 }
 
 pub fn delete_file(file: &File) -> Result<&File> {
     std::fs::remove_file(file.path())
-        .map_err(|err| Error::create_invalid_argument_error(&err.to_string()))?;
+        .map_err(|err| Error::invalid_argument(&err.to_string()))?;
 
     Ok(file)
 }
 
 pub fn file_metadata(file: &File) -> Result<FileMetadata> {
     if !Permissions::can_read(file.permissions()) {
-        return Err(Error::create_invalid_argument_error(
+        return Err(Error::invalid_argument(
             "File must be readable",
         ));
     }
 
     let metadata = open_file_handle(file.path(), &Permissions::readable())?
         .metadata()
-        .map_err(|err| Error::create_invalid_argument_error(&err.to_string()))?;
+        .map_err(|err| Error::invalid_argument(&err.to_string()))?;
 
     Ok(FileMetadata::from_metadata(&metadata))
 }
@@ -229,7 +229,7 @@ impl Directory {
 }
 
 pub fn create_directory(path: &str) -> Result<Directory> {
-    create_dir_all(path).map_err(|err| Error::create_invalid_argument_error(&err.to_string()))?;
+    create_dir_all(path).map_err(|err| Error::invalid_argument(&err.to_string()))?;
 
     Ok(Directory::new(path))
 }

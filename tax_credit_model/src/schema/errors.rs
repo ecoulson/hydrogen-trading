@@ -1,4 +1,5 @@
 use askama::Template;
+use rocket::http::Status;
 use serde::{Deserialize, Serialize};
 
 use crate::responders::htmx_responder::{HtmxHeadersBuilder, HtmxTemplate};
@@ -7,7 +8,6 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, Clone)]
 pub enum Error {
-    Parse(String),
     NotFound(String),
     Poisoned(String),
     Unimplemented(String),
@@ -16,33 +16,41 @@ pub enum Error {
     Unknown(String),
 }
 
+impl From<Error> for Status {
+    fn from(value: Error) -> Self {
+        match value {
+            Error::NotFound(_) => Status::NotFound,
+            Error::Unimplemented(_) => Status::NotImplemented,
+            Error::InvalidArgument(_) => Status::BadRequest,
+            Error::Unauthenticated(_) => Status::Unauthorized,
+            Error::Unknown(_) | Error::Poisoned(_) => Status::InternalServerError,
+        }
+    }
+}
+
 // TODO: have these functions accept an error instead of a string
 impl Error {
-    pub fn create_parse_error(value: &str) -> Error {
-        Error::Parse(String::from(value))
-    }
-
-    pub fn create_not_found_error(value: &str) -> Error {
+    pub fn not_found(value: &str) -> Error {
         Error::NotFound(String::from(value))
     }
 
-    pub fn create_poison_error(value: &str) -> Error {
+    pub fn poison(value: &str) -> Error {
         Error::Poisoned(String::from(value))
     }
 
-    pub fn create_unimplemented_error(value: &str) -> Error {
+    pub fn unimplemented(value: &str) -> Error {
         Error::Unimplemented(String::from(value))
     }
 
-    pub fn create_invalid_argument_error(value: &str) -> Error {
+    pub fn invalid_argument(value: &str) -> Error {
         Error::InvalidArgument(String::from(value))
     }
 
-    pub fn create_unknown_error(value: &str) -> Error {
+    pub fn unknown(value: &str) -> Error {
         Error::Unknown(String::from(value))
     }
 
-    pub fn create_unauthenticated_error(value: &str) -> Error {
+    pub fn unauthenticated(value: &str) -> Error {
         Error::Unauthenticated(String::from(value))
     }
 }
@@ -51,7 +59,6 @@ impl Error {
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &self {
-            Self::Parse(value) => write!(f, "Parse: {}", value),
             Self::NotFound(value) => write!(f, "NotFound: {}", value),
             Self::Poisoned(value) => write!(f, "Poisoned: {}", value),
             Self::Unimplemented(value) => write!(f, "Unimplemented: {}", value),
@@ -91,5 +98,17 @@ impl BannerError {
 
     pub fn create_from_message(message: &str) -> HtmxTemplate<BannerError> {
         BannerError::to_htmx(BannerError::new(message))
+    }
+}
+
+impl From<BannerError> for HtmxTemplate<BannerError> {
+    fn from(value: BannerError) -> Self {
+        value.to_htmx()
+    }
+}
+
+impl From<Error> for HtmxTemplate<BannerError> {
+    fn from(error: Error) -> Self {
+        BannerError::create_from_error(error)
     }
 }

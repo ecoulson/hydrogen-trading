@@ -43,11 +43,11 @@ impl DiskGenerationPersistanceClient {
 impl GenerationClient for DiskGenerationPersistanceClient {
     fn list_generations(&self) -> Result<Vec<GenerationMetric>> {
         let data = String::from_utf8(read_file(&self.file)?)
-            .map_err(|err| Error::create_invalid_argument_error(&err.to_string()))?;
+            .map_err(|err| Error::invalid_argument(&err.to_string()))?;
 
         data.lines()
             .map(|line| {
-                from_str(line).map_err(|err| Error::create_invalid_argument_error(&err.to_string()))
+                from_str(line).map_err(|err| Error::invalid_argument(&err.to_string()))
             })
             .collect()
     }
@@ -58,7 +58,7 @@ impl GenerationClient for DiskGenerationPersistanceClient {
             &format!(
                 "{}\n",
                 to_string(generation_metric)
-                    .map_err(|err| Error::create_invalid_argument_error(&err.to_string()))?
+                    .map_err(|err| Error::invalid_argument(&err.to_string()))?
             )
             .bytes()
             .collect::<Vec<u8>>(),

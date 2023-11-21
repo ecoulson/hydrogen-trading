@@ -45,7 +45,7 @@ impl SimulationClient for InMemorySimulationClient {
     fn get_simulation_state(&self, simulation_id: &i32) -> Result<SimulationState> {
         Ok(Mutex::lock(&self.simulation_store)?
             .get(simulation_id)
-            .ok_or_else(|| Error::create_not_found_error("No simulation found"))?
+            .ok_or_else(|| Error::not_found("No simulation found"))?
             .clone())
     }
 

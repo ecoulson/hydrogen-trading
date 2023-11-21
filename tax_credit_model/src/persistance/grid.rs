@@ -30,7 +30,7 @@ impl GridClient for InMemoryGridClient {
         let plant_id = 0;
         let generations = Mutex::lock(&self.generations_store)?
             .get(&plant_id)
-            .ok_or_else(|| Error::create_not_found_error("No generations found"))?
+            .ok_or_else(|| Error::not_found("No generations found"))?
             .clone();
         let power_plant = PowerPlant {
             plant_id,

@@ -30,7 +30,7 @@ impl ElectrolyzerClient for InMemoryElectrolyzerPersistanceClient {
     fn get_electrolyzer(&self, id: usize) -> Result<Electrolyzer> {
         Ok(Mutex::lock(&self.electrolyzers_by_id)?
             .get(&id)
-            .ok_or_else(|| Error::create_not_found_error(&id.to_string()))?
+            .ok_or_else(|| Error::not_found(&id.to_string()))?
             .clone())
     }
 

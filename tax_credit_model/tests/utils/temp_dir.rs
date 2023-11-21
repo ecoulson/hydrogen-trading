@@ -19,7 +19,7 @@ impl TempDirectory {
             Ok(_) => Ok(TempDirectory { path }),
             Err(err) => match err.kind() {
                 std::io::ErrorKind::AlreadyExists => Ok(TempDirectory { path }),
-                _ => Err(Error::create_invalid_argument_error(
+                _ => Err(Error::invalid_argument(
                     "Failed to create tmp dir",
                 )),
             },

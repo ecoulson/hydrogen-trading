@@ -41,7 +41,7 @@ pub fn create_electrolyzer_handler(
         state: String::from("TX"),
     })?;
 
-    Component::new(
+    Component::component(
         HtmxHeadersBuilder::new()
             .trigger("create-electrolyzer")
             .build(),

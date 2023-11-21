@@ -14,5 +14,5 @@ pub struct CreateElectrolyzerPage {}
 #[post("/create_electrolyzer_form")]
 pub fn create_electrolyzer_form_handler() -> ComponentResponse<CreateElectrolyzerPage, BannerError>
 {
-    Component::htmx(CreateElectrolyzerPage {})
+    Component::basic(CreateElectrolyzerPage {})
 }
