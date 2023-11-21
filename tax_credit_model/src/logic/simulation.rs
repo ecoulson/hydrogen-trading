@@ -6,8 +6,8 @@ use crate::{
         histogram::Histogram,
         simulation_schema::{
             EmissionEvent, EnergySourcePortfolio, EnergyTransaction, HydrogenProductionEvent,
-            PowerGrid, PowerPlant, SimulationResult, SimulationStatus, TaxCredit45V,
-            TaxCredit45VTier, TaxCreditSummary,
+            PowerGrid, PowerPlant, SimulationResult, TaxCredit45V, TaxCredit45VTier,
+            TaxCreditSummary,
         },
         time::{DateTimeRange, Timestamp},
         time_series::TimeSeriesChart,
@@ -105,17 +105,17 @@ pub fn simulate(
         tax_credit_summary: state.tax_credit_summary,
         emissions: produce_emissions_graph(&simulation_id)?,
         hydrogen_productions: TimeSeriesChart {
-            id: String::from("hydrogen-produced"),
+            id: format!("hydrogen-produced-{}", &simulation_id),
             title: String::from("Hydrogen Production Over Time"),
             data_set_endpoints: vec![format!("/fetch_hydrogen_production/{simulation_id}")],
         },
         energy_costs: TimeSeriesChart {
-            id: String::from("energy-costs"),
+            id: format!("energy-costs-{}", &simulation_id),
             title: String::from("Energy Costs Over Time"),
             data_set_endpoints: vec![format!("/fetch_energy_costs/{simulation_id}")],
         },
         hourly_histogram: Histogram {
-            id: String::from("hourly-histogram"),
+            id: format!("hourly-histograms-{}", &simulation_id),
             title: String::from("Hourly Tax Credits"),
             data_set_endpoints: vec![format!("/fetch_hourly_histogram/{simulation_id}")],
         },
@@ -124,7 +124,7 @@ pub fn simulate(
 
 fn produce_emissions_graph(simulation_id: &i32) -> Result<TimeSeriesChart> {
     Ok(TimeSeriesChart {
-        id: String::from("emissions"),
+        id: format!("emissions-{}", simulation_id),
         title: String::from("Emissions Over Time"),
         data_set_endpoints: vec![format!("/fetch_emissions/{simulation_id}")],
     })

@@ -1,8 +1,7 @@
 use askama::Template;
-use rocket::{get, State};
+use rocket::{get, http::Status, State};
 
 use crate::{
-    logic::simulation::SimulationState,
     persistance::{
         electrolyzer::ElectrolyzerClient, simulation::SimulationClient, user::UserClient,
     },
@@ -10,7 +9,7 @@ use crate::{
         htmx_responder::{HtmxHeadersBuilder, HtmxTemplate},
         user_context::UserContext,
     },
-    schema::{errors::BannerError, user::User},
+    schema::user::User,
     templates::list_electrolyzers_template::{
         ElectrolyzerSearchResults, ListElectrolyzersTemplate,
     },
@@ -31,37 +30,32 @@ pub fn index_handler(
     user_client: &State<Box<dyn UserClient>>,
     simulation_client: &State<Box<dyn SimulationClient>>,
     electrolyzer_client: &State<Box<dyn ElectrolyzerClient>>,
-) -> Result<HtmxTemplate<IndexResponse>, HtmxTemplate<BannerError>> {
+) -> Result<HtmxTemplate<IndexResponse>, Status> {
     let mut cookie = None;
 
     if user_context.user().is_none() {
         let user = user_client
             .create_user(&User::default())
-            .map_err(BannerError::create_from_error)?;
+            .map_err(|_| Status::InternalServerError)?;
 
         cookie = Some(format!("user_id={}", user.id()))
     }
 
-    let mut simulations = simulation_client
+    let simulations = simulation_client
         .list_simulations()
-        .map_err(BannerError::create_from_error)?;
+        .map_err(|_| Status::InternalServerError)?;
     let electrolyzers = electrolyzer_client
         .list_electrolyzers()
-        .map_err(BannerError::create_from_error)?;
-
-    if simulations.is_empty() {
-        simulations.push(
-            simulation_client
-                .create_simulation_state(&SimulationState::default())
-                .map_err(BannerError::create_from_error)?,
-        );
-    }
+        .map_err(|_| Status::InternalServerError)?;
 
     Ok(HtmxTemplate::new(
         HtmxHeadersBuilder::new().set_cookie_if(cookie).build(),
         IndexResponse {
             electrolyzer_list: ListElectrolyzersTemplate {
-                search_results: ElectrolyzerSearchResults { electrolyzers },
+                search_results: ElectrolyzerSearchResults {
+                    electrolyzers,
+                    selected_id: None,
+                },
             },
             simulation_list: ListSimulationResponse { simulations },
         },

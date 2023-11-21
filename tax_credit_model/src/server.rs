@@ -1,6 +1,7 @@
-use rocket::{fs::FileServer, routes, Build, Rocket};
+use rocket::{catchers, fs::FileServer, routes, Build, Rocket};
 
 use crate::{
+    catchers::{not_found_catcher::not_found_catcher, unauthorized_catcher::unauthorized_catcher},
     handlers::{
         close_error_handler::close_error_handler,
         create_electrolyzer_form_handler::create_electrolyzer_form_handler,
@@ -9,16 +10,18 @@ use crate::{
         execute_simulation_handler::execute_simulation,
         fetch_emissions_handler::fetch_emissions_handler,
         fetch_energy_costs_handler::fetch_energy_costs_handler,
+        fetch_hourly_histogram_handler::fetch_hourly_histogram_handler,
         fetch_hydrogen_production_handler::fetch_hydrogen_production_handler,
         get_active_electrolyzer_handler::get_active_electrolyzer_handler,
         get_electrolyzer_handler::get_electrolyzer_handler,
         get_simulation_form_handler::get_simulation_form_handler, index_handler::index_handler,
+        initialize_simulation_handler::initialize_simulation_handler,
         list_electrolyzers_handler::list_electrolyzers_handler,
         list_simulation_handler::list_simulation_handler,
         search_electrolyzers_handler::search_electrolyzers_handler,
         select_electrolyzer_handler::select_electrolyzer_handler,
         select_simulation_handler::select_simulation_handler,
-        simulation_handler::simulation_handler, fetch_hourly_histogram_handler::fetch_hourly_histogram_handler,
+        simulation_handler::simulation_handler,
     },
     persistance::{
         electrolyzer::ElectrolyzerClient, generation::GenerationClient, grid::GridClient,
@@ -69,6 +72,7 @@ pub fn init_service(
         .manage(dependencies.simulation_client)
         .manage(dependencies.generation_client)
         .manage(dependencies.user_client)
+        .register("/", catchers![unauthorized_catcher, not_found_catcher])
         .mount("/assets", static_files)
         .mount(
             "/",
@@ -91,7 +95,8 @@ pub fn init_service(
                 index_handler,
                 select_simulation_handler,
                 get_active_electrolyzer_handler,
-                fetch_hourly_histogram_handler
+                fetch_hourly_histogram_handler,
+                initialize_simulation_handler
             ],
         )
 }

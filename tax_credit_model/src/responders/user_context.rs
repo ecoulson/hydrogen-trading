@@ -60,8 +60,7 @@ impl<'r> FromRequest<'r> for UserContext {
         }
 
         user_client.get_user_by_id(&user_id.unwrap()).map_or_else(
-            |_| Outcome::Success(UserContext { user: None }), // TODO: want to return failure
-
+            |err| Outcome::Failure((Status::Unauthorized, err)),
             |user| Outcome::Success(UserContext { user: Some(user) }),
         )
     }

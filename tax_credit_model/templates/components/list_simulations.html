@@ -1,9 +1,18 @@
-<div class="max-w-75 py-2 px-4">
+{% if simulations.is_empty() %}
+<div class="grow" hx-trigger="create-electrolyzer from:body" hx-post="/initialize_simulation"
+    hx-target="#dataplane">
+    <div class="h-full flex items-center justify-center">
+        <p class="text-lg font-bold">No simulations exist. Create an electrolyzer to get started</p>
+    </div>
+</div>
+{% else %}
+<div class="flex flex-col items-center gap-y-4 w-full py-2 px-4">
     {% for simulation in simulations %}
-    <form class="py-2 px-4 bg-gray-200 hover:bg-gray-300 cursor-pointer rounded-md flex items-center gap-x-4"
-        hx-trigger="click" hx-post="/select_simulation" hx-target="#dataplane" hx-swap="innerHTML">
+    <form class="w-full max-w-75 py-4 px-4 bg-gray-200 hover:bg-gray-300 cursor-pointer rounded-md " hx-trigger="click"
+        hx-post="/select_simulation" hx-target="#dataplane" hx-swap="innerHTML">
         <input name="simulation_id" hidden value="{{ simulation.id }}" />
         <span>Simulation {{ simulation.id }}</span>
     </form>
     {% endfor %}
 </div>
+{% endif %}

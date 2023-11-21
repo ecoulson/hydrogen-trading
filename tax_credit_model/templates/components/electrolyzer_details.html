@@ -1,9 +1,9 @@
 <form class="flex items-center flex-col h-full w-full relative" hx-trigger="simulation-selected from:body"
     hx-post="/get_active_electrolyzer">
     <input hidden name="electrolyzer_id" value="{{ electrolyzer.id }}" />
-    <div class="flex items-center w-full">
-        <div class="px-4 cursor-pointer" hx-post="/list_electrolyzers" hx-trigger="click" hx-target="#sidebar"
-            hx-swap="innerHTML">
+    <div class="p-4 flex items-center w-full">
+        <div class="flex items-center px-2 mr-2 cursor-pointer rounded-full hover:bg-gray-300 h-8 w-8"
+            hx-post="/list_electrolyzers" hx-trigger="click" hx-target="#sidebar" hx-swap="innerHTML">
             <svg width="17" height="16" viewBox="0 0 17 16" class="fill-black" xmlns="http://www.w3.org/2000/svg">
                 <path
                     d="M16.8333 7H4.15621L9.97913 1.41L8.49996 0L0.166626 8L8.49996 16L9.96871 14.59L4.15621 9H16.8333V7Z" />
@@ -391,48 +391,43 @@
         </div>
     </div>
     <div class="px-2 py-4 w-full grow">
-        <table id="electrolyzer-details">
-            <tr>
-                <td>Replacement Threshold</td>
-                <td>{{ electrolyzer.replacement_threshold }}</td>
-            </tr>
-            <tr>
-                <td>Degredation Rate</td>
-                <td>{{ electrolyzer.degredation_rate }}</td>
-            </tr>
-            <tr>
-                <td>Capacity MW</td>
-                <td>{{ electrolyzer.capacity_mw }}</td>
-            </tr>
-            <tr>
-                <td>Production Method</td>
-                <td>Constant</td>
-            </tr>
-            <tr>
-                <td>Production Rate (kg h2 / mw)</td>
-                <td>{{ electrolyzer.production.conversion_rate }}
-                </td>
-            </tr>
-            <tr>
-                <td>Capex</td>
-                <td>{{ electrolyzer.capex }}</td>
-            </tr>
-            <tr>
-                <td>Opex ($/hr)</td>
-                <td>{{ electrolyzer.opex }}</td>
-            </tr>
-            <tr>
-                <td>Replacement Cost</td>
-                <td>{{ electrolyzer.replacement_cost }}</td>
-            </tr>
-        </table>
+        <div class="w-full px-4 py-2 hover:bg-gray-200">
+            <h2 class="font-medium">Replacement Threshold</h2>
+            <p>{{ electrolyzer.replacement_threshold }}</p>
+        </div>
+        <div class="px-4 py-2 hover:bg-gray-200">
+            <h2 class="font-medium">Degredation Rate</h2>
+            <p>{{ electrolyzer.degredation_rate }}</p>
+        </div>
+        <div class="px-4 py-2 hover:bg-gray-200">
+            <h2 class="font-medium">Capacity MW</h2>
+            <p>{{ electrolyzer.capacity_mw }}</p>
+        </div>
+        <div class="px-4 py-2 hover:bg-gray-200">
+            <h2 class="font-medium">Production Method</h2>
+            <p>Constant</p>
+        </div>
+        <div class="px-4 py-2 hover:bg-gray-200">
+            <h2 class="font-medium">Production Rate (kg h2 / mw)</h2>
+            <p>{{ electrolyzer.production.conversion_rate }}</p>
+        </div>
+        <div class="px-4 py-2 hover:bg-gray-200">
+            <h2 class="font-medium">Capex</h2 <p>{{ electrolyzer.capex }}</p>
+        </div>
+        <div class="px-4 py-2 hover:bg-gray-200">
+            <h2 class="font-medium">Opex ($/hr)</h2 <p>{{ electrolyzer.opex }}</p>
+        </div>
+        <div class="px-4 py-2 hover:bg-gray-200">
+            <h2 class="font-medium">Replacement Cost</h2>
+            <p>{{ electrolyzer.replacement_cost }}</p>
+        </div>
     </div>
     <div class="sticky w-full bottom-0 py-4 left-0 flex justify-center bg-gray-200">
         {% if selected %}
-        <button class="h-10 bg-gray-700 w-48 rounded-sm text-center font-semibold text-white px-4 py-2" type="submit"
+        <button class="h-10 bg-gray-700 w-48 rounded-sm text-center font-medium text-white px-4 py-2" type="submit"
             hx-post="/select_electrolyzer" disabled hx-target="#sidebar" hx-swap="innerHTML">Use</button>
         {% else %}
-        <button class="h-10 bg-blue-600 w-48 rounded-sm text-center font-semibold text-white px-4 py-2" type="submit"
+        <button class="h-10 bg-blue-600 w-48 rounded-sm text-center font-medium text-white px-4 py-2" type="submit"
             hx-post="/select_electrolyzer" hx-target="#sidebar" hx-swap="innerHTML">Use</button>
         {% endif %}
     </div>

@@ -3,7 +3,8 @@
         hx-trigger="keyup changed delay:500ms" hx-post="/search_electrolyzers"
         hx-target="#electrolyzer-search-results" />
 </div>
-<div id="electrolyzer-search-results" class="w-full flex flex-col gap-y-4 py-2 px-4 grow overflow-y-scroll">
+<div id="electrolyzer-search-results" class="w-full flex flex-col gap-y-4 py-2 px-4 grow overflow-y-scroll"
+    hx-post="/list_electrolyzers" hx-trigger="simulation-selected from:body" hx-target="#sidebar">
     {{ search_results|safe }}
 </div>
 <div class="sticky w-full bottom-0 py-4 left-0 flex justify-center bg-gray-200">

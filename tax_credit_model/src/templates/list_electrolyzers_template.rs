@@ -19,5 +19,6 @@ pub struct ListElectrolyzersTemplate {
 #[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq)]
 #[template(path = "components/electrolyzer_search_results.html")]
 pub struct ElectrolyzerSearchResults {
+    pub selected_id: Option<usize>,
     pub electrolyzers: Vec<Electrolyzer>,
 }
