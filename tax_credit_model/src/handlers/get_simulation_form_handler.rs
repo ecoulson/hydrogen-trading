@@ -31,7 +31,6 @@ pub fn get_simulation_form_handler(
         .list_electrolyzers()
         .map_err(BannerError::create_from_error)?;
 
-    // Simulations require an electrolyzer to exist. Somehow want a better solution
     if electrolyzers.is_empty() {
         return Err(BannerError::create_from_message("No electrolyzers exist"));
     }

@@ -1,6 +1,6 @@
-<div class="w-full flex items-center gap-x-2 justify-between bg-gray-200" hx-trigger="create-electrolyzer from:body"
-    hx-post="/simulation_form">
-    <form class="flex gap-4 justify-evenly items-center w-full bg-slate-100 sticky z-10 top-0 px-4" hx-swap="innerHTML"
+<div class="sticky z-10 top-0 w-full flex items-center gap-x-2 justify-between bg-gray-200"
+    hx-trigger="create-electrolyzer from:body" hx-target="#dataplane" hx-post="/simulation_form">
+    <form class="flex gap-4 justify-evenly items-center w-full bg-slate-100 px-4" hx-swap="innerHTML"
         hx-target="#simulation-result" hx-post="/execute_simulation">
         <div class="py-2">
             {{ electrolyzer_selector|safe }}
@@ -8,14 +8,14 @@
         <div class="py-2">
             <label for="simulation_time_range.start">Start Datetime</label>
             <br />
-            <input type="datetime-local" class="border" id="simulation_time_range.start" step="900"
+            <input type="datetime-local" class="border h-7" id="simulation_time_range.start" step="900"
                 min="{{ generation_range.start }}" max="{{ generation_range.end }}"
                 name="simulation_time_range.start" />
         </div>
         <div class="py-2">
             <label for="simulation_time_range.end">End Datetime</label>
             <br />
-            <input type="datetime-local" class="border" id="simulation_time_range.end" step="900"
+            <input type="datetime-local" class="border h-7" id="simulation_time_range.end" step="900"
                 min="{{ generation_range.start }}" max="{{ generation_range.end }}" name="simulation_time_range.end" />
         </div>
         <div class="grow"></div>
