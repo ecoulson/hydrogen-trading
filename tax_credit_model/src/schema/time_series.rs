@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use super::histogram::Labels;
 
-#[derive(Deserialize, Serialize, Default, Debug, PartialEq)]
+#[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
 pub enum ChartColor {
     #[default]
     Red,
@@ -27,20 +27,14 @@ impl std::fmt::Display for ChartColor {
     }
 }
 
-#[derive(Deserialize, Serialize, Default, Debug, PartialEq)]
-pub struct TimeSeriesData {
-    pub labels: Labels,
-    pub datasets: Vec<TimeSeries>,
-}
-
-#[derive(Deserialize, Serialize, Default, Debug, PartialEq)]
+#[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
 pub struct TimeSeries {
     pub color: ChartColor,
     pub label: String,
     pub data_points: Vec<TimeSeriesEntry>,
 }
 
-#[derive(Deserialize, Serialize, Default, Debug, PartialEq)]
+#[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
 pub struct TimeSeriesEntry {
     pub date: String,
     pub color: ChartColor,
@@ -49,8 +43,15 @@ pub struct TimeSeriesEntry {
 
 #[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
 #[template(path = "components/time_series_chart.html")]
-pub struct TimeSeriesChart {
-    pub title: String,
+pub struct TimeSeriesChartResponse {
     pub id: String,
     pub endpoint: String,
+    pub chart: TimeSeriesChart
+}
+
+#[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
+pub struct TimeSeriesChart {
+    pub title: String,
+    pub labels: Labels,
+    pub datasets: Vec<TimeSeries>,
 }

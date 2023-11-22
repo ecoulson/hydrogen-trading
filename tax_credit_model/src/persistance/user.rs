@@ -20,8 +20,8 @@ pub struct InMemoryUserClient {
 }
 
 impl InMemoryUserClient {
-    pub fn new() -> InMemoryUserClient {
-        InMemoryUserClient {
+    pub fn new() -> Self {
+        Self {
             id: Mutex::new(0),
             user_by_id: Mutex::new(HashMap::new()),
         }

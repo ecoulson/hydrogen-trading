@@ -1,4 +1,6 @@
-<div class="w-full h-96 relative flex justify-center">
+<div class="w-full h-96 relative flex justify-center flex-col">
     <canvas id="{{ id }}"></canvas>
-    <script src='/assets/scripts/histogram.js?id={{id}}&title={{title}}&endpoint={{ histogram_end_point }}'></script>
+    <script>
+        createHistogram("{{id}}", {{chart|json|safe}});
+    </script>
 </div>

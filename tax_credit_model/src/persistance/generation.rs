@@ -3,8 +3,10 @@ use std::sync::Arc;
 use serde_json::{from_str, to_string};
 
 use crate::{
-    files::file_system::{
-        create_directory, read_file, write_file, CreateMode, File, Permissions, ReadMode, WriteMode,
+    file_systems::{
+        directory::Directory,
+        file::File,
+        permission::{CreateMode, Permissions, ReadMode, WriteMode},
     },
     schema::{
         errors::{Error, Result},
@@ -23,12 +25,12 @@ pub struct DiskGenerationPersistanceClient {
 }
 
 impl DiskGenerationPersistanceClient {
-    pub fn new(path: &str) -> Result<DiskGenerationPersistanceClient> {
+    pub fn new(path: &str) -> Result<Self> {
         let data_file = File::new(path, &Permissions::appendable(CreateMode::CreateOrRead));
-        create_directory(File::directory_path(&data_file))?;
-        write_file(&data_file, &vec![])?;
+        Directory::create_directory(File::directory_path(&data_file))?;
+        data_file.write_file(&vec![])?;
 
-        Ok(DiskGenerationPersistanceClient {
+        Ok(Self {
             file: Arc::new(File::new(
                 path,
                 &Permissions::new(
@@ -42,19 +44,16 @@ impl DiskGenerationPersistanceClient {
 
 impl GenerationClient for DiskGenerationPersistanceClient {
     fn list_generations(&self) -> Result<Vec<GenerationMetric>> {
-        let data = String::from_utf8(read_file(&self.file)?)
+        let data = String::from_utf8(self.file.read_file()?)
             .map_err(|err| Error::invalid_argument(&err.to_string()))?;
 
         data.lines()
-            .map(|line| {
-                from_str(line).map_err(|err| Error::invalid_argument(&err.to_string()))
-            })
+            .map(|line| from_str(line).map_err(|err| Error::invalid_argument(&err.to_string())))
             .collect()
     }
 
     fn create_generation(&self, generation_metric: &GenerationMetric) -> Result<GenerationMetric> {
-        write_file(
-            &self.file,
+        self.file.write_file(
             &format!(
                 "{}\n",
                 to_string(generation_metric)
@@ -68,13 +67,11 @@ impl GenerationClient for DiskGenerationPersistanceClient {
     }
 
     fn remove_all_generations(&self) -> Result<()> {
-        write_file(
-            &File::new(
-                self.file.path(),
-                &Permissions::writeable(CreateMode::CreateOrRead),
-            ),
-            &vec![],
-        )?;
+        let empty_file = &File::new(
+            self.file.path(),
+            &Permissions::writeable(CreateMode::CreateOrRead),
+        );
+        empty_file.write_file(&vec![])?;
 
         Ok(())
     }

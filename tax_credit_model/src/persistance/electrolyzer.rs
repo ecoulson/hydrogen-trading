@@ -19,8 +19,8 @@ pub struct InMemoryElectrolyzerPersistanceClient {
 }
 
 impl InMemoryElectrolyzerPersistanceClient {
-    pub fn new() -> InMemoryElectrolyzerPersistanceClient {
-        InMemoryElectrolyzerPersistanceClient {
+    pub fn new() -> Self {
+        Self {
             electrolyzers_by_id: Mutex::new(HashMap::new()),
         }
     }

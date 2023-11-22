@@ -48,8 +48,8 @@ pub struct HtmxHeadersBuilder {
 }
 
 impl HtmxHeadersBuilder {
-    pub fn new() -> HtmxHeadersBuilder {
-        HtmxHeadersBuilder {
+    pub fn new() -> Self {
+        Self {
             headers: HtmxHeaders::default(),
         }
     }
@@ -143,15 +143,15 @@ impl<T> HtmxTemplate<T>
 where
     T: askama::Template,
 {
-    pub fn new(headers: HtmxHeaders, template: T) -> HtmxTemplate<T> {
-        HtmxTemplate {
+    pub fn new(headers: HtmxHeaders, template: T) -> Self {
+        Self  {
             html: template,
             headers,
         }
     }
 
-    pub fn template(template: T) -> HtmxTemplate<T> {
-        HtmxTemplate {
+    pub fn template(template: T) -> Self {
+        Self {
             html: template,
             headers: HtmxHeaders::default(),
         }

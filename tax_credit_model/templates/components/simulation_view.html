@@ -1,10 +1,34 @@
-<div class="p-4" id="simulation-result">
-    <h2 class="font-semibold text-lg">Tax Credits By Quarter Hour</h2>
-    {{ simulation_result.hourly_histogram|safe }}
-    <h2 class="font-semibold text-lg">Electrolyzer Emissions By Quarter Hour</h2>
-    {{ simulation_result.emissions|safe }}
-    <h2 class="font-semibold text-lg">Hydrogen Production By Quarter Hour</h2>
-    {{ simulation_result.hydrogen_productions|safe }}
-    <h2 class="font-semibold text-lg">Energy Price By Quarter Hour</h2>
-    {{ simulation_result.energy_costs|safe }}
+<div class="sticky z-10 top-0 w-full flex items-center gap-x-2 justify-between bg-gray-200"
+    hx-trigger="create-electrolyzer from:body" hx-target="#dataplane" hx-post="/get_selected_simulation">
+    <form class="flex gap-4 justify-evenly items-center w-full bg-slate-100 px-4" hx-swap="innerHTML"
+        hx-target="#simulation-result" hx-post="/execute_simulation">
+        <div class="py-2">
+            {{ electrolyzer_selector|safe }}
+        </div>
+        <div class="py-2">
+            <label for="simulation_time_range.start">Start Datetime</label>
+            <br />
+            <input type="datetime-local" class="border h-7" id="simulation_time_range.start" step="900"
+                min="{{ generation_range.start }}" max="{{ generation_range.end }}"
+                name="simulation_time_range.start" />
+        </div>
+        <div class="py-2">
+            <label for="simulation_time_range.end">End Datetime</label>
+            <br />
+            <input type="datetime-local" class="border h-7" id="simulation_time_range.end" step="900"
+                min="{{ generation_range.start }}" max="{{ generation_range.end }}" name="simulation_time_range.end" />
+        </div>
+        <div class="grow"></div>
+        <button hx-post="/list_simulations" hx-swap="innerHTML" hx-target="#dataplane"
+            class="bg-gray-300 text-center h-10 max-w-48 rounded-sm font-semibold text-black-600 px-4 py-2">
+            View Runs</button>
+        <button type="submit"
+            class="bg-green-600 rounded-sm text-center h-10 max-w-48 font-semibold text-white px-4 py-2">
+            Simulate</button>
+    </form>
+</div>
+<div id="simulation-result" class="grow">
+    <div class="h-full flex items-center justify-center">
+        <p class="text-lg font-bold">No recent simulation. Use the bar above to start a new simulation</p>
+    </div>
 </div>

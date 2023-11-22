@@ -9,7 +9,7 @@ use crate::{
     },
     responders::client_context::ClientContext,
     schema::{errors::BannerError, user::User},
-    templates::simulation_form_template::SimulationFormTemplate,
+    templates::simulation_view::SimulationView,
 };
 
 use super::select_simulation_handler::{select_simulation_handler, SelectSimulationRequest};
@@ -21,7 +21,7 @@ pub fn initialize_simulation_handler(
     electrolyzer_client: &State<Box<dyn ElectrolyzerClient>>,
     simulation_client: &State<Box<dyn SimulationClient>>,
     simulation_selection_client: &State<Box<dyn SimulationSelectionClient>>,
-) -> ComponentResponse<SimulationFormTemplate, BannerError> {
+) -> ComponentResponse<SimulationView, BannerError> {
     let electrolyzers = electrolyzer_client.list_electrolyzers()?;
 
     if electrolyzers.is_empty() {

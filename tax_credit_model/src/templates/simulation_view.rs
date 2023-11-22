@@ -6,8 +6,8 @@ use crate::schema::time::DateTimeRange;
 use super::list_electrolyzers_template::ElectrolyzerSelectorTemplate;
 
 #[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq)]
-#[template(path = "components/simulation_form.html")]
-pub struct SimulationFormTemplate {
+#[template(path = "components/simulation_view.html")]
+pub struct SimulationView {
     pub generation_range: DateTimeRange,
     pub electrolyzer_selector: ElectrolyzerSelectorTemplate,
 }

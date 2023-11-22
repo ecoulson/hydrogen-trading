@@ -9,8 +9,8 @@ use crate::{
     schema::{electrolyzer::ElectrolyzerDetailsTemplate, errors::BannerError, user::User},
 };
 
-#[post("/get_active_electrolyzer")]
-pub fn get_active_electrolyzer_handler(
+#[post("/get_selected_electrolyzer")]
+pub fn get_selected_electrolyzer_handler(
     user: User,
     simulation_client: &State<Box<dyn SimulationClient>>,
     electrolyzer_client: &State<Box<dyn ElectrolyzerClient>>,

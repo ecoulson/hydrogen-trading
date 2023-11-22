@@ -18,8 +18,8 @@ pub struct InMemoryGridClient {
 }
 
 impl InMemoryGridClient {
-    pub fn new() -> InMemoryGridClient {
-        InMemoryGridClient {
+    pub fn new() -> Self {
+        Self {
             generations_store: Mutex::new(HashMap::new()),
         }
     }

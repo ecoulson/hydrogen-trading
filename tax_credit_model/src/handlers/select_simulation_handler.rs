@@ -10,7 +10,7 @@ use crate::{
     schema::{errors::BannerError, time::DateTimeRange, user::User},
     templates::{
         list_electrolyzers_template::ElectrolyzerSelectorTemplate,
-        simulation_form_template::SimulationFormTemplate,
+        simulation_view::SimulationView,
     },
 };
 
@@ -27,7 +27,7 @@ pub fn select_simulation_handler(
     simulation_client: &State<Box<dyn SimulationClient>>,
     electrolyzer_client: &State<Box<dyn ElectrolyzerClient>>,
     simulation_selection: &State<Box<dyn SimulationSelectionClient>>,
-) -> ComponentResponse<SimulationFormTemplate, BannerError> {
+) -> ComponentResponse<SimulationView, BannerError> {
     let mut client_context = client_context;
     let simulation = simulation_client.get_simulation_state(&request.simulation_id)?;
     let electrolyzers = electrolyzer_client.list_electrolyzers()?;
@@ -41,7 +41,7 @@ pub fn select_simulation_handler(
             .replace_url(&location.build_url())
             .trigger("simulation-selected")
             .build(),
-        SimulationFormTemplate {
+        SimulationView {
             generation_range: DateTimeRange {
                 start: String::from("2023-01-01T00:00"),
                 end: String::from("2023-07-31T23:59"),

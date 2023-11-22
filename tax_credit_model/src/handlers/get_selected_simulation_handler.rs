@@ -10,18 +10,17 @@ use crate::{
     responders::htmx_responder::HtmxHeadersBuilder,
     schema::{errors::BannerError, time::DateTimeRange, user::User},
     templates::{
-        list_electrolyzers_template::ElectrolyzerSelectorTemplate,
-        simulation_form_template::SimulationFormTemplate,
+        list_electrolyzers_template::ElectrolyzerSelectorTemplate, simulation_view::SimulationView,
     },
 };
 
-#[post("/simulation_form")]
-pub fn get_simulation_form_handler(
+#[post("/get_selected_simulation")]
+pub fn get_selected_simulation_handler(
     user: User,
     electrolyzer_client: &State<Box<dyn ElectrolyzerClient>>,
     simulation_client: &State<Box<dyn SimulationClient>>,
     simulation_selection_client: &State<Box<dyn SimulationSelectionClient>>,
-) -> ComponentResponse<SimulationFormTemplate, BannerError> {
+) -> ComponentResponse<SimulationView, BannerError> {
     let electrolyzers = electrolyzer_client.list_electrolyzers()?;
 
     if electrolyzers.is_empty() {
@@ -35,7 +34,7 @@ pub fn get_simulation_form_handler(
 
     Component::component(
         HtmxHeadersBuilder::new().build(),
-        SimulationFormTemplate {
+        SimulationView {
             generation_range: DateTimeRange {
                 start: String::from("2023-01-01T00:00"),
                 end: String::from("2023-07-31T23:59"),

@@ -1,5 +1,13 @@
-<div class="w-full h-96 relative flex justify-center">
+<div class="w-full h-96 relative flex justify-center flex-col">
+    <form class="px-4 py-2">
+        <input hidden name="endpoint" value="{{ endpoint }}" />
+        <span>Granularity</span>
+        <span>Time Range</span>
+        <span>Next Time Range</span>
+        <span>Prev Time Range</span>
+    </form>
     <canvas id="{{ id }}"></canvas>
-    <script
-        src='/assets/scripts/time-series-chart.js?id={{id}}&title={{title}}&endpoint={{ endpoint }}'></script>
+    <script>
+        createTimeSeriesChart("{{id}}", {{chart|json|safe}});
+    </script>
 </div>

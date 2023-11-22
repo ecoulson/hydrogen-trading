@@ -3,26 +3,27 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
 #[template(path = "components/histogram.html")]
-pub struct Histogram {
-    pub title: String,
+pub struct HistogramResponse {
     pub id: String,
-    pub histogram_end_point: String,
+    pub endpoint: String,
+    pub chart: Histogram,
 }
 
-#[derive(Deserialize, Serialize, Default, Debug, PartialEq)]
-pub struct HistogramData {
-    pub labels: Labels,
+#[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
+pub struct Histogram {
+    pub title: String,
     pub keys: Vec<String>,
+    pub label: Labels,
     pub datasets: Vec<HistogramDataset>,
 }
 
-#[derive(Deserialize, Serialize, Default, Debug, PartialEq)]
+#[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
 pub struct Labels {
     pub x: String,
     pub y: String,
 }
 
-#[derive(Deserialize, Serialize, Default, Debug, PartialEq)]
+#[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
 pub struct HistogramDataset {
     pub label: String,
     pub data_points: Vec<f64>,

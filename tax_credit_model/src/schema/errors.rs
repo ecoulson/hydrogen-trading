@@ -76,8 +76,8 @@ pub struct BannerError {
 }
 
 impl BannerError {
-    pub fn new(message: &str) -> BannerError {
-        BannerError {
+    pub fn new(message: &str) -> Self {
+        Self {
             message: String::from(message),
         }
     }
@@ -104,7 +104,7 @@ impl BannerError {
 impl From<Error> for BannerError {
     fn from(error: Error) -> Self {
         BannerError {
-            message: error.to_string()
+            message: error.to_string(),
         }
     }
 }
@@ -112,7 +112,7 @@ impl From<Error> for BannerError {
 impl From<&str> for BannerError {
     fn from(value: &str) -> Self {
         BannerError {
-            message: String::from(value)
+            message: String::from(value),
         }
     }
 }

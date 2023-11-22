@@ -23,7 +23,7 @@ pub struct InMemorySimulationSelectionClient {
 
 impl InMemorySimulationSelectionClient {
     pub fn new() -> Self {
-        InMemorySimulationSelectionClient {
+        Self {
             selection_by_user_id: Mutex::new(HashMap::new()),
         }
     }

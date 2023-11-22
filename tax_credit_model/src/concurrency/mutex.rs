@@ -7,8 +7,8 @@ pub struct Mutex<T> {
 }
 
 impl<T> Mutex<T> {
-    pub fn new(value: T) -> Mutex<T> {
-        Mutex {
+    pub fn new(value: T) -> Self {
+        Self {
             lock: std::sync::Mutex::new(value),
         }
     }

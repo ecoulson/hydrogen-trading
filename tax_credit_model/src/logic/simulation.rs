@@ -1,16 +1,20 @@
+use std::collections::HashMap;
+
 use crate::{
     persistance::simulation::SimulationClient,
     schema::{
         electrolyzer::Electrolyzer,
         errors::{Error, Result},
-        histogram::Histogram,
+        histogram::{Histogram, HistogramDataset, HistogramResponse, Labels},
         simulation_schema::{
             EmissionEvent, EnergySourcePortfolio, EnergyTransaction, HydrogenProductionEvent,
             PowerGrid, PowerPlant, SimulationResult, TaxCredit45V, TaxCredit45VTier,
             TaxCreditSummary,
         },
         time::{DateTimeRange, Timestamp},
-        time_series::TimeSeriesChart,
+        time_series::{
+            ChartColor, TimeSeries, TimeSeriesChart, TimeSeriesChartResponse, TimeSeriesEntry,
+        },
     },
 };
 use chrono::{Datelike, Duration, Timelike};
@@ -100,33 +104,143 @@ pub fn simulate(
     }
 
     simulation_client.update(&state)?;
+    let mut energy_costs_time_series = TimeSeries {
+        color: ChartColor::Blue,
+        label: String::from("Energy Cost"),
+        data_points: state
+            .transactions
+            .iter()
+            .fold(HashMap::new(), |mut aggregation, transaction| {
+                if let Some(current_price) = aggregation.get_mut(&transaction.timestamp) {
+                    *current_price += transaction.price_usd;
+                } else {
+                    aggregation.insert(transaction.timestamp, transaction.price_usd);
+                }
+
+                aggregation
+            })
+            .iter()
+            .map(|(key, value)| {
+                Ok(TimeSeriesEntry {
+                    color: ChartColor::Blue,
+                    date: key.to_utc_date_time()?.to_rfc3339(),
+                    value: *value,
+                })
+            })
+            .collect::<Result<Vec<TimeSeriesEntry>>>()?,
+    };
+    energy_costs_time_series
+        .data_points
+        .sort_by(|a, b| a.date.cmp(&b.date));
 
     Ok(SimulationResult {
-        tax_credit_summary: state.tax_credit_summary,
-        emissions: produce_emissions_graph(&simulation_id)?,
-        hydrogen_productions: TimeSeriesChart {
+        tax_credit_summary: state.tax_credit_summary.clone(),
+        emissions: produce_emissions_graph(&state)?,
+        hydrogen_productions: TimeSeriesChartResponse {
             id: format!("hydrogen-produced-{}", &simulation_id),
-            title: String::from("Hydrogen Production Over Time"),
             endpoint: format!("/fetch_hydrogen_production/{simulation_id}"),
+            chart: TimeSeriesChart {
+                title: String::from("Hydrogen Production Over Time"),
+                labels: Labels {
+                    x: String::from("Simulation Date"),
+                    y: String::from("kg (H2O)"),
+                },
+                datasets: vec![TimeSeries {
+                    color: ChartColor::Blue,
+                    label: String::from("Energy Cost"),
+                    data_points: state
+                        .hydrogen_productions
+                        .iter()
+                        .map(|production| {
+                            Ok(TimeSeriesEntry {
+                                color: ChartColor::Blue,
+                                date: production
+                                    .production_timestamp
+                                    .to_utc_date_time()?
+                                    .to_rfc3339(),
+                                value: production.kg_hydrogen,
+                            })
+                        })
+                        .collect::<Result<Vec<TimeSeriesEntry>>>()?,
+                }],
+            },
         },
-        energy_costs: TimeSeriesChart {
+        energy_costs: TimeSeriesChartResponse {
             id: format!("energy-costs-{}", &simulation_id),
-            title: String::from("Energy Costs Over Time"),
             endpoint: format!("/fetch_energy_costs/{simulation_id}"),
+            chart: TimeSeriesChart {
+                title: String::from("Energy Costs Over Time"),
+                labels: Labels {
+                    x: String::from("Simulation Date"),
+                    y: String::from("USD ($)"),
+                },
+                datasets: vec![energy_costs_time_series],
+            },
         },
-        hourly_histogram: Histogram {
+        hourly_histogram: HistogramResponse {
             id: format!("hourly-histograms-{}", &simulation_id),
-            title: String::from("Hourly Tax Credits"),
-            histogram_end_point: format!("/fetch_hourly_histogram/{simulation_id}"),
+            endpoint: format!("/fetch_hourly_histogram/{simulation_id}"),
+            chart: Histogram {
+                keys: vec![
+                    String::from("0%"),
+                    String::from("20%"),
+                    String::from("25%"),
+                    String::from("33%"),
+                    String::from("100%"),
+                ],
+                title: String::from("Hourly Tax Credits"),
+                label: Labels {
+                    x: String::from("Tax Credit Level"),
+                    y: String::from("Hours"),
+                },
+                datasets: vec![HistogramDataset {
+                    label: String::from("Credit Breakdown"),
+                    data_points: vec![
+                        state.tax_credit_summary.credit_hours_none,
+                        state.tax_credit_summary.credit_hours_20,
+                        state.tax_credit_summary.credit_hours_25,
+                        state.tax_credit_summary.credit_hours_33,
+                        state.tax_credit_summary.credit_hours_full,
+                    ],
+                }],
+            },
         },
     })
 }
 
-fn produce_emissions_graph(simulation_id: &i32) -> Result<TimeSeriesChart> {
-    Ok(TimeSeriesChart {
-        id: format!("emissions-{}", simulation_id),
-        title: String::from("Emissions Over Time"),
-        endpoint: format!("/fetch_emissions/{simulation_id}"),
+fn produce_emissions_graph(state: &SimulationState) -> Result<TimeSeriesChartResponse> {
+    Ok(TimeSeriesChartResponse {
+        id: format!("emissions-{}", state.id),
+        endpoint: format!("/fetch_emissions/{}", state.id),
+        chart: TimeSeriesChart {
+            title: String::from("Emissions Over Time"),
+            labels: Labels {
+                x: String::from("Simulation Date"),
+                y: String::from("kg (CO2)"),
+            },
+            datasets: vec![TimeSeries {
+                data_points: state
+                    .emissions
+                    .iter()
+                    .zip(&state.tax_credit)
+                    .map(|(emission, tax_credit)| {
+                        Ok(TimeSeriesEntry {
+                            date: emission.emission_timestamp.to_utc_date_time()?.to_rfc3339(),
+                            value: emission.amount_emitted_kg,
+                            color: match tax_credit.tier {
+                                TaxCredit45VTier::Max => ChartColor::Green,
+                                TaxCredit45VTier::Tier1 => ChartColor::Chartreuse,
+                                TaxCredit45VTier::Tier2 => ChartColor::Yellow,
+                                TaxCredit45VTier::Tier3 => ChartColor::Orange,
+                                TaxCredit45VTier::None => ChartColor::Red,
+                            },
+                        })
+                    })
+                    .collect::<crate::schema::errors::Result<Vec<TimeSeriesEntry>>>()?,
+                color: ChartColor::Blue,
+                label: String::from("CO2 Emissions"),
+            }],
+        },
     })
 }
 
@@ -165,9 +279,7 @@ fn purchase(
                 },
             )
         })
-        .ok_or_else(|| {
-            Error::not_found(&format!("Generation not found for timestep"))
-        })?;
+        .ok_or_else(|| Error::not_found(&format!("Generation not found for timestep")))?;
 
     Ok(EnergyTransaction {
         simulation_id,

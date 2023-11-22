@@ -16,7 +16,7 @@ use crate::{
     },
     templates::{
         list_electrolyzers_template::ElectrolyzerSelectorTemplate,
-        simulation_form_template::SimulationFormTemplate,
+        simulation_view::SimulationView,
     },
 };
 
@@ -47,7 +47,7 @@ pub fn execute_simulation(
             .replace_url(&location.build_url())
             .build(),
         ExecuteSimulationResponse {
-            simulation_form: SimulationFormTemplate {
+            simulation_view: SimulationView {
                 generation_range: DateTimeRange::default(),
                 electrolyzer_selector: ElectrolyzerSelectorTemplate {
                     electrolyzers: electrolyzer_client.list_electrolyzers()?,

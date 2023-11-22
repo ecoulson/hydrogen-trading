@@ -11,8 +11,8 @@ pub struct Timestamp {
 }
 
 impl Timestamp {
-    pub fn new(seconds: i64, nanos: u32) -> Timestamp {
-        Timestamp { seconds, nanos }
+    pub fn new(seconds: i64, nanos: u32) -> Self {
+        Self { seconds, nanos }
     }
 
     pub fn to_utc_date_time(&self) -> Result<DateTime<Utc>> {

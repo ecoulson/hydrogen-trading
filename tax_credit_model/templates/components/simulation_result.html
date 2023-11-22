@@ -1,0 +1,10 @@
+<div class="p-4" id="simulation-result">
+    <h2 class="font-semibold text-lg">Tax Credits By Quarter Hour</h2>
+    {{ simulation_result.hourly_histogram|safe }}
+    <h2 class="font-semibold text-lg">Electrolyzer Emissions By Quarter Hour</h2>
+    {{ simulation_result.emissions|safe }}
+    <h2 class="font-semibold text-lg">Hydrogen Production By Quarter Hour</h2>
+    {{ simulation_result.hydrogen_productions|safe }}
+    <h2 class="font-semibold text-lg">Energy Price By Quarter Hour</h2>
+    {{ simulation_result.energy_costs|safe }}
+</div>

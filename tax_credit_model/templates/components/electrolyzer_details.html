@@ -1,6 +1,6 @@
 <form class="flex items-center flex-col h-full w-full relative">
     <div hx-trigger="list-simulations from:body" hx-post="/list_electrolyzers" hx-target="#sidebar"></div>
-    <div hx-trigger="simulation-selected from:body" hx-post="/get_active_electrolyzer" hx-target="#sidebar"></div>
+    <div hx-trigger="simulation-selected from:body" hx-post="/get_selected_electrolyzer" hx-target="#sidebar"></div>
     <input hidden name="electrolyzer_id" value="{{ electrolyzer.id }}" />
     <div class="p-4 flex items-center w-full">
         <div class="flex items-center px-2 mr-2 cursor-pointer rounded-full hover:bg-gray-300 h-8 w-8"

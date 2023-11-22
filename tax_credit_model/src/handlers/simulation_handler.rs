@@ -11,8 +11,7 @@ use crate::{
     responders::{htmx_responder::HtmxHeadersBuilder, user_context::UserContext},
     schema::{electrolyzer::ElectrolyzerDetailsTemplate, time::DateTimeRange, user::User},
     templates::{
-        list_electrolyzers_template::ElectrolyzerSelectorTemplate,
-        simulation_form_template::SimulationFormTemplate,
+        list_electrolyzers_template::ElectrolyzerSelectorTemplate, simulation_view::SimulationView,
     },
 };
 
@@ -20,7 +19,7 @@ use crate::{
 #[template(path = "pages/simulation.html")]
 pub struct SimulationPage {
     simulation_id: i32,
-    simulation_form: SimulationFormTemplate,
+    simulation_view: SimulationView,
     electrolyzer_details: ElectrolyzerDetailsTemplate,
 }
 
@@ -62,7 +61,7 @@ pub fn simulation_handler(
                 selected: true,
                 selectable: true,
             },
-            simulation_form: SimulationFormTemplate {
+            simulation_view: SimulationView {
                 generation_range: DateTimeRange {
                     start: String::from("2023-01-01T00:00"),
                     end: String::from("2023-07-31T23:59"),

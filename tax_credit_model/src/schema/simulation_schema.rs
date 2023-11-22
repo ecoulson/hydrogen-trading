@@ -4,13 +4,13 @@ use askama::Template;
 use rocket::FromForm;
 use serde::{Deserialize, Serialize};
 
-use crate::templates::simulation_form_template::SimulationFormTemplate;
+use crate::templates::simulation_view::SimulationView;
 
 use super::{
     errors::{Error, Result},
-    histogram::Histogram,
+    histogram::{Histogram, HistogramResponse},
     time::{DateTimeRange, Timestamp},
-    time_series::TimeSeriesChart,
+    time_series::{TimeSeriesChart, TimeSeriesChartResponse},
 };
 
 #[derive(FromForm, Deserialize, Serialize, Default, Debug, PartialEq)]
@@ -20,11 +20,8 @@ pub struct ExecuteSimulationRequest {
 }
 
 impl ExecuteSimulationRequest {
-    pub fn new(
-        electrolyzer_id: usize,
-        simulation_time_range: DateTimeRange,
-    ) -> ExecuteSimulationRequest {
-        ExecuteSimulationRequest {
+    pub fn new(electrolyzer_id: usize, simulation_time_range: DateTimeRange) -> Self {
+        Self {
             electrolyzer_id,
             simulation_time_range,
         }
@@ -32,10 +29,10 @@ impl ExecuteSimulationRequest {
 }
 
 #[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq)]
-#[template(path = "components/simulation_view.html")]
+#[template(path = "components/simulation_result.html")]
 pub struct ExecuteSimulationResponse {
     pub simulation_result: SimulationResult,
-    pub simulation_form: SimulationFormTemplate,
+    pub simulation_view: SimulationView,
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
@@ -63,11 +60,11 @@ pub struct TaxCreditSummary {
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
 pub struct SimulationResult {
-    pub hourly_histogram: Histogram,
+    pub hourly_histogram: HistogramResponse,
     pub tax_credit_summary: TaxCreditSummary,
-    pub emissions: TimeSeriesChart,
-    pub hydrogen_productions: TimeSeriesChart,
-    pub energy_costs: TimeSeriesChart,
+    pub emissions: TimeSeriesChartResponse,
+    pub hydrogen_productions: TimeSeriesChartResponse,
+    pub energy_costs: TimeSeriesChartResponse,
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
@@ -151,9 +148,7 @@ impl EnergySourcePortfolio {
         amount_mwh: f64,
     ) -> Result<EnergySourcePortfolio> {
         if amount_mwh > portfolio.total_electricity_mwh {
-            return Err(Error::invalid_argument(
-                "Total electricity exceeded",
-            ));
+            return Err(Error::invalid_argument("Total electricity exceeded"));
         }
 
         let scale_factor = amount_mwh / portfolio.total_electricity_mwh;
@@ -257,8 +252,8 @@ impl GenerationMetric {
         time_generated: &Timestamp,
         sale_price_usd_per_mwh: f64,
         portfolio: EnergySourcePortfolio,
-    ) -> GenerationMetric {
-        GenerationMetric {
+    ) -> Self {
+        Self {
             id: String::new(),
             plant_id,
             time_generated: Timestamp::new(time_generated.seconds, time_generated.nanos),

@@ -23,8 +23,8 @@ pub struct InMemorySimulationClient {
 }
 
 impl InMemorySimulationClient {
-    pub fn new() -> InMemorySimulationClient {
-        InMemorySimulationClient {
+    pub fn new() -> Self {
+        Self {
             simulation_store: Mutex::new(HashMap::new()),
             id: Mutex::new(0),
         }
