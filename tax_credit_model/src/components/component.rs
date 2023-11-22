@@ -22,4 +22,12 @@ impl Component {
     {
         Ok(HtmxTemplate::template(value))
     }
+
+    pub fn error<'a, T, E>(value: &'a str) -> ComponentResponse<T, E>
+    where
+        T: Template,
+        E: Template + From<&'a str>,
+    {
+        Err(HtmxTemplate::template(E::from(value)))
+    }
 }

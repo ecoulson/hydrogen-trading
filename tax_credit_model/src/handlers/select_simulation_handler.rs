@@ -3,7 +3,8 @@ use rocket::{form::Form, post, FromForm, State};
 use crate::{
     components::component::{Component, ComponentResponse},
     persistance::{
-        electrolyzer::ElectrolyzerClient, simulation::SimulationClient, user::UserClient,
+        electrolyzer::ElectrolyzerClient, simulation::SimulationClient,
+        simulation_selection::SimulationSelectionClient,
     },
     responders::{client_context::ClientContext, htmx_responder::HtmxHeadersBuilder},
     schema::{errors::BannerError, time::DateTimeRange, user::User},
@@ -22,19 +23,17 @@ pub struct SelectSimulationRequest {
 pub fn select_simulation_handler(
     request: Form<SelectSimulationRequest>,
     user: User,
-    user_client: &State<Box<dyn UserClient>>,
     client_context: ClientContext,
     simulation_client: &State<Box<dyn SimulationClient>>,
     electrolyzer_client: &State<Box<dyn ElectrolyzerClient>>,
+    simulation_selection: &State<Box<dyn SimulationSelectionClient>>,
 ) -> ComponentResponse<SimulationFormTemplate, BannerError> {
     let mut client_context = client_context;
-    let mut user = user;
-    user.set_simulation_id(request.simulation_id);
-    user_client.update_user(&user)?;
-    let simulation = simulation_client.get_simulation_state(&user.simulation_id())?;
+    let simulation = simulation_client.get_simulation_state(&request.simulation_id)?;
     let electrolyzers = electrolyzer_client.list_electrolyzers()?;
     let next_url = &format!("simulation/{}", simulation.id);
     let location = client_context.mut_location();
+    simulation_selection.select(user.id().clone(), request.simulation_id)?;
     location.set_path(&next_url);
 
     Component::component(

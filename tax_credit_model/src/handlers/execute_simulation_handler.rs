@@ -5,7 +5,7 @@ use crate::{
     logic::simulation::{simulate, SimulationState},
     persistance::{
         electrolyzer::ElectrolyzerClient, grid::GridClient, simulation::SimulationClient,
-        user::UserClient,
+        simulation_selection::SimulationSelectionClient,
     },
     responders::{client_context::ClientContext, htmx_responder::HtmxHeadersBuilder},
     schema::{
@@ -28,21 +28,19 @@ pub fn execute_simulation(
     power_grid_fetcher: &State<Box<dyn GridClient>>,
     electrolyzer_client: &State<Box<dyn ElectrolyzerClient>>,
     simulation_client: &State<Box<dyn SimulationClient>>,
-    user_client: &State<Box<dyn UserClient>>,
+    simulation_selection_client: &State<Box<dyn SimulationSelectionClient>>,
 ) -> ComponentResponse<ExecuteSimulationResponse, BannerError> {
-    let mut user = user;
     let mut client_context = client_context;
     let electrolyzer = electrolyzer_client.get_electrolyzer(request.electrolyzer_id)?;
     let power_grid = power_grid_fetcher.get_power_grid()?;
-    let current_simulation_id = user.simulation_id();
+    let current_simulation_id = simulation_selection_client.expect_current_selection(user.id())?;
     let mut next_simulation = SimulationState::default();
     next_simulation.electrolyzer_id = electrolyzer.id;
     let next_simulation = simulation_client.create_simulation_state(&next_simulation)?;
     let next_url = &format!("simulation/{}", next_simulation.id);
     let location = client_context.mut_location();
     location.set_path(&next_url);
-    user.set_simulation_id(next_simulation.id);
-    user_client.update_user(&user)?;
+    simulation_selection_client.select(user.id().clone(), next_simulation.id)?;
 
     Component::component(
         HtmxHeadersBuilder::new()

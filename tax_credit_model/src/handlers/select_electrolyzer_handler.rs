@@ -2,7 +2,10 @@ use rocket::{form::Form, post, FromForm, State};
 
 use crate::{
     components::component::{Component, ComponentResponse},
-    persistance::{electrolyzer::ElectrolyzerClient, simulation::SimulationClient},
+    persistance::{
+        electrolyzer::ElectrolyzerClient, simulation::SimulationClient,
+        simulation_selection::SimulationSelectionClient,
+    },
     responders::htmx_responder::HtmxHeadersBuilder,
     schema::{electrolyzer::ElectrolyzerDetailsTemplate, errors::BannerError, user::User},
 };
@@ -18,8 +21,10 @@ pub fn select_electrolyzer_handler(
     electrolyzer_client: &State<Box<dyn ElectrolyzerClient>>,
     simulation_client: &State<Box<dyn SimulationClient>>,
     user: User,
+    simulation_selection_client: &State<Box<dyn SimulationSelectionClient>>,
 ) -> ComponentResponse<ElectrolyzerDetailsTemplate, BannerError> {
-    let mut state = simulation_client.get_simulation_state(&user.simulation_id())?;
+    let simulation_id = simulation_selection_client.expect_current_selection(user.id())?;
+    let mut state = simulation_client.get_simulation_state(&simulation_id)?;
     let electrolyzer = electrolyzer_client.get_electrolyzer(request.electrolyzer_id)?;
     state.electrolyzer_id = electrolyzer.id;
     simulation_client.update(&state)?;
@@ -31,6 +36,7 @@ pub fn select_electrolyzer_handler(
         ElectrolyzerDetailsTemplate {
             electrolyzer,
             selected: true,
+            selectable: true,
         },
     )
 }

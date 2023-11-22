@@ -6,7 +6,8 @@ use tax_credit_model_server::{
     persistance::{
         electrolyzer::InMemoryElectrolyzerPersistanceClient,
         generation::DiskGenerationPersistanceClient, grid::InMemoryGridClient,
-        simulation::InMemorySimulationClient, user::InMemoryUserClient,
+        simulation::InMemorySimulationClient,
+        simulation_selection::InMemorySimulationSelectionClient, user::InMemoryUserClient,
     },
     server::{init_service, Dependencies, ServerConfiguration},
 };
@@ -25,14 +26,18 @@ pub async fn rocket() -> _ {
         grid_client: Box::new(InMemoryGridClient::new()),
         electrolyzer_client: Box::new(InMemoryElectrolyzerPersistanceClient::new()),
         simulation_client: Box::new(InMemorySimulationClient::new()),
-        generation_client: Box::new(DiskGenerationPersistanceClient::new(&format!(
-            "{}/{}/{}",
-            data_directory, "generations", "generations.data"
-        )).unwrap_or_else(|x| {
-            eprintln!("{}", x);
-            exit(1);
-        })),
-        user_client: Box::new(InMemoryUserClient::new())
+        generation_client: Box::new(
+            DiskGenerationPersistanceClient::new(&format!(
+                "{}/{}/{}",
+                data_directory, "generations", "generations.data"
+            ))
+            .unwrap_or_else(|x| {
+                eprintln!("{}", x);
+                exit(1);
+            }),
+        ),
+        user_client: Box::new(InMemoryUserClient::new()),
+        simulation_selection_client: Box::new(InMemorySimulationSelectionClient::new()),
     };
 
     fill_generations(configuration.clone(), &dependencies);

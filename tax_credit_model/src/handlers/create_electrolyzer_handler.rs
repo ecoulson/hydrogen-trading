@@ -48,6 +48,7 @@ pub fn create_electrolyzer_handler(
         ElectrolyzerDetailsTemplate {
             electrolyzer,
             selected: electrolyzers.is_empty(),
+            selectable: true,
         },
     )
 }

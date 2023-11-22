@@ -84,4 +84,5 @@ pub struct CreateElectrolyzerRequest {
 pub struct ElectrolyzerDetailsTemplate {
     pub electrolyzer: Electrolyzer,
     pub selected: bool,
+    pub selectable: bool,
 }

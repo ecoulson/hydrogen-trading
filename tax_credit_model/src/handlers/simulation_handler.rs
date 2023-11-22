@@ -5,7 +5,8 @@ use serde::{Deserialize, Serialize};
 use crate::{
     components::page::{Page, PageResponse},
     persistance::{
-        electrolyzer::ElectrolyzerClient, simulation::SimulationClient, user::UserClient,
+        electrolyzer::ElectrolyzerClient, simulation::SimulationClient,
+        simulation_selection::SimulationSelectionClient, user::UserClient,
     },
     responders::{htmx_responder::HtmxHeadersBuilder, user_context::UserContext},
     schema::{electrolyzer::ElectrolyzerDetailsTemplate, time::DateTimeRange, user::User},
@@ -30,6 +31,7 @@ pub fn simulation_handler(
     electrolyzer_client: &State<Box<dyn ElectrolyzerClient>>,
     simulation_client: &State<Box<dyn SimulationClient>>,
     user_client: &State<Box<dyn UserClient>>,
+    simulation_selection_client: &State<Box<dyn SimulationSelectionClient>>,
 ) -> PageResponse<SimulationPage> {
     let mut cookie = None;
     let mut user_context = user_context;
@@ -43,14 +45,13 @@ pub fn simulation_handler(
     let user = user_context.user_mut().unwrap();
     let electrolyzers = electrolyzer_client.list_electrolyzers()?;
     let simulation_state = simulation_client.get_simulation_state(&simulation_id)?;
-    user.set_simulation_id(simulation_state.id);
-    user_client.update_user(&user)?;
     let electrolyzer = electrolyzers
         .iter()
         .find(|electrolyzer| electrolyzer.id == simulation_state.electrolyzer_id)
         .ok_or_else(|| Status::NotFound)?
         .clone();
     let electrolyzer_id = electrolyzer.id.clone();
+    simulation_selection_client.select(user.id().clone(), simulation_id)?;
 
     Page::page(
         HtmxHeadersBuilder::new().set_cookie_if(cookie).build(),
@@ -59,6 +60,7 @@ pub fn simulation_handler(
             electrolyzer_details: ElectrolyzerDetailsTemplate {
                 electrolyzer,
                 selected: true,
+                selectable: true,
             },
             simulation_form: SimulationFormTemplate {
                 generation_range: DateTimeRange {

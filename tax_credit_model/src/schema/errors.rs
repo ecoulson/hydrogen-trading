@@ -101,6 +101,22 @@ impl BannerError {
     }
 }
 
+impl From<Error> for BannerError {
+    fn from(error: Error) -> Self {
+        BannerError {
+            message: error.to_string()
+        }
+    }
+}
+
+impl From<&str> for BannerError {
+    fn from(value: &str) -> Self {
+        BannerError {
+            message: String::from(value)
+        }
+    }
+}
+
 impl From<BannerError> for HtmxTemplate<BannerError> {
     fn from(value: BannerError) -> Self {
         value.to_htmx()

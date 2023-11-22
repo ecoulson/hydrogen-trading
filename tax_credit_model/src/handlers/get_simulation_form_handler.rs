@@ -4,7 +4,8 @@ use crate::{
     components::component::{Component, ComponentResponse},
     logic::simulation::SimulationState,
     persistance::{
-        electrolyzer::ElectrolyzerClient, simulation::SimulationClient, user::UserClient,
+        electrolyzer::ElectrolyzerClient, simulation::SimulationClient,
+        simulation_selection::SimulationSelectionClient,
     },
     responders::htmx_responder::HtmxHeadersBuilder,
     schema::{errors::BannerError, time::DateTimeRange, user::User},
@@ -19,9 +20,8 @@ pub fn get_simulation_form_handler(
     user: User,
     electrolyzer_client: &State<Box<dyn ElectrolyzerClient>>,
     simulation_client: &State<Box<dyn SimulationClient>>,
-    user_client: &State<Box<dyn UserClient>>,
+    simulation_selection_client: &State<Box<dyn SimulationSelectionClient>>,
 ) -> ComponentResponse<SimulationFormTemplate, BannerError> {
-    let mut user = user;
     let electrolyzers = electrolyzer_client.list_electrolyzers()?;
 
     if electrolyzers.is_empty() {
@@ -30,9 +30,8 @@ pub fn get_simulation_form_handler(
 
     let mut simulation_state = SimulationState::default();
     simulation_state.electrolyzer_id = electrolyzers[0].id;
-    let simulation_state = simulation_client.ensure_simulation_exists(&user.simulation_id())?;
-    user.set_simulation_id(simulation_state.id);
-    user_client.update_user(&user)?;
+    let simulation_id = simulation_selection_client.expect_current_selection(user.id())?;
+    let simulation_state = simulation_client.get_simulation_state(&simulation_id)?;
 
     Component::component(
         HtmxHeadersBuilder::new().build(),

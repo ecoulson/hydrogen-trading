@@ -16,13 +16,16 @@ pub fn get_active_electrolyzer_handler(
     electrolyzer_client: &State<Box<dyn ElectrolyzerClient>>,
     simulation_selection_client: &State<Box<dyn SimulationSelectionClient>>,
 ) -> ComponentResponse<ElectrolyzerDetailsTemplate, BannerError> {
-    let simulation_id = simulation_selection_client.expect_current_selection(user.id())?;
+    let simulation_id = simulation_selection_client.current_selection(user.id())?;
+
+    if simulation_id.is_none() {
+    }
+
     let simulation = simulation_client.get_simulation_state(&simulation_id)?;
     let electrolyzer = electrolyzer_client.get_electrolyzer(simulation.electrolyzer_id)?;
 
     Component::basic(ElectrolyzerDetailsTemplate {
         electrolyzer,
         selected: true,
-        selectable: true,
     })
 }

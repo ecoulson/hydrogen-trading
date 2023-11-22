@@ -4,7 +4,8 @@ use crate::{
     components::component::ComponentResponse,
     logic::simulation::SimulationState,
     persistance::{
-        electrolyzer::ElectrolyzerClient, simulation::SimulationClient, user::UserClient,
+        electrolyzer::ElectrolyzerClient, simulation::SimulationClient,
+        simulation_selection::SimulationSelectionClient,
     },
     responders::client_context::ClientContext,
     schema::{errors::BannerError, user::User},
@@ -17,9 +18,9 @@ use super::select_simulation_handler::{select_simulation_handler, SelectSimulati
 pub fn initialize_simulation_handler(
     user: User,
     client_context: ClientContext,
-    user_client: &State<Box<dyn UserClient>>,
     electrolyzer_client: &State<Box<dyn ElectrolyzerClient>>,
     simulation_client: &State<Box<dyn SimulationClient>>,
+    simulation_selection_client: &State<Box<dyn SimulationSelectionClient>>,
 ) -> ComponentResponse<SimulationFormTemplate, BannerError> {
     let electrolyzers = electrolyzer_client.list_electrolyzers()?;
 
@@ -34,9 +35,9 @@ pub fn initialize_simulation_handler(
             simulation_id: simulation.id,
         }),
         user,
-        user_client,
         client_context,
         simulation_client,
         electrolyzer_client,
+        simulation_selection_client,
     )
 }
