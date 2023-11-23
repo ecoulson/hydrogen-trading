@@ -386,7 +386,7 @@
             <span class="text-xl">{{ electrolyzer.name }}</span>
             <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">{{ electrolyzer.city }}, {{ electrolyzer.state
                 }}</span>
-            {% if selected %}
+            {% if self.is_selected() %}
             <span class="bg-blue-600 text-white rounded-full px-2 py-1 text-sm">Selected</span>
             {% endif %}
         </div>
@@ -401,10 +401,10 @@
         </div>
         <div class="px-4 py-2 hover:bg-gray-200">
             <div class="flex justify-between">
-                <h2 class="font-medium">Degredation Rate</h2>
+                <h2 class="font-medium">Degradation Rate</h2>
                 <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">% / Year</span>
             </div>
-            <p>{{ electrolyzer.degredation_rate }}</p>
+            <p>{{ electrolyzer.degradation_rate }}</p>
         </div>
         <div class="px-4 py-2 hover:bg-gray-200">
             <div class="flex justify-between">
@@ -446,9 +446,9 @@
             <p>{{ electrolyzer.replacement_cost }}</p>
         </div>
     </div>
-    {% if selectable %}
+    {% if self.is_selectable() %}
     <div class="sticky w-full bottom-0 py-4 left-0 flex justify-center bg-gray-200">
-        {% if selected %}
+        {% if self.is_selected() %}
         <button class="h-10 bg-gray-700 w-48 rounded-sm text-center font-medium text-white px-4 py-2" type="submit"
             hx-post="/select_electrolyzer" disabled hx-target="#sidebar" hx-swap="innerHTML">Use</button>
         {% else %}

@@ -7,7 +7,8 @@ use crate::{
     schema::{
         electrolyzer::{
             ConstantProduction, CreateElectrolyzerRequest, Electrolyzer,
-            ElectrolyzerDetailsTemplate, ProductionType,
+            ElectrolyzerDetailsActions, ElectrolyzerDetailsState, ElectrolyzerDetailsTemplate,
+            ProductionType,
         },
         errors::BannerError,
     },
@@ -23,7 +24,7 @@ pub fn create_electrolyzer_handler(
         id: 0,
         name: String::from(&request.name),
         replacement_threshold: request.replacement_threshold,
-        degredation_rate: request.degredation_rate,
+        degradation_rate: request.degradation_rate,
         capacity_mw: request.capacity_mw,
         opex: request.opex,
         capex: request.capex,
@@ -47,8 +48,11 @@ pub fn create_electrolyzer_handler(
             .build(),
         ElectrolyzerDetailsTemplate {
             electrolyzer,
-            selected: electrolyzers.is_empty(),
-            selectable: true,
+            state: match electrolyzers.is_empty() {
+                true => ElectrolyzerDetailsState::Selected,
+                false => ElectrolyzerDetailsState::Default,
+            },
+            actions: ElectrolyzerDetailsActions::Selectable,
         },
     )
 }

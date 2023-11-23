@@ -1,16 +1,15 @@
-<div id="electrolyzer-selector" hx-trigger="electrolyzer-selected from:body" hx-post="/electrolyzer_selector"
-    hx-swap="outerHTML" hx-target="#electrolyzer-selector">
-    <div hx-trigger="change" hx-target="#sidebar" hx-post="/select_electrolyzer" hx-swap="innerHTML">
-        <label for="electrolyzer-select">Electrolyzer</label>
-        <br />
-        <select class="border h-7" name="electrolyzer_id" id="electrolyzer-select">
-            {% for electrolyzer in electrolyzers %}
-            {% if electrolyzer.id == selected_id %}
-            <option selected value="{{ electrolyzer.id }}">{{ electrolyzer.name }}</option>
-            {% else %}
-            <option value="{{ electrolyzer.id }}">{{ electrolyzer.name }}</option>
-            {% endif %}
-            {% endfor %}
-        </select>
-    </div>
+<div id="electrolyzer-selector" hx-trigger="change" hx-target="#sidebar" hx-post="/select_electrolyzer"
+    hx-swap="innerHTML">
+    <label for="electrolyzer-select">Electrolyzer</label>
+    <br />
+    <select class="border h-7" name="electrolyzer_id" hx-trigger="electrolyzer-selected from:body"
+        hx-post="/electrolyzer_selector" hx-swap="outerHTML" hx-target="#electrolyzer-selector">
+        {% for electrolyzer in electrolyzers %}
+        {% if electrolyzer.id == selected_id %}
+        <option selected value="{{ electrolyzer.id }}">{{ electrolyzer.name }}</option>
+        {% else %}
+        <option value="{{ electrolyzer.id }}">{{ electrolyzer.name }}</option>
+        {% endif %}
+        {% endfor %}
+    </select>
 </div>

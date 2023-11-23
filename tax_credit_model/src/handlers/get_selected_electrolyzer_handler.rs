@@ -6,7 +6,13 @@ use crate::{
         electrolyzer::ElectrolyzerClient, simulation::SimulationClient,
         simulation_selection::SimulationSelectionClient,
     },
-    schema::{electrolyzer::ElectrolyzerDetailsTemplate, errors::BannerError, user::User},
+    schema::{
+        electrolyzer::{
+            ElectrolyzerDetailsActions, ElectrolyzerDetailsState, ElectrolyzerDetailsTemplate,
+        },
+        errors::BannerError,
+        user::User,
+    },
 };
 
 #[post("/get_selected_electrolyzer")]
@@ -22,7 +28,7 @@ pub fn get_selected_electrolyzer_handler(
 
     Component::basic(ElectrolyzerDetailsTemplate {
         electrolyzer,
-        selected: true,
-        selectable: true,
+        state: ElectrolyzerDetailsState::Selected,
+        actions: ElectrolyzerDetailsActions::Selectable,
     })
 }

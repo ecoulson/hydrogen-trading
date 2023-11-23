@@ -11,7 +11,7 @@ pub struct ConstantProduction {
 pub struct Electrolyzer {
     pub id: usize,
     pub replacement_threshold: f64,
-    pub degredation_rate: f64,
+    pub degradation_rate: f64,
     pub capacity_mw: f64,
     pub production_type: ProductionType,
     pub production: ConstantProduction,
@@ -29,7 +29,7 @@ impl Electrolyzer {
         name: &str,
         replacement_threshold: f64,
         replacement_cost: f64,
-        degredation_rate: f64,
+        degradation_rate: f64,
         capacity_mw: f64,
         production_rate: f64,
         capex: f64,
@@ -40,7 +40,7 @@ impl Electrolyzer {
             name: String::from(name),
             replacement_threshold,
             replacement_cost,
-            degredation_rate,
+            degradation_rate,
             capacity_mw,
             production_type: ProductionType::Constant,
             production: ConstantProduction {
@@ -70,7 +70,7 @@ pub struct CreateProductionRequest {
 #[derive(FromForm, Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
 pub struct CreateElectrolyzerRequest {
     pub replacement_threshold: f64,
-    pub degredation_rate: f64,
+    pub degradation_rate: f64,
     pub capacity_mw: f64,
     pub production_method: CreateProductionRequest,
     pub capex: f64,
@@ -83,6 +83,30 @@ pub struct CreateElectrolyzerRequest {
 #[template(path = "components/electrolyzer_details.html")]
 pub struct ElectrolyzerDetailsTemplate {
     pub electrolyzer: Electrolyzer,
-    pub selected: bool,
-    pub selectable: bool,
+    pub state: ElectrolyzerDetailsState,
+    pub actions: ElectrolyzerDetailsActions,
+}
+
+impl ElectrolyzerDetailsTemplate {
+    pub fn is_selected(&self) -> bool {
+        matches!(self.state, ElectrolyzerDetailsState::Selected)
+    }
+
+    pub fn is_selectable(&self) -> bool {
+        matches!(self.actions, ElectrolyzerDetailsActions::Selectable)
+    }
+}
+
+#[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
+pub enum ElectrolyzerDetailsState {
+    Selected,
+    #[default]
+    Default,
+}
+
+#[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
+pub enum ElectrolyzerDetailsActions {
+    Selectable,
+    #[default]
+    None,
 }

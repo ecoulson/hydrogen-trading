@@ -7,7 +7,13 @@ use crate::{
         simulation_selection::SimulationSelectionClient,
     },
     responders::htmx_responder::HtmxHeadersBuilder,
-    schema::{electrolyzer::ElectrolyzerDetailsTemplate, errors::BannerError, user::User},
+    schema::{
+        electrolyzer::{
+            ElectrolyzerDetailsActions, ElectrolyzerDetailsState, ElectrolyzerDetailsTemplate,
+        },
+        errors::BannerError,
+        user::User,
+    },
 };
 
 #[derive(FromForm, Debug, Default)]
@@ -35,8 +41,8 @@ pub fn select_electrolyzer_handler(
             .build(),
         ElectrolyzerDetailsTemplate {
             electrolyzer,
-            selected: true,
-            selectable: true,
+            state: ElectrolyzerDetailsState::Selected,
+            actions: ElectrolyzerDetailsActions::Selectable,
         },
     )
 }

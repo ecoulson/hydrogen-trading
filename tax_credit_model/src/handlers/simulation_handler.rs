@@ -9,7 +9,13 @@ use crate::{
         simulation_selection::SimulationSelectionClient, user::UserClient,
     },
     responders::{htmx_responder::HtmxHeadersBuilder, user_context::UserContext},
-    schema::{electrolyzer::ElectrolyzerDetailsTemplate, time::DateTimeRange, user::User},
+    schema::{
+        electrolyzer::{
+            ElectrolyzerDetailsActions, ElectrolyzerDetailsState, ElectrolyzerDetailsTemplate,
+        },
+        time::DateTimeRange,
+        user::User,
+    },
     templates::{
         list_electrolyzers_template::ElectrolyzerSelectorTemplate, simulation_view::SimulationView,
     },
@@ -58,8 +64,8 @@ pub fn simulation_handler(
             simulation_id: simulation_state.id,
             electrolyzer_details: ElectrolyzerDetailsTemplate {
                 electrolyzer,
-                selected: true,
-                selectable: true,
+                state: ElectrolyzerDetailsState::Selected,
+                actions: ElectrolyzerDetailsActions::Selectable,
             },
             simulation_view: SimulationView {
                 generation_range: DateTimeRange {

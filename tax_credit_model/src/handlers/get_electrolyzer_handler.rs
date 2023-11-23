@@ -6,7 +6,13 @@ use crate::{
         electrolyzer::ElectrolyzerClient, simulation::SimulationClient,
         simulation_selection::SimulationSelectionClient,
     },
-    schema::{electrolyzer::ElectrolyzerDetailsTemplate, errors::BannerError, user::User},
+    schema::{
+        electrolyzer::{
+            ElectrolyzerDetailsActions, ElectrolyzerDetailsState, ElectrolyzerDetailsTemplate,
+        },
+        errors::BannerError,
+        user::User,
+    },
 };
 
 #[derive(FromForm)]
@@ -28,16 +34,18 @@ pub fn get_electrolyzer_handler(
     if simulation_id.is_none() {
         return Component::basic(ElectrolyzerDetailsTemplate {
             electrolyzer,
-            selected: false,
-            selectable: false,
-        })
+            actions: ElectrolyzerDetailsActions::None,
+            state: ElectrolyzerDetailsState::Default,
+        });
     }
 
     let simulation = simulation_client.get_simulation_state(&simulation_id.unwrap())?;
 
+    if simulation.electrolyzer_id == request.electrolyzer_id {}
+
     Component::basic(ElectrolyzerDetailsTemplate {
         electrolyzer,
-        selected: simulation.electrolyzer_id == request.electrolyzer_id,
-        selectable: true,
+        state: simulation.electrolyzer_state(&request.electrolyzer_id),
+        actions: ElectrolyzerDetailsActions::Selectable,
     })
 }

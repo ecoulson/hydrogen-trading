@@ -8,9 +8,9 @@ use crate::templates::simulation_view::SimulationView;
 
 use super::{
     errors::{Error, Result},
-    histogram::{Histogram, HistogramResponse},
+    histogram::HistogramResponse,
     time::{DateTimeRange, Timestamp},
-    time_series::{TimeSeriesChart, TimeSeriesChartResponse},
+    time_series::TimeSeriesChartResponse,
 };
 
 #[derive(FromForm, Deserialize, Serialize, Default, Debug, PartialEq)]
