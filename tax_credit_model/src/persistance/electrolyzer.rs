@@ -3,19 +3,19 @@ use std::collections::HashMap;
 use crate::{
     concurrency::mutex::Mutex,
     schema::{
-        electrolyzer::Electrolyzer,
+        electrolyzer::{Electrolyzer, ElectrolyzerId},
         errors::{Error, Result},
     },
 };
 
 pub trait ElectrolyzerClient: Send + Sync {
-    fn get_electrolyzer(&self, id: usize) -> Result<Electrolyzer>;
+    fn get_electrolyzer(&self, id: ElectrolyzerId) -> Result<Electrolyzer>;
     fn create_electrolyzer(&self, electrolyzer: &Electrolyzer) -> Result<Electrolyzer>;
     fn list_electrolyzers(&self) -> Result<Vec<Electrolyzer>>;
 }
 
 pub struct InMemoryElectrolyzerPersistanceClient {
-    electrolyzers_by_id: Mutex<HashMap<usize, Electrolyzer>>,
+    electrolyzers_by_id: Mutex<HashMap<ElectrolyzerId, Electrolyzer>>,
 }
 
 impl InMemoryElectrolyzerPersistanceClient {
@@ -27,7 +27,7 @@ impl InMemoryElectrolyzerPersistanceClient {
 }
 
 impl ElectrolyzerClient for InMemoryElectrolyzerPersistanceClient {
-    fn get_electrolyzer(&self, id: usize) -> Result<Electrolyzer> {
+    fn get_electrolyzer(&self, id: ElectrolyzerId) -> Result<Electrolyzer> {
         Ok(Mutex::lock(&self.electrolyzers_by_id)?
             .get(&id)
             .ok_or_else(|| Error::not_found(&id.to_string()))?

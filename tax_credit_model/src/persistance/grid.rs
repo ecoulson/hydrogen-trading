@@ -4,7 +4,7 @@ use crate::{
     concurrency::mutex::Mutex,
     schema::{
         errors::{Error, Result},
-        simulation_schema::{GenerationMetric, PowerGrid, PowerPlant},
+        simulation_schema::{GenerationMetric, PowerGrid, PowerPlant, PowerPlantId},
     },
 };
 
@@ -14,7 +14,7 @@ pub trait GridClient: Send + Sync {
 }
 
 pub struct InMemoryGridClient {
-    generations_store: Mutex<HashMap<i32, Vec<GenerationMetric>>>,
+    generations_store: Mutex<HashMap<PowerPlantId, Vec<GenerationMetric>>>,
 }
 
 impl InMemoryGridClient {

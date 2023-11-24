@@ -13,6 +13,7 @@ use crate::{
         electrolyzer::{
             ElectrolyzerDetailsActions, ElectrolyzerDetailsState, ElectrolyzerDetailsTemplate,
         },
+        simulation_schema::SimulationId,
         time::DateTimeRange,
         user::User,
     },
@@ -24,7 +25,7 @@ use crate::{
 #[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq)]
 #[template(path = "pages/simulation.html")]
 pub struct SimulationPage {
-    simulation_id: i32,
+    simulation_id: SimulationId,
     simulation_view: SimulationView,
     electrolyzer_details: ElectrolyzerDetailsTemplate,
 }
@@ -32,7 +33,7 @@ pub struct SimulationPage {
 #[get("/simulation/<simulation_id>")]
 pub fn simulation_handler(
     user_context: UserContext,
-    simulation_id: i32,
+    simulation_id: SimulationId,
     electrolyzer_client: &State<Box<dyn ElectrolyzerClient>>,
     simulation_client: &State<Box<dyn SimulationClient>>,
     user_client: &State<Box<dyn UserClient>>,

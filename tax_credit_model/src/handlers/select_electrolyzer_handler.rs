@@ -10,6 +10,7 @@ use crate::{
     schema::{
         electrolyzer::{
             ElectrolyzerDetailsActions, ElectrolyzerDetailsState, ElectrolyzerDetailsTemplate,
+            ElectrolyzerId,
         },
         errors::BannerError,
         user::User,
@@ -18,7 +19,7 @@ use crate::{
 
 #[derive(FromForm, Debug, Default)]
 pub struct SelectElectrolyzerHandlerRequest {
-    electrolyzer_id: usize,
+    electrolyzer_id: ElectrolyzerId,
 }
 
 #[post("/select_electrolyzer", data = "<request>")]

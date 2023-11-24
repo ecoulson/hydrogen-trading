@@ -7,16 +7,17 @@ use crate::{
         simulation_selection::SimulationSelectionClient,
     },
     responders::{client_context::ClientContext, htmx_responder::HtmxHeadersBuilder},
-    schema::{errors::BannerError, time::DateTimeRange, user::User},
+    schema::{
+        errors::BannerError, simulation_schema::SimulationId, time::DateTimeRange, user::User,
+    },
     templates::{
-        list_electrolyzers_template::ElectrolyzerSelectorTemplate,
-        simulation_view::SimulationView,
+        list_electrolyzers_template::ElectrolyzerSelectorTemplate, simulation_view::SimulationView,
     },
 };
 
 #[derive(Debug, FromForm)]
 pub struct SelectSimulationRequest {
-    pub simulation_id: i32,
+    pub simulation_id: SimulationId,
 }
 
 #[post("/select_simulation", data = "<request>")]

@@ -2,6 +2,8 @@ use askama::Template;
 use rocket::{FromForm, FromFormField};
 use serde::{Deserialize, Serialize};
 
+pub type ElectrolyzerId = usize;
+
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone, Copy)]
 pub struct ConstantProduction {
     pub conversion_rate: f64,
@@ -9,7 +11,7 @@ pub struct ConstantProduction {
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
 pub struct Electrolyzer {
-    pub id: usize,
+    pub id: ElectrolyzerId,
     pub replacement_threshold: f64,
     pub degradation_rate: f64,
     pub capacity_mw: f64,
@@ -25,7 +27,7 @@ pub struct Electrolyzer {
 
 impl Electrolyzer {
     pub fn constant_production(
-        id: usize,
+        id: ElectrolyzerId,
         name: &str,
         replacement_threshold: f64,
         replacement_cost: f64,

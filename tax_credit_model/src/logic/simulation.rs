@@ -3,12 +3,12 @@ use std::collections::HashMap;
 use crate::{
     persistance::simulation::SimulationClient,
     schema::{
-        electrolyzer::{Electrolyzer, ElectrolyzerDetailsState},
+        electrolyzer::{Electrolyzer, ElectrolyzerDetailsState, ElectrolyzerId},
         errors::{Error, Result},
         histogram::{Histogram, HistogramDataset, HistogramResponse, Labels},
         simulation_schema::{
             EmissionEvent, EnergySourcePortfolio, EnergyTransaction, HydrogenProductionEvent,
-            PowerGrid, PowerPlant, SimulationResult, TaxCredit45V, TaxCredit45VTier,
+            PowerGrid, PowerPlant, SimulationId, SimulationResult, TaxCredit45V, TaxCredit45VTier,
             TaxCreditSummary,
         },
         time::{DateTimeRange, Timestamp},
@@ -28,8 +28,8 @@ const BIOMASS_MWH_TO_CO2: f64 = 530.82;
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
 pub struct SimulationState {
-    pub id: i32,
-    pub electrolyzer_id: usize,
+    pub id: SimulationId,
+    pub electrolyzer_id: ElectrolyzerId,
     pub emissions: Vec<EmissionEvent>,
     pub hydrogen_productions: Vec<HydrogenProductionEvent>,
     pub transactions: Vec<EnergyTransaction>,
@@ -38,7 +38,7 @@ pub struct SimulationState {
 }
 
 impl SimulationState {
-    pub fn electrolyzer_state(&self, electrolyzer_id: &usize) -> ElectrolyzerDetailsState {
+    pub fn electrolyzer_state(&self, electrolyzer_id: &ElectrolyzerId) -> ElectrolyzerDetailsState {
         if &self.electrolyzer_id == electrolyzer_id {
             ElectrolyzerDetailsState::Selected
         } else {
@@ -48,7 +48,7 @@ impl SimulationState {
 }
 
 pub fn simulate(
-    simulation_id: i32,
+    simulation_id: SimulationId,
     power_grid: &PowerGrid,
     electrolyzer: &Electrolyzer,
     time_range: &DateTimeRange,
@@ -255,7 +255,7 @@ fn produce_emissions_graph(state: &SimulationState) -> Result<TimeSeriesChartRes
 }
 
 fn make_optimal_transactions(
-    simulation_id: i32,
+    simulation_id: SimulationId,
     timestamp: &Timestamp,
     electrolyzer: &Electrolyzer,
     power_grid: &PowerGrid,
@@ -268,7 +268,7 @@ fn make_optimal_transactions(
 }
 
 fn purchase(
-    simulation_id: i32,
+    simulation_id: SimulationId,
     electrolyzer: &Electrolyzer,
     power_plant: &PowerPlant,
     amount_mwh: f64,
@@ -309,7 +309,7 @@ fn create_energy_source_portfolio(transactions: &Vec<EnergyTransaction>) -> Ener
 }
 
 fn create_emission_event(
-    simulation_id: i32,
+    simulation_id: SimulationId,
     timestamp: &Timestamp,
     electrolyzer: &Electrolyzer,
     portfolio: &EnergySourcePortfolio,
@@ -329,7 +329,7 @@ fn create_emission_event(
 }
 
 fn create_hydrogen_production_event(
-    simulation_id: i32,
+    simulation_id: SimulationId,
     timestamp: &Timestamp,
     electrolyzer: &Electrolyzer,
     portfolio: &EnergySourcePortfolio,

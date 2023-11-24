@@ -16,7 +16,7 @@ pub trait UserClient: Sync + Send {
 
 pub struct InMemoryUserClient {
     id: Mutex<UserId>,
-    user_by_id: Mutex<HashMap<usize, User>>,
+    user_by_id: Mutex<HashMap<UserId, User>>,
 }
 
 impl InMemoryUserClient {

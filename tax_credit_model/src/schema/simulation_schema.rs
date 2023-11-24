@@ -7,20 +7,24 @@ use serde::{Deserialize, Serialize};
 use crate::templates::simulation_view::SimulationView;
 
 use super::{
+    electrolyzer::ElectrolyzerId,
     errors::{Error, Result},
     histogram::HistogramResponse,
     time::{DateTimeRange, Timestamp},
     time_series::TimeSeriesChartResponse,
 };
 
+pub type SimulationId = usize;
+pub type PowerPlantId = usize;
+
 #[derive(FromForm, Deserialize, Serialize, Default, Debug, PartialEq)]
 pub struct ExecuteSimulationRequest {
-    pub electrolyzer_id: usize,
+    pub electrolyzer_id: ElectrolyzerId,
     pub simulation_time_range: DateTimeRange,
 }
 
 impl ExecuteSimulationRequest {
-    pub fn new(electrolyzer_id: usize, simulation_time_range: DateTimeRange) -> Self {
+    pub fn new(electrolyzer_id: ElectrolyzerId, simulation_time_range: DateTimeRange) -> Self {
         Self {
             electrolyzer_id,
             simulation_time_range,
@@ -69,16 +73,16 @@ pub struct SimulationResult {
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
 pub struct EmissionEvent {
-    pub simulation_id: i32,
-    pub electrolyzer_id: usize,
+    pub simulation_id: SimulationId,
+    pub electrolyzer_id: ElectrolyzerId,
     pub emission_timestamp: Timestamp,
     pub amount_emitted_kg: f64,
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
 pub struct HydrogenProductionEvent {
-    pub simulation_id: i32,
-    pub electrolyzer_id: usize,
+    pub simulation_id: SimulationId,
+    pub electrolyzer_id: ElectrolyzerId,
     pub production_timestamp: Timestamp,
     pub kg_hydrogen: f64,
 }
@@ -182,24 +186,6 @@ impl PowerGrid {
     }
 }
 
-#[derive(Deserialize, Serialize, Default, Debug, PartialEq, Eq)]
-pub enum PolicyType {
-    #[default]
-    PPAAgreement,
-}
-
-#[derive(Deserialize, Serialize, Default, Debug, PartialEq, Eq)]
-pub struct Policy {
-    pub policy_type: PolicyType,
-    pub ppa_agreement: PPAAgreement,
-}
-
-#[derive(Deserialize, Serialize, Default, Debug, PartialEq, Eq)]
-pub struct PPAAgreement {
-    pub plant_id: i32,
-    pub electrolyzer_id: usize,
-}
-
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq, Eq, Clone)]
 pub enum EnergySource {
     #[default]
@@ -239,8 +225,7 @@ impl FromStr for EnergySource {
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
 pub struct GenerationMetric {
-    pub id: String,
-    pub plant_id: i32,
+    pub plant_id: PowerPlantId,
     pub time_generated: Timestamp,
     pub sale_price_usd_per_mwh: f64,
     pub portfolio: EnergySourcePortfolio,
@@ -248,13 +233,12 @@ pub struct GenerationMetric {
 
 impl GenerationMetric {
     pub fn new(
-        plant_id: i32,
+        plant_id: PowerPlantId,
         time_generated: &Timestamp,
         sale_price_usd_per_mwh: f64,
         portfolio: EnergySourcePortfolio,
     ) -> Self {
         Self {
-            id: String::new(),
             plant_id,
             time_generated: Timestamp::new(time_generated.seconds, time_generated.nanos),
             sale_price_usd_per_mwh,
@@ -265,7 +249,7 @@ impl GenerationMetric {
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
 pub struct PowerPlant {
-    pub plant_id: i32,
+    pub plant_id: PowerPlantId,
     pub generations: Vec<GenerationMetric>,
 }
 
@@ -305,9 +289,9 @@ pub struct TaxCredit45V {
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
 pub struct EnergyTransaction {
-    pub simulation_id: i32,
-    pub electrolyzer_id: usize,
-    pub plant_id: i32,
+    pub simulation_id: SimulationId,
+    pub electrolyzer_id: ElectrolyzerId,
+    pub plant_id: PowerPlantId,
     pub timestamp: Timestamp,
     pub price_usd: f64,
     pub portfolio: EnergySourcePortfolio,

@@ -4,14 +4,15 @@ use crate::{
     concurrency::mutex::Mutex,
     schema::{
         errors::{Error, Result},
+        simulation_schema::SimulationId,
         user::UserId,
     },
 };
 
-pub type SimulationSelection = i32;
+pub type SimulationSelection = usize;
 
 pub trait SimulationSelectionClient: Sync + Send {
-    fn select(&self, user_id: UserId, simulation_id: i32) -> Result<SimulationSelection>;
+    fn select(&self, user_id: UserId, simulation_id: SimulationId) -> Result<SimulationSelection>;
     fn current_selection(&self, user_id: &UserId) -> Result<Option<SimulationSelection>>;
     fn expect_current_selection(&self, user_id: &UserId) -> Result<SimulationSelection>;
     fn unselect(&self, user_id: &UserId) -> Result<()>;
@@ -30,7 +31,7 @@ impl InMemorySimulationSelectionClient {
 }
 
 impl SimulationSelectionClient for InMemorySimulationSelectionClient {
-    fn select(&self, user_id: UserId, simulation_id: i32) -> Result<SimulationSelection> {
+    fn select(&self, user_id: UserId, simulation_id: SimulationId) -> Result<SimulationSelection> {
         self.selection_by_user_id
             .lock()?
             .insert(user_id, simulation_id);

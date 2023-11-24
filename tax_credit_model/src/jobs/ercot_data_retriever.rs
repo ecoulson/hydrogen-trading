@@ -148,7 +148,6 @@ impl ErcotDataRetrieverJob {
                     );
 
                 Ok(GenerationMetric {
-                    id: String::new(),
                     plant_id: 0,
                     time_generated: price.delivery_timestamp.clone(),
                     portfolio,
