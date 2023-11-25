@@ -1,4 +1,4 @@
-<form class="w-full h-full flex flex-col" hx-post="/create_electrolyzer" hx-target="#sidebar" hx-swap="innerHTML">
+<form class="w-full h-full flex flex-col">
     <div class="sticky bg-gray-100 z-10 top-0 p-4 cursor-pointer flex items-center" hx-post="/list_electrolyzers"
         hx-trigger="click" hx-target="#sidebar" hx-swap="innerHTML">
         <svg width="17" height="16" viewBox="0 0 17 16" class="fill-black" xmlns="http://www.w3.org/2000/svg">
@@ -8,59 +8,59 @@
         <h1 class="px-4 text-lg text-center">New Electrolyzer</h1>
     </div>
     <div class="flex grow flex-col">
-        <div class="flex flex-col p-4">
+        <div class="flex flex-col px-4 py-2">
             <label class="font-medium" for="name">Name</label>
             <input placeholder="Name" autocomplete="name" class="border" id="name" name="name" />
         </div>
-        <div class="flex flex-col p-4">
+        <div class="flex flex-col py-2 px-4">
             <div class="flex justify-between py-2">
                 <label class="font-medium" for="replacement_threshold">Replacement Threshold</label>
                 <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">%</span>
             </div>
             <input value="0" class="border" id="replacement_threshold" name="replacement_threshold" />
         </div>
-        <div class="flex flex-col p-4">
+        <div class="flex flex-col py-2 px-4">
             <div class="flex justify-between py-2">
                 <label for="degradation_rate">Degradation Rate</label>
                 <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">% / Year</span>
             </div>
             <input value="0" class="border" id="degradation_rate" name="degradation_rate" />
         </div>
-        <div class="flex flex-col p-4">
+        <div class="flex flex-col py-2 px-4">
             <div class="flex justify-between py-2">
                 <label class="font-medium" for="capacity_mw">Capacity</label>
                 <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">MW</span>
             </div>
             <input value="0" class="border" id="capacity_mw" name="capacity_mw" />
         </div>
-        <div class="flex flex-col p-4">
+        <div class="flex flex-col py-2 px-4">
             <div class="flex justify-between py-2">
                 <label class="font-medium" for="capex">Capex</label>
                 <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">$</span>
             </div>
             <input value="0" class="border" id="capex" name="capex" />
         </div>
-        <div class="flex flex-col p-4">
+        <div class="flex flex-col py-2 px-4">
             <div class="flex justify-between py-2">
                 <label class="font-medium" for="opex">Opex</label>
                 <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">$ / Hour</span>
             </div>
             <input value="0" class="border" id="opex" name="opex" />
         </div>
-        <div class="flex flex-col p-4">
+        <div class="flex flex-col py-2 px-4">
             <div class="flex justify-between py-2">
                 <label class="font-medium" for="replacement_cost">Replacement Cost</label>
                 <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">$ / Replacement</span>
             </div>
             <input value="0" class="border" id="replacement_cost" name="replacement_cost" />
         </div>
-        <div class="flex flex-col p-4 hidden">
+        <div class="flex flex-col py-2 px-4 hidden">
             <label class="font-medium" for="production-selector">Production Type</label>
             <select class="border" id="production-selector" value="Constant" name="production_method.production_type">
                 <option>Constant</option>
             </select>
         </div>
-        <div class="flex flex-col p-4">
+        <div class="flex flex-col py-2 px-4">
             <div class="flex justify-between py-2">
                 <label class="font-medium" for="production_method.conversion_rate_constant">Production Rate</label>
                 <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">kg / MW</span>
@@ -70,8 +70,6 @@
         </div>
     </div>
     <div class="sticky bottom-0 w-full flex justify-center bg-gray-200 py-4">
-        <button type="submit"
-            class="h-10 bg-blue-600 w-48 rounded-sm text-center font-semibold text-white px-4 py-2">Create
-            Electrolyzer</button>
+        {{ create_electrolyzer_button|safe }}
     </div>
 </form>

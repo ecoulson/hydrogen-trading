@@ -1,17 +1,15 @@
-<div class="w-full h-full flex flex-col items-center" hx-post="/list_electrolyzers"
-    hx-trigger="list-simulations from:body" hx-target="#sidebar">
+<div class="w-full h-full flex flex-col items-center">
+    {{ list_simulation_listener|safe }}
     <div class="px-4 py-2 w-full">
         <input class="border w-full" name="query" placeholder="Search for electrolyzer"
             hx-trigger="keyup changed delay:500ms" hx-post="/search_electrolyzers"
             hx-target="#electrolyzer-search-results" />
     </div>
-    <div class="hidden" hx-post="/get_selected_electrolyzer" hx-trigger="simulation-selected from:body"
-        hx-target="#sidebar"></div>
+    {{ select_simulation_listener|safe }}
     <div id="electrolyzer-search-results" class="w-full flex flex-col gap-y-4 py-2 px-4 grow overflow-y-scroll">
         {{ search_results|safe }}
     </div>
     <div class="sticky w-full bottom-0 py-4 left-0 flex justify-center bg-gray-200">
-        <button class="h-10 bg-blue-600 w-48 rounded-sm text-center font-semibold text-white px-4 py-2"
-            hx-post="/create_electrolyzer_form" hx-target="#sidebar" hx-swap="innerHTML">Create Electrolyzer</button>
+        {{ create_electrolyzer_button|safe }}
     </div>
 </div>

@@ -2,8 +2,8 @@
     hx-swap="innerHTML">
     <label for="electrolyzer-select">Electrolyzer</label>
     <br />
-    <select class="border h-7" name="electrolyzer_id" hx-trigger="electrolyzer-selected from:body"
-        hx-post="/electrolyzer_selector" hx-swap="outerHTML" hx-target="#electrolyzer-selector">
+    {{ select_electrolyzer_listener|safe }}
+    <select class="border h-7" name="electrolyzer_id">
         {% for electrolyzer in electrolyzers %}
         {% if electrolyzer.id == selected_id %}
         <option selected value="{{ electrolyzer.id }}">{{ electrolyzer.name }}</option>

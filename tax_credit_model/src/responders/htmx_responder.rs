@@ -3,7 +3,7 @@ use std::io::Cursor;
 use askama;
 use rocket::{http::ContentType, response::Responder, Response};
 
-use crate::schema::errors::Error;
+use crate::{client::events::ClientEvent, schema::errors::Error};
 
 const HX_TRIGGER: &str = "HX-Trigger";
 const HX_PUSH_URL: &str = "HX-Push-Url";
@@ -102,8 +102,8 @@ impl HtmxHeadersBuilder {
         self
     }
 
-    pub fn trigger(mut self, value: &str) -> Self {
-        self.headers.trigger = Some(String::from(value));
+    pub fn trigger(mut self, value: ClientEvent) -> Self {
+        self.headers.trigger = Some(value.to_string());
 
         self
     }
@@ -144,7 +144,7 @@ where
     T: askama::Template,
 {
     pub fn new(headers: HtmxHeaders, template: T) -> Self {
-        Self  {
+        Self {
             html: template,
             headers,
         }

@@ -1,7 +1,11 @@
 use rocket::{form::Form, post, FromForm, State};
 
 use crate::{
-    components::component::{Component, ComponentResponse},
+    client::events::ClientEvent,
+    components::{
+        component::{Component, ComponentResponse},
+        event::EventListenerBuilder, button::ButtonBuilder,
+    },
     persistance::{
         electrolyzer::ElectrolyzerClient, simulation::SimulationClient,
         simulation_selection::SimulationSelectionClient,
@@ -38,12 +42,27 @@ pub fn select_electrolyzer_handler(
 
     Component::component(
         HtmxHeadersBuilder::new()
-            .trigger("electrolyzer-selected")
+            .trigger(ClientEvent::SelectElectrolyzer)
             .build(),
         ElectrolyzerDetailsTemplate {
             electrolyzer,
             state: ElectrolyzerDetailsState::Selected,
             actions: ElectrolyzerDetailsActions::Selectable,
+            list_simulations_listener: EventListenerBuilder::new()
+                .event(ClientEvent::ListSimulations)
+                .endpoint("/list_electrolyzers")
+                .target("#sidebar")
+                .build(),
+            select_simulation_listener: EventListenerBuilder::new()
+                .event(ClientEvent::SelectSimulation)
+                .endpoint("/get_selected_electrolyzer")
+                .target("#sidebar")
+                .build(),
+            select_electrolyzer_button: ButtonBuilder::new()
+                .endpoint("/select_electrolyzer")
+                .target("#sidebar")
+                .text("Use")
+                .build(),
         },
     )
 }

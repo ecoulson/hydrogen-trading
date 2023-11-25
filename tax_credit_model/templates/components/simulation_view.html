@@ -1,7 +1,6 @@
-<div class="sticky z-10 top-0 w-full flex items-center gap-x-2 justify-between bg-gray-200"
-    hx-trigger="create-electrolyzer from:body" hx-target="#dataplane" hx-post="/get_selected_simulation">
-    <form class="flex gap-4 justify-evenly items-center w-full bg-slate-100 px-4" hx-swap="innerHTML"
-        hx-target="#simulation-result" hx-post="/execute_simulation">
+<div class="sticky z-10 top-0 w-full flex items-center gap-x-2 justify-between bg-gray-200">
+    {{ create_electrolyzer_listener|safe }}
+    <form class="flex gap-4 justify-evenly items-center w-full bg-slate-100 px-4">
         <div class="py-2">
             {{ electrolyzer_selector|safe }}
         </div>
@@ -19,12 +18,8 @@
                 min="{{ generation_range.start }}" max="{{ generation_range.end }}" name="simulation_time_range.end" />
         </div>
         <div class="grow"></div>
-        <button hx-post="/list_simulations" hx-swap="innerHTML" hx-target="#dataplane"
-            class="bg-gray-300 text-center h-10 max-w-48 rounded-sm font-semibold text-black-600 px-4 py-2">
-            View Runs</button>
-        <button type="submit"
-            class="bg-green-600 rounded-sm text-center h-10 max-w-48 font-semibold text-white px-4 py-2">
-            Simulate</button>
+        {{ list_simulation_button|safe }}
+        {{ simulate_button|safe }}
     </form>
 </div>
 <div id="simulation-result" class="grow">

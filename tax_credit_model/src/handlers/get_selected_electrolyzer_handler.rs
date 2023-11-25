@@ -1,7 +1,11 @@
 use rocket::{post, State};
 
 use crate::{
-    components::component::{Component, ComponentResponse},
+    client::events::ClientEvent,
+    components::{
+        component::{Component, ComponentResponse},
+        event::EventListenerBuilder, button::ButtonBuilder,
+    },
     persistance::{
         electrolyzer::ElectrolyzerClient, simulation::SimulationClient,
         simulation_selection::SimulationSelectionClient,
@@ -30,5 +34,20 @@ pub fn get_selected_electrolyzer_handler(
         electrolyzer,
         state: ElectrolyzerDetailsState::Selected,
         actions: ElectrolyzerDetailsActions::Selectable,
+        list_simulations_listener: EventListenerBuilder::new()
+            .event(ClientEvent::ListSimulations)
+            .endpoint("/list_electrolyzers")
+            .target("#sidebar")
+            .build(),
+        select_simulation_listener: EventListenerBuilder::new()
+            .event(ClientEvent::SelectSimulation)
+            .endpoint("/get_selected_electrolyzer")
+            .target("#sidebar")
+            .build(),
+        select_electrolyzer_button: ButtonBuilder::new()
+            .endpoint("/select_electrolyzer")
+            .target("#sidebar")
+            .text("Use")
+            .build(),
     })
 }

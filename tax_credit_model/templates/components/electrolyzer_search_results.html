@@ -381,10 +381,7 @@
     </div>
     <div class="grow"></div>
     {% if !(selected_id.is_none() || electrolyzer.id == selected_id.unwrap()) %}
-    <button type="submit" hx-post="/select_electrolyzer"
-        class="h-10 text-blue-600 w-24 rounded-sm text-center font-semibold hover:bg-gray-400 px-4 py-2">
-        Use
-    </button>
+    {{ select_electrolyzer_button|safe }}
     {% endif %}
 </form>
 {% endfor %}

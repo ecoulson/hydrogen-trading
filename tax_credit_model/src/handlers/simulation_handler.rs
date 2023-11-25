@@ -3,7 +3,12 @@ use rocket::{get, http::Status, State};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    components::page::{Page, PageResponse},
+    client::{events::ClientEvent, htmx::HtmxSwap},
+    components::{
+        button::ButtonBuilder,
+        event::EventListenerBuilder,
+        page::{Page, PageResponse},
+    },
     persistance::{
         electrolyzer::ElectrolyzerClient, simulation::SimulationClient,
         simulation_selection::SimulationSelectionClient, user::UserClient,
@@ -18,7 +23,8 @@ use crate::{
         user::User,
     },
     templates::{
-        list_electrolyzers_template::ElectrolyzerSelectorTemplate, simulation_view::SimulationView,
+        list_electrolyzers_template::ElectrolyzerSelectorTemplate,
+        simulation_view::{SimulationView, SimulationViewBuilder},
     },
 };
 
@@ -67,17 +73,38 @@ pub fn simulation_handler(
                 electrolyzer,
                 state: ElectrolyzerDetailsState::Selected,
                 actions: ElectrolyzerDetailsActions::Selectable,
+                list_simulations_listener: EventListenerBuilder::new()
+                    .event(ClientEvent::ListSimulations)
+                    .endpoint("/list_electrolyzers")
+                    .target("#sidebar")
+                    .build(),
+                select_simulation_listener: EventListenerBuilder::new()
+                    .event(ClientEvent::SelectSimulation)
+                    .endpoint("/get_selected_electrolyzer")
+                    .target("#sidebar")
+                    .build(),
+                select_electrolyzer_button: ButtonBuilder::new()
+                    .endpoint("/select_electrolyzer")
+                    .target("#sidebar")
+                    .text("Use")
+                    .build(),
             },
-            simulation_view: SimulationView {
-                generation_range: DateTimeRange {
+            simulation_view: SimulationViewBuilder::new()
+                .generation_range(DateTimeRange {
                     start: String::from("2023-01-01T00:00"),
                     end: String::from("2023-07-31T23:59"),
-                },
-                electrolyzer_selector: ElectrolyzerSelectorTemplate {
+                })
+                .electrolyzer_selector(ElectrolyzerSelectorTemplate {
                     electrolyzers,
                     selected_id: electrolyzer_id,
-                },
-            },
+                    select_electrolyzer_listener: EventListenerBuilder::new()
+                        .event(ClientEvent::SelectElectrolyzer)
+                        .endpoint("/electrolyzer_selector")
+                        .target("#electrolyzer-selector")
+                        .swap(HtmxSwap::OuterHtml)
+                        .build(),
+                })
+                .build(),
         },
     )
 }

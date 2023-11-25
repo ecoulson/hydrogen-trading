@@ -1,7 +1,12 @@
 use rocket::{form::Form, post, FromForm, State};
 
 use crate::{
-    components::component::{Component, ComponentResponse},
+    client::events::ClientEvent,
+    components::{
+        button::ButtonBuilder,
+        component::{Component, ComponentResponse},
+        event::EventListenerBuilder,
+    },
     persistance::{
         electrolyzer::ElectrolyzerClient, simulation::SimulationClient,
         simulation_selection::SimulationSelectionClient,
@@ -31,12 +36,30 @@ pub fn get_electrolyzer_handler(
 ) -> ComponentResponse<ElectrolyzerDetailsTemplate, BannerError> {
     let electrolyzer = electrolyzer_client.get_electrolyzer(request.electrolyzer_id)?;
     let simulation_id = simulation_selection_client.current_selection(user.id())?;
+    let list_simulations_listener = EventListenerBuilder::new()
+        .event(ClientEvent::ListSimulations)
+        .endpoint("/list_electrolyzers")
+        .target("#sidebar")
+        .build();
+    let select_simulation_listener = EventListenerBuilder::new()
+        .event(ClientEvent::SelectSimulation)
+        .endpoint("/get_selected_electrolyzer")
+        .target("#sidebar")
+        .build();
 
     if simulation_id.is_none() {
         return Component::basic(ElectrolyzerDetailsTemplate {
             electrolyzer,
             actions: ElectrolyzerDetailsActions::None,
             state: ElectrolyzerDetailsState::Default,
+            list_simulations_listener,
+            select_simulation_listener,
+            select_electrolyzer_button: ButtonBuilder::new()
+                .endpoint("/select_electrolyzer")
+                .target("#sidebar")
+                .disabled()
+                .text("Use")
+                .build(),
         });
     }
 
@@ -48,5 +71,12 @@ pub fn get_electrolyzer_handler(
         electrolyzer,
         state: simulation.electrolyzer_state(&request.electrolyzer_id),
         actions: ElectrolyzerDetailsActions::Selectable,
+        list_simulations_listener,
+        select_simulation_listener,
+        select_electrolyzer_button: ButtonBuilder::new()
+            .endpoint("/select_electrolyzer")
+            .target("#sidebar")
+            .text("Use")
+            .build(),
     })
 }

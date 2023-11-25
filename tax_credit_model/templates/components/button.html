@@ -1,0 +1,26 @@
+{% match variant %}
+{% when ButtonVariant::Primary %}
+<button {{ state }} type="submit"
+    class="h-10 bg-blue-600 max-w-48 rounded-sm text-center font-semibold text-white px-4 py-2" hx-post="{{ endpoint }}"
+    hx-target="{{ target }}" hx-swap="{{ swap }}">
+    {{ text }}
+</button>
+{% when ButtonVariant::Secondary %}
+<button {{ state }} type="submit"
+    class="bg-green-600 rounded-sm text-center h-10 max-w-48 font-semibold text-white px-4 py-2"
+    hx-post="{{ endpoint }}" hx-target="{{ target }}" hx-swap="{{ swap }}">
+    {{ text }}
+</button>
+{% when ButtonVariant::Outline %}
+<button {{ state }} type="submit"
+    class="h-10 text-blue-600 max-w-48 rounded-sm text-center font-semibold hover:bg-gray-400 px-4 py-2"
+    hx-post="{{ endpoint }}" hx-target="{{ target }}" hx-swap="{{ swap }}">
+    {{ text }}
+</button>
+{% when ButtonVariant::Disabled %}
+<button {{ state }} type="submit"
+    class="bg-gray-400 rounded-sm text-center h-10 max-w-48 font-semibold text-white px-4 py-2"
+    hx-post="{{ endpoint }}" hx-target="{{ target }}" hx-swap="{{ swap }}">
+    {{ text }}
+</button>
+{% endmatch %}

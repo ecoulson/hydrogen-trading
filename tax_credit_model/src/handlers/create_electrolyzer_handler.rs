@@ -1,7 +1,11 @@
 use rocket::{form::Form, post, State};
 
 use crate::{
-    components::component::{Component, ComponentResponse},
+    client::events::ClientEvent,
+    components::{
+        component::{Component, ComponentResponse},
+        event::EventListenerBuilder, button::ButtonBuilder,
+    },
     persistance::electrolyzer::ElectrolyzerClient,
     responders::htmx_responder::HtmxHeadersBuilder,
     schema::{
@@ -44,7 +48,7 @@ pub fn create_electrolyzer_handler(
 
     Component::component(
         HtmxHeadersBuilder::new()
-            .trigger("create-electrolyzer")
+            .trigger(ClientEvent::CreateElectrolyzer)
             .build(),
         ElectrolyzerDetailsTemplate {
             electrolyzer,
@@ -53,6 +57,22 @@ pub fn create_electrolyzer_handler(
                 false => ElectrolyzerDetailsState::Default,
             },
             actions: ElectrolyzerDetailsActions::Selectable,
+            list_simulations_listener: EventListenerBuilder::new()
+                .event(ClientEvent::ListSimulations)
+                .endpoint("/list_electrolyzers")
+                .target("#sidebar")
+                .build(),
+            select_simulation_listener: EventListenerBuilder::new()
+                .event(ClientEvent::SelectSimulation)
+                .endpoint("/get_selected_electrolyzer")
+                .target("#sidebar")
+                .build(),
+            select_electrolyzer_button: ButtonBuilder::new()
+                .endpoint("/select_electrolyzer")
+                .target("#sidebar")
+                .set_disabled(electrolyzers.is_empty())
+                .text("Use")
+                .build(),
         },
     )
 }

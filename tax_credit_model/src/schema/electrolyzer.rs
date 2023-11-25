@@ -2,6 +2,8 @@ use askama::Template;
 use rocket::{FromForm, FromFormField};
 use serde::{Deserialize, Serialize};
 
+use crate::components::{event::EventListener, button::Button};
+
 pub type ElectrolyzerId = usize;
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone, Copy)]
@@ -81,13 +83,16 @@ pub struct CreateElectrolyzerRequest {
     pub name: String,
 }
 
-#[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
+#[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq)]
 #[template(path = "components/electrolyzer_details.html")]
 pub struct ElectrolyzerDetailsTemplate {
     pub electrolyzer: Electrolyzer,
     pub state: ElectrolyzerDetailsState,
     pub actions: ElectrolyzerDetailsActions,
-}
+    pub list_simulations_listener: EventListener,
+    pub select_simulation_listener: EventListener,
+    pub select_electrolyzer_button: Button,
+}  
 
 impl ElectrolyzerDetailsTemplate {
     pub fn is_selected(&self) -> bool {

@@ -1,6 +1,6 @@
 {% if simulations.is_empty() %}
-<div class="grow" hx-trigger="create-electrolyzer from:body" hx-post="/initialize_simulation"
-    hx-target="#dataplane">
+<div class="grow">
+    {{ create_electrolyzer_listener|safe }}
     <div class="h-full flex items-center justify-center">
         <p class="text-lg font-bold">No simulations exist. Create an electrolyzer to get started</p>
     </div>

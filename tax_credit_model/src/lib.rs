@@ -1,4 +1,5 @@
 pub mod catchers;
+pub mod client;
 pub mod components;
 pub mod concurrency;
 pub mod data_retriever;

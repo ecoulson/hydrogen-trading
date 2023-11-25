@@ -1,6 +1,6 @@
 <form class="flex items-center flex-col h-full w-full relative">
-    <div hx-trigger="list-simulations from:body" hx-post="/list_electrolyzers" hx-target="#sidebar"></div>
-    <div hx-trigger="simulation-selected from:body" hx-post="/get_selected_electrolyzer" hx-target="#sidebar"></div>
+    {{ list_simulations_listener|safe }}
+    {{ select_simulation_listener|safe }}
     <input hidden name="electrolyzer_id" value="{{ electrolyzer.id }}" />
     <div class="p-4 flex items-center w-full">
         <div class="flex items-center px-2 mr-2 cursor-pointer rounded-full hover:bg-gray-300 h-8 w-8"
@@ -448,13 +448,7 @@
     </div>
     {% if self.is_selectable() %}
     <div class="sticky w-full bottom-0 py-4 left-0 flex justify-center bg-gray-200">
-        {% if self.is_selected() %}
-        <button class="h-10 bg-gray-700 w-48 rounded-sm text-center font-medium text-white px-4 py-2" type="submit"
-            hx-post="/select_electrolyzer" disabled hx-target="#sidebar" hx-swap="innerHTML">Use</button>
-        {% else %}
-        <button class="h-10 bg-blue-600 w-48 rounded-sm text-center font-medium text-white px-4 py-2" type="submit"
-            hx-post="/select_electrolyzer" hx-target="#sidebar" hx-swap="innerHTML">Use</button>
-        {% endif %}
+        {{ select_electrolyzer_button|safe }}
     </div>
     {% endif %}
 </form>
