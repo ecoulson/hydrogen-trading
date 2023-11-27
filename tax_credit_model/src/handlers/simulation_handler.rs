@@ -5,7 +5,6 @@ use serde::{Deserialize, Serialize};
 use crate::{
     client::{events::ClientEvent, htmx::HtmxSwap},
     components::{
-        button::ButtonBuilder,
         event::EventListenerBuilder,
         page::{Page, PageResponse},
     },
@@ -15,9 +14,7 @@ use crate::{
     },
     responders::{htmx_responder::HtmxHeadersBuilder, user_context::UserContext},
     schema::{
-        electrolyzer::{
-            ElectrolyzerDetailsActions, ElectrolyzerDetailsState, ElectrolyzerDetailsTemplate,
-        },
+        electrolyzer::{ElectrolyzerDetails, ElectrolyzerDetailsBuilder},
         simulation_schema::SimulationId,
         time::DateTimeRange,
         user::User,
@@ -33,7 +30,7 @@ use crate::{
 pub struct SimulationPage {
     simulation_id: SimulationId,
     simulation_view: SimulationView,
-    electrolyzer_details: ElectrolyzerDetailsTemplate,
+    electrolyzer_details: ElectrolyzerDetails,
 }
 
 #[get("/simulation/<simulation_id>")]
@@ -69,26 +66,10 @@ pub fn simulation_handler(
         HtmxHeadersBuilder::new().set_cookie_if(cookie).build(),
         SimulationPage {
             simulation_id: simulation_state.id,
-            electrolyzer_details: ElectrolyzerDetailsTemplate {
-                electrolyzer,
-                state: ElectrolyzerDetailsState::Selected,
-                actions: ElectrolyzerDetailsActions::Selectable,
-                list_simulations_listener: EventListenerBuilder::new()
-                    .event(ClientEvent::ListSimulations)
-                    .endpoint("/list_electrolyzers")
-                    .target("#sidebar")
-                    .build(),
-                select_simulation_listener: EventListenerBuilder::new()
-                    .event(ClientEvent::SelectSimulation)
-                    .endpoint("/get_selected_electrolyzer")
-                    .target("#sidebar")
-                    .build(),
-                select_electrolyzer_button: ButtonBuilder::new()
-                    .endpoint("/select_electrolyzer")
-                    .target("#sidebar")
-                    .text("Use")
-                    .build(),
-            },
+            electrolyzer_details: ElectrolyzerDetailsBuilder::new()
+                .electrolyzer(electrolyzer)
+                .selected()
+                .build(),
             simulation_view: SimulationViewBuilder::new()
                 .generation_range(DateTimeRange {
                     start: String::from("2023-01-01T00:00"),

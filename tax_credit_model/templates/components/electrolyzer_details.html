@@ -395,21 +395,21 @@
         <div class="w-full px-4 py-2 hover:bg-gray-200">
             <div class="flex justify-between">
                 <h2 class="font-medium">Replacement Threshold</h2>
-                <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">%</span>
+                {{ replacement_threshold_badge|safe }}
             </div>
             <p>{{ electrolyzer.replacement_threshold }}</p>
         </div>
         <div class="px-4 py-2 hover:bg-gray-200">
             <div class="flex justify-between">
                 <h2 class="font-medium">Degradation Rate</h2>
-                <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">% / Year</span>
+                {{ degradation_rate_badge|safe }}
             </div>
             <p>{{ electrolyzer.degradation_rate }}</p>
         </div>
         <div class="px-4 py-2 hover:bg-gray-200">
             <div class="flex justify-between">
                 <h2 class="font-medium">Capacity</h2>
-                <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">MW</span>
+                {{ capacity_badge|safe }}
             </div>
             <p>{{ electrolyzer.capacity_mw }}</p>
         </div>
@@ -420,28 +420,28 @@
         <div class="px-4 py-2 hover:bg-gray-200">
             <div class="flex justify-between">
                 <h2 class="font-medium">Production Rate</h2>
-                <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">kg / MW</span>
+                {{ conversion_rate_badge|safe }}
             </div>
             <p>{{ electrolyzer.production.conversion_rate }}</p>
         </div>
         <div class="px-4 py-2 hover:bg-gray-200">
             <div class="flex justify-between">
                 <h2 class="font-medium">Capex</h2>
-                <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">$ / Hour</span>
+                {{ capex_badge|safe }}
             </div>
             <p>{{ electrolyzer.capex }}</p>
         </div>
         <div class="px-4 py-2 hover:bg-gray-200">
             <div class="flex justify-between">
                 <h2 class="font-medium">Opex ($/hr)</h2>
-                <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">$ / Hour</span>
+                {{ opex_badge|safe }}
             </div>
             <p>{{ electrolyzer.opex }}</p>
         </div>
         <div class="px-4 py-2 hover:bg-gray-200">
             <div class="flex justify-between">
                 <h2 class="font-medium">Replacement Cost</h2>
-                <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">$ / Replacement</span>
+                {{ replacement_cost_badge|safe }}
             </div>
             <p>{{ electrolyzer.replacement_cost }}</p>
         </div>

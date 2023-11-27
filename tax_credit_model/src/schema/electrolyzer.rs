@@ -2,7 +2,14 @@ use askama::Template;
 use rocket::{FromForm, FromFormField};
 use serde::{Deserialize, Serialize};
 
-use crate::components::{event::EventListener, button::Button};
+use crate::{
+    client::events::ClientEvent,
+    components::{
+        badge::{Badge, BadgeBuilder, BadgeVariant},
+        button::{Button, ButtonBuilder},
+        event::{EventListener, EventListenerBuilder},
+    },
+};
 
 pub type ElectrolyzerId = usize;
 
@@ -85,16 +92,23 @@ pub struct CreateElectrolyzerRequest {
 
 #[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq)]
 #[template(path = "components/electrolyzer_details.html")]
-pub struct ElectrolyzerDetailsTemplate {
-    pub electrolyzer: Electrolyzer,
-    pub state: ElectrolyzerDetailsState,
-    pub actions: ElectrolyzerDetailsActions,
-    pub list_simulations_listener: EventListener,
-    pub select_simulation_listener: EventListener,
-    pub select_electrolyzer_button: Button,
-}  
+pub struct ElectrolyzerDetails {
+    electrolyzer: Electrolyzer,
+    state: ElectrolyzerDetailsState,
+    actions: ElectrolyzerDetailsActions,
+    list_simulations_listener: EventListener,
+    select_simulation_listener: EventListener,
+    select_electrolyzer_button: Button,
+    conversion_rate_badge: Badge,
+    opex_badge: Badge,
+    capex_badge: Badge,
+    capacity_badge: Badge,
+    degradation_rate_badge: Badge,
+    replacement_threshold_badge: Badge,
+    replacement_cost_badge: Badge,
+}
 
-impl ElectrolyzerDetailsTemplate {
+impl ElectrolyzerDetails {
     pub fn is_selected(&self) -> bool {
         matches!(self.state, ElectrolyzerDetailsState::Selected)
     }
@@ -106,8 +120,8 @@ impl ElectrolyzerDetailsTemplate {
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
 pub enum ElectrolyzerDetailsState {
-    Selected,
     #[default]
+    Selected,
     Default,
 }
 
@@ -116,4 +130,100 @@ pub enum ElectrolyzerDetailsActions {
     Selectable,
     #[default]
     None,
+}
+
+pub struct ElectrolyzerDetailsBuilder {
+    electrolyzer_details: ElectrolyzerDetails,
+}
+
+impl ElectrolyzerDetailsBuilder {
+    pub fn new() -> Self {
+        Self {
+            electrolyzer_details: ElectrolyzerDetails {
+                list_simulations_listener: EventListenerBuilder::new()
+                    .event(ClientEvent::ListSimulations)
+                    .endpoint("/list_electrolyzers")
+                    .target("#sidebar")
+                    .build(),
+                select_simulation_listener: EventListenerBuilder::new()
+                    .event(ClientEvent::SelectSimulation)
+                    .endpoint("/get_selected_electrolyzer")
+                    .target("#sidebar")
+                    .build(),
+                electrolyzer: Electrolyzer::default(),
+                state: ElectrolyzerDetailsState::Default,
+                actions: ElectrolyzerDetailsActions::Selectable,
+                select_electrolyzer_button: ButtonBuilder::new()
+                    .endpoint("/select_electrolyzer")
+                    .target("#sidebar")
+                    .text("Use")
+                    .build(),
+                opex_badge: BadgeBuilder::new()
+                    .variant(BadgeVariant::Secondary)
+                    .text("$ / Hour")
+                    .build(),
+                capex_badge: BadgeBuilder::new()
+                    .variant(BadgeVariant::Secondary)
+                    .text("$")
+                    .build(),
+                capacity_badge: BadgeBuilder::new()
+                    .variant(BadgeVariant::Secondary)
+                    .text("MW")
+                    .build(),
+                degradation_rate_badge: BadgeBuilder::new()
+                    .variant(BadgeVariant::Secondary)
+                    .text("% / Year")
+                    .build(),
+                replacement_threshold_badge: BadgeBuilder::new()
+                    .variant(BadgeVariant::Secondary)
+                    .text("%")
+                    .build(),
+                replacement_cost_badge: BadgeBuilder::new()
+                    .variant(BadgeVariant::Secondary)
+                    .text("$ / Replacement")
+                    .build(),
+                conversion_rate_badge: BadgeBuilder::new()
+                    .variant(BadgeVariant::Secondary)
+                    .text("kg / MW")
+                    .build(),
+            },
+        }
+    }
+
+    pub fn electrolyzer(mut self, electrolyzer: Electrolyzer) -> Self {
+        self.electrolyzer_details.electrolyzer = electrolyzer;
+
+        self
+    }
+
+    pub fn selected(mut self) -> Self {
+        self.electrolyzer_details.state = ElectrolyzerDetailsState::Selected;
+        self.electrolyzer_details
+            .select_electrolyzer_button
+            .disable();
+
+        self
+    }
+
+    pub fn actions(mut self, actions: ElectrolyzerDetailsActions) -> Self {
+        self.electrolyzer_details.actions = actions;
+
+        self
+    }
+
+    pub fn state(mut self, state: ElectrolyzerDetailsState) -> Self {
+        self.electrolyzer_details.state = state;
+
+        self
+    }
+
+    pub fn select_electrolyzer_button(mut self, button: Button) -> Self {
+        self.electrolyzer_details.select_electrolyzer_button = button;
+
+        self
+    }
+
+    pub fn build(self) -> ElectrolyzerDetails {
+        self.electrolyzer_details
+    }
 }

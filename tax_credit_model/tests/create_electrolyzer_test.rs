@@ -7,7 +7,7 @@ use tax_credit_model_server::{
         simulation::InMemorySimulationClient,
     },
     schema::electrolyzer::{
-        ConstantProduction, CreateElectrolyzerRequest, ElectrolyzerDetailsTemplate,
+        ConstantProduction, CreateElectrolyzerRequest, ElectrolyzerDetails,
     },
     server::Dependencies,
 };
@@ -27,7 +27,7 @@ async fn create_electrolyzer_successfully() {
     };
     let mut request = CreateElectrolyzerRequest::default();
     request.production_method.conversion_rate_constant = Some(0.5);
-    let mut expected_response = ElectrolyzerDetailsTemplate::default();
+    let mut expected_response = ElectrolyzerDetails::default();
     expected_response.electrolyzer.constant_production = Some(ConstantProduction {
         conversion_rate: 0.5,
     });

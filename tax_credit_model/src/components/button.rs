@@ -41,6 +41,13 @@ pub struct Button {
     variant: ButtonVariant,
 }
 
+impl Button {
+    pub fn disable(&mut self) {
+        self.state = ButtonState::Disabled;
+        self.variant = ButtonVariant::Disabled;
+    }
+}
+
 #[derive(Debug)]
 pub struct ButtonBuilder {
     button: Button,
@@ -85,16 +92,14 @@ impl ButtonBuilder {
 
     pub fn set_disabled(mut self, disabled: bool) -> Self {
         if disabled {
-            self.button.state = ButtonState::Disabled;
-            self.button.variant = ButtonVariant::Disabled;
+            self.button.disable();
         }
 
         self
     }
 
     pub fn disabled(mut self) -> Self {
-        self.button.state = ButtonState::Disabled;
-        self.button.variant = ButtonVariant::Disabled;
+        self.button.disable();
 
         self
     }

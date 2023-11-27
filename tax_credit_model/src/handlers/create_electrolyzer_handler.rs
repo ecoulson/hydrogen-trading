@@ -2,17 +2,13 @@ use rocket::{form::Form, post, State};
 
 use crate::{
     client::events::ClientEvent,
-    components::{
-        component::{Component, ComponentResponse},
-        event::EventListenerBuilder, button::ButtonBuilder,
-    },
+    components::component::{Component, ComponentResponse},
     persistance::electrolyzer::ElectrolyzerClient,
     responders::htmx_responder::HtmxHeadersBuilder,
     schema::{
         electrolyzer::{
-            ConstantProduction, CreateElectrolyzerRequest, Electrolyzer,
-            ElectrolyzerDetailsActions, ElectrolyzerDetailsState, ElectrolyzerDetailsTemplate,
-            ProductionType,
+            ConstantProduction, CreateElectrolyzerRequest, Electrolyzer, ElectrolyzerDetails,
+            ElectrolyzerDetailsBuilder, ProductionType,
         },
         errors::BannerError,
     },
@@ -22,7 +18,7 @@ use crate::{
 pub fn create_electrolyzer_handler(
     request: Form<CreateElectrolyzerRequest>,
     electrolyzer_client: &State<Box<dyn ElectrolyzerClient>>,
-) -> ComponentResponse<ElectrolyzerDetailsTemplate, BannerError> {
+) -> ComponentResponse<ElectrolyzerDetails, BannerError> {
     let electrolyzers = electrolyzer_client.list_electrolyzers()?;
     let electrolyzer = electrolyzer_client.create_electrolyzer(&Electrolyzer {
         id: 0,
@@ -46,33 +42,24 @@ pub fn create_electrolyzer_handler(
         state: String::from("TX"),
     })?;
 
+    if electrolyzers.is_empty() {
+        return Component::component(
+            HtmxHeadersBuilder::new()
+                .trigger(ClientEvent::CreateElectrolyzer)
+                .build(),
+            ElectrolyzerDetailsBuilder::new()
+                .electrolyzer(electrolyzer)
+                .selected()
+                .build(),
+        );
+    }
+
     Component::component(
         HtmxHeadersBuilder::new()
             .trigger(ClientEvent::CreateElectrolyzer)
             .build(),
-        ElectrolyzerDetailsTemplate {
-            electrolyzer,
-            state: match electrolyzers.is_empty() {
-                true => ElectrolyzerDetailsState::Selected,
-                false => ElectrolyzerDetailsState::Default,
-            },
-            actions: ElectrolyzerDetailsActions::Selectable,
-            list_simulations_listener: EventListenerBuilder::new()
-                .event(ClientEvent::ListSimulations)
-                .endpoint("/list_electrolyzers")
-                .target("#sidebar")
-                .build(),
-            select_simulation_listener: EventListenerBuilder::new()
-                .event(ClientEvent::SelectSimulation)
-                .endpoint("/get_selected_electrolyzer")
-                .target("#sidebar")
-                .build(),
-            select_electrolyzer_button: ButtonBuilder::new()
-                .endpoint("/select_electrolyzer")
-                .target("#sidebar")
-                .set_disabled(electrolyzers.is_empty())
-                .text("Use")
-                .build(),
-        },
+        ElectrolyzerDetailsBuilder::new()
+            .electrolyzer(electrolyzer)
+            .build(),
     )
 }

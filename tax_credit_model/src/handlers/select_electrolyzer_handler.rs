@@ -2,20 +2,14 @@ use rocket::{form::Form, post, FromForm, State};
 
 use crate::{
     client::events::ClientEvent,
-    components::{
-        component::{Component, ComponentResponse},
-        event::EventListenerBuilder, button::ButtonBuilder,
-    },
+    components::component::{Component, ComponentResponse},
     persistance::{
         electrolyzer::ElectrolyzerClient, simulation::SimulationClient,
         simulation_selection::SimulationSelectionClient,
     },
     responders::htmx_responder::HtmxHeadersBuilder,
     schema::{
-        electrolyzer::{
-            ElectrolyzerDetailsActions, ElectrolyzerDetailsState, ElectrolyzerDetailsTemplate,
-            ElectrolyzerId,
-        },
+        electrolyzer::{ElectrolyzerDetails, ElectrolyzerDetailsBuilder, ElectrolyzerId},
         errors::BannerError,
         user::User,
     },
@@ -33,7 +27,7 @@ pub fn select_electrolyzer_handler(
     simulation_client: &State<Box<dyn SimulationClient>>,
     user: User,
     simulation_selection_client: &State<Box<dyn SimulationSelectionClient>>,
-) -> ComponentResponse<ElectrolyzerDetailsTemplate, BannerError> {
+) -> ComponentResponse<ElectrolyzerDetails, BannerError> {
     let simulation_id = simulation_selection_client.expect_current_selection(user.id())?;
     let mut state = simulation_client.get_simulation_state(&simulation_id)?;
     let electrolyzer = electrolyzer_client.get_electrolyzer(request.electrolyzer_id)?;
@@ -44,25 +38,9 @@ pub fn select_electrolyzer_handler(
         HtmxHeadersBuilder::new()
             .trigger(ClientEvent::SelectElectrolyzer)
             .build(),
-        ElectrolyzerDetailsTemplate {
-            electrolyzer,
-            state: ElectrolyzerDetailsState::Selected,
-            actions: ElectrolyzerDetailsActions::Selectable,
-            list_simulations_listener: EventListenerBuilder::new()
-                .event(ClientEvent::ListSimulations)
-                .endpoint("/list_electrolyzers")
-                .target("#sidebar")
-                .build(),
-            select_simulation_listener: EventListenerBuilder::new()
-                .event(ClientEvent::SelectSimulation)
-                .endpoint("/get_selected_electrolyzer")
-                .target("#sidebar")
-                .build(),
-            select_electrolyzer_button: ButtonBuilder::new()
-                .endpoint("/select_electrolyzer")
-                .target("#sidebar")
-                .text("Use")
-                .build(),
-        },
+        ElectrolyzerDetailsBuilder::new()
+            .electrolyzer(electrolyzer)
+            .selected()
+            .build(),
     )
 }

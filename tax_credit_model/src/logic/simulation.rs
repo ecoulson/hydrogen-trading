@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use crate::{
     persistance::simulation::SimulationClient,
     schema::{
-        electrolyzer::{Electrolyzer, ElectrolyzerDetailsState, ElectrolyzerId},
+        electrolyzer::{Electrolyzer, ElectrolyzerId},
         errors::{Error, Result},
         histogram::{Histogram, HistogramDataset, HistogramResponse, Labels},
         simulation_schema::{
@@ -35,16 +35,6 @@ pub struct SimulationState {
     pub transactions: Vec<EnergyTransaction>,
     pub tax_credit: Vec<TaxCredit45V>,
     pub tax_credit_summary: TaxCreditSummary,
-}
-
-impl SimulationState {
-    pub fn electrolyzer_state(&self, electrolyzer_id: &ElectrolyzerId) -> ElectrolyzerDetailsState {
-        if &self.electrolyzer_id == electrolyzer_id {
-            ElectrolyzerDetailsState::Selected
-        } else {
-            ElectrolyzerDetailsState::Default
-        }
-    }
 }
 
 pub fn simulate(

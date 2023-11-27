@@ -15,42 +15,42 @@
         <div class="flex flex-col py-2 px-4">
             <div class="flex justify-between py-2">
                 <label class="font-medium" for="replacement_threshold">Replacement Threshold</label>
-                <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">%</span>
+                {{ replacement_threshold_badge|safe  }}
             </div>
             <input value="0" class="border" id="replacement_threshold" name="replacement_threshold" />
         </div>
         <div class="flex flex-col py-2 px-4">
             <div class="flex justify-between py-2">
                 <label for="degradation_rate">Degradation Rate</label>
-                <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">% / Year</span>
+                {{ degradation_rate_badge|safe }}
             </div>
             <input value="0" class="border" id="degradation_rate" name="degradation_rate" />
         </div>
         <div class="flex flex-col py-2 px-4">
             <div class="flex justify-between py-2">
                 <label class="font-medium" for="capacity_mw">Capacity</label>
-                <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">MW</span>
+                {{ capacity_badge|safe  }}
             </div>
             <input value="0" class="border" id="capacity_mw" name="capacity_mw" />
         </div>
         <div class="flex flex-col py-2 px-4">
             <div class="flex justify-between py-2">
                 <label class="font-medium" for="capex">Capex</label>
-                <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">$</span>
+                {{ capex_badge|safe  }}
             </div>
             <input value="0" class="border" id="capex" name="capex" />
         </div>
         <div class="flex flex-col py-2 px-4">
             <div class="flex justify-between py-2">
                 <label class="font-medium" for="opex">Opex</label>
-                <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">$ / Hour</span>
+                {{ opex_badge|safe  }}
             </div>
             <input value="0" class="border" id="opex" name="opex" />
         </div>
         <div class="flex flex-col py-2 px-4">
             <div class="flex justify-between py-2">
                 <label class="font-medium" for="replacement_cost">Replacement Cost</label>
-                <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">$ / Replacement</span>
+                {{ replacement_cost_badge|safe  }}
             </div>
             <input value="0" class="border" id="replacement_cost" name="replacement_cost" />
         </div>
@@ -63,7 +63,7 @@
         <div class="flex flex-col py-2 px-4">
             <div class="flex justify-between py-2">
                 <label class="font-medium" for="production_method.conversion_rate_constant">Production Rate</label>
-                <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">kg / MW</span>
+                {{ conversion_rate_badge|safe }}
             </div>
             <input value="0" class="border" id="production_method.conversion_rate_constant"
                 name="production_method.conversion_rate_constant" />
