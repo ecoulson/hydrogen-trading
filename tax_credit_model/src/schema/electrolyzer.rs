@@ -95,7 +95,6 @@ pub struct CreateElectrolyzerRequest {
 pub struct ElectrolyzerDetails {
     electrolyzer: Electrolyzer,
     state: ElectrolyzerDetailsState,
-    actions: ElectrolyzerDetailsActions,
     list_simulations_listener: EventListener,
     select_simulation_listener: EventListener,
     select_electrolyzer_button: Button,
@@ -108,28 +107,11 @@ pub struct ElectrolyzerDetails {
     replacement_cost_badge: Badge,
 }
 
-impl ElectrolyzerDetails {
-    pub fn is_selected(&self) -> bool {
-        matches!(self.state, ElectrolyzerDetailsState::Selected)
-    }
-
-    pub fn is_selectable(&self) -> bool {
-        matches!(self.actions, ElectrolyzerDetailsActions::Selectable)
-    }
-}
-
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
 pub enum ElectrolyzerDetailsState {
+    Selected(Badge),
     #[default]
-    Selected,
     Default,
-}
-
-#[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
-pub enum ElectrolyzerDetailsActions {
-    Selectable,
-    #[default]
-    None,
 }
 
 pub struct ElectrolyzerDetailsBuilder {
@@ -152,7 +134,6 @@ impl ElectrolyzerDetailsBuilder {
                     .build(),
                 electrolyzer: Electrolyzer::default(),
                 state: ElectrolyzerDetailsState::Default,
-                actions: ElectrolyzerDetailsActions::Selectable,
                 select_electrolyzer_button: ButtonBuilder::new()
                     .endpoint("/select_electrolyzer")
                     .target("#sidebar")
@@ -197,16 +178,11 @@ impl ElectrolyzerDetailsBuilder {
     }
 
     pub fn selected(mut self) -> Self {
-        self.electrolyzer_details.state = ElectrolyzerDetailsState::Selected;
+        self.electrolyzer_details.state =
+            ElectrolyzerDetailsState::Selected(BadgeBuilder::new().text("Selected").build());
         self.electrolyzer_details
             .select_electrolyzer_button
             .disable();
-
-        self
-    }
-
-    pub fn actions(mut self, actions: ElectrolyzerDetailsActions) -> Self {
-        self.electrolyzer_details.actions = actions;
 
         self
     }

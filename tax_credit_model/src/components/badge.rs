@@ -1,14 +1,14 @@
 use askama::Template;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, PartialEq, Serialize, Deserialize, Default)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, Default, Clone)]
 pub enum BadgeVariant {
     #[default]
     Primary,
     Secondary,
 }
 
-#[derive(Template, Debug, PartialEq, Serialize, Deserialize, Default)]
+#[derive(Template, Debug, PartialEq, Serialize, Deserialize, Default, Clone)]
 #[template(path = "components/badge.html")]
 pub struct Badge {
     variant: BadgeVariant,

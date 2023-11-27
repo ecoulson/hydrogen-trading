@@ -386,9 +386,11 @@
             <span class="text-xl">{{ electrolyzer.name }}</span>
             <span class="bg-gray-300 rounded-full px-2 py-1 text-sm">{{ electrolyzer.city }}, {{ electrolyzer.state
                 }}</span>
-            {% if self.is_selected() %}
-            <span class="bg-blue-600 text-white rounded-full px-2 py-1 text-sm">Selected</span>
-            {% endif %}
+            {% match state %}
+            {% when ElectrolyzerDetailsState::Selected with (selected_badge) %}
+            {{ selected_badge|safe }}
+            {% when ElectrolyzerDetailsState::Default %}
+            {% endmatch %}
         </div>
     </div>
     <div class="px-2 py-4 w-full grow">
@@ -446,9 +448,7 @@
             <p>{{ electrolyzer.replacement_cost }}</p>
         </div>
     </div>
-    {% if self.is_selectable() %}
     <div class="sticky w-full bottom-0 py-4 left-0 flex justify-center bg-gray-200">
         {{ select_electrolyzer_button|safe }}
     </div>
-    {% endif %}
 </form>
