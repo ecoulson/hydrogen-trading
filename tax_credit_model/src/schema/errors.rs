@@ -1,8 +1,10 @@
 use askama::Template;
 use rocket::http::Status;
-use serde::{Deserialize, Serialize};
 
-use crate::responders::htmx_responder::{HtmxHeadersBuilder, HtmxTemplate};
+use crate::{
+    components::icon::{Icon, IconBuilder, IconColor, IconKind, IconSize},
+    responders::htmx_responder::{HtmxHeadersBuilder, HtmxTemplate},
+};
 
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -69,16 +71,22 @@ impl std::fmt::Display for Error {
     }
 }
 
-#[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq)]
+#[derive(Template, Default, Debug)]
 #[template(path = "components/banner_error.html")]
 pub struct BannerError {
     message: String,
+    close_icon: Icon,
 }
 
 impl BannerError {
     pub fn new(message: &str) -> Self {
         Self {
             message: String::from(message),
+            close_icon: IconBuilder::new()
+                .fill(IconColor::Black)
+                .kind(IconKind::Close)
+                .size(IconSize::Small)
+                .build(),
         }
     }
 
@@ -103,17 +111,13 @@ impl BannerError {
 
 impl From<Error> for BannerError {
     fn from(error: Error) -> Self {
-        BannerError {
-            message: error.to_string(),
-        }
+        BannerError::new(&error.to_string())
     }
 }
 
 impl From<&str> for BannerError {
     fn from(value: &str) -> Self {
-        BannerError {
-            message: String::from(value),
-        }
+        BannerError::new(value)
     }
 }
 

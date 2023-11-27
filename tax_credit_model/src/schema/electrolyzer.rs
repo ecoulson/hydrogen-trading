@@ -8,6 +8,7 @@ use crate::{
         badge::{Badge, BadgeBuilder, BadgeVariant},
         button::{Button, ButtonBuilder},
         event::{EventListener, EventListenerBuilder},
+        icon::{Icon, IconBuilder, IconColor, IconKind, IconSize},
     },
 };
 
@@ -90,13 +91,14 @@ pub struct CreateElectrolyzerRequest {
     pub name: String,
 }
 
-#[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq)]
+#[derive(Template, Default, Debug, PartialEq)]
 #[template(path = "components/electrolyzer_details.html")]
 pub struct ElectrolyzerDetails {
     electrolyzer: Electrolyzer,
     state: ElectrolyzerDetailsState,
     list_simulations_listener: EventListener,
     select_simulation_listener: EventListener,
+    state_icon: Icon,
     select_electrolyzer_button: Button,
     conversion_rate_badge: Badge,
     opex_badge: Badge,
@@ -105,6 +107,7 @@ pub struct ElectrolyzerDetails {
     degradation_rate_badge: Badge,
     replacement_threshold_badge: Badge,
     replacement_cost_badge: Badge,
+    left_arrow_icon: Icon,
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
@@ -134,6 +137,11 @@ impl ElectrolyzerDetailsBuilder {
                     .build(),
                 electrolyzer: Electrolyzer::default(),
                 state: ElectrolyzerDetailsState::Default,
+                state_icon: IconBuilder::new()
+                    .kind(IconKind::Texas)
+                    .fill(IconColor::Black)
+                    .size(IconSize::Small)
+                    .build(),
                 select_electrolyzer_button: ButtonBuilder::new()
                     .endpoint("/select_electrolyzer")
                     .target("#sidebar")
@@ -166,6 +174,11 @@ impl ElectrolyzerDetailsBuilder {
                 conversion_rate_badge: BadgeBuilder::new()
                     .variant(BadgeVariant::Secondary)
                     .text("kg / MW")
+                    .build(),
+                left_arrow_icon: IconBuilder::new()
+                    .kind(IconKind::LeftArrow)
+                    .size(IconSize::Small)
+                    .fill(IconColor::Black)
                     .build(),
             },
         }

@@ -3,3 +3,4 @@ pub mod page;
 pub mod event;
 pub mod button;
 pub mod badge;
+pub mod icon;

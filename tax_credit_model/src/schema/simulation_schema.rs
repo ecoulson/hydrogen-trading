@@ -32,7 +32,7 @@ impl ExecuteSimulationRequest {
     }
 }
 
-#[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq)]
+#[derive(Template, Default, Debug)]
 #[template(path = "components/simulation_result.html")]
 pub struct ExecuteSimulationResponse {
     pub simulation_result: SimulationResult,

@@ -1,17 +1,17 @@
 use askama::Template;
 use rocket::post;
-use serde::{Deserialize, Serialize};
 
 use crate::{
     components::{
         badge::{Badge, BadgeBuilder, BadgeVariant},
         button::{Button, ButtonBuilder},
         component::{Component, ComponentResponse},
+        icon::{Icon, IconBuilder, IconKind, IconSize, IconColor},
     },
     schema::errors::BannerError,
 };
 
-#[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq)]
+#[derive(Template, Default, Debug)]
 #[template(path = "components/create_electrolyzer.html")]
 pub struct CreateElectrolyzerForm {
     create_electrolyzer_button: Button,
@@ -22,6 +22,7 @@ pub struct CreateElectrolyzerForm {
     degradation_rate_badge: Badge,
     replacement_threshold_badge: Badge,
     replacement_cost_badge: Badge,
+    left_arrow_icon: Icon,
 }
 
 pub struct CreateElectrolyzerFormBuilder {
@@ -64,6 +65,11 @@ impl CreateElectrolyzerFormBuilder {
                     .text("Create Electrolyzer")
                     .endpoint("/create_electrolyzer")
                     .target("#sidebar")
+                    .build(),
+                left_arrow_icon: IconBuilder::new()
+                    .kind(IconKind::LeftArrow)
+                    .size(IconSize::Small)
+                    .fill(IconColor::Black)
                     .build(),
             },
         }

@@ -1,6 +1,5 @@
 use askama::Template;
 use rocket::{get, http::Status, State};
-use serde::{Deserialize, Serialize};
 
 use crate::{
     client::{events::ClientEvent, htmx::HtmxSwap},
@@ -25,10 +24,9 @@ use crate::{
     },
 };
 
-#[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq)]
+#[derive(Template, Default, Debug)]
 #[template(path = "pages/simulation.html")]
 pub struct SimulationPage {
-    simulation_id: SimulationId,
     simulation_view: SimulationView,
     electrolyzer_details: ElectrolyzerDetails,
 }
@@ -65,7 +63,6 @@ pub fn simulation_handler(
     Page::page(
         HtmxHeadersBuilder::new().set_cookie_if(cookie).build(),
         SimulationPage {
-            simulation_id: simulation_state.id,
             electrolyzer_details: ElectrolyzerDetailsBuilder::new()
                 .electrolyzer(electrolyzer)
                 .selected()

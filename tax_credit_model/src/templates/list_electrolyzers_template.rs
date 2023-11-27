@@ -1,15 +1,15 @@
 use askama::Template;
-use serde::{Deserialize, Serialize};
 
 use crate::{
     components::{
         button::{Button, ButtonBuilder, ButtonVariant},
         event::EventListener,
+        icon::{Icon, IconBuilder, IconColor, IconKind, IconSize},
     },
     schema::electrolyzer::{Electrolyzer, ElectrolyzerId},
 };
 
-#[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq)]
+#[derive(Template, Default, Debug)]
 #[template(path = "components/electrolyzer_selector.html")]
 pub struct ElectrolyzerSelectorTemplate {
     pub selected_id: ElectrolyzerId,
@@ -17,7 +17,7 @@ pub struct ElectrolyzerSelectorTemplate {
     pub select_electrolyzer_listener: EventListener,
 }
 
-#[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq)]
+#[derive(Template, Default, Debug)]
 #[template(path = "components/list_electrolyzers.html")]
 pub struct ListElectrolyzersTemplate {
     pub search_results: ElectrolyzerSearchResults,
@@ -26,12 +26,13 @@ pub struct ListElectrolyzersTemplate {
     pub create_electrolyzer_button: Button,
 }
 
-#[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq)]
+#[derive(Template, Default, Debug)]
 #[template(path = "components/electrolyzer_search_results.html")]
 pub struct ElectrolyzerSearchResults {
-    pub selected_id: Option<ElectrolyzerId>,
-    pub electrolyzers: Vec<Electrolyzer>,
-    pub select_electrolyzer_button: Button,
+    selected_id: Option<ElectrolyzerId>,
+    electrolyzers: Vec<Electrolyzer>,
+    select_electrolyzer_button: Button,
+    state_icon: Icon,
 }
 
 pub struct ElectrolyzerSearchResultsBuilder {
@@ -44,6 +45,11 @@ impl ElectrolyzerSearchResultsBuilder {
             electrolyzer_search_results: ElectrolyzerSearchResults {
                 selected_id: None,
                 electrolyzers: vec![],
+                state_icon: IconBuilder::new()
+                    .kind(IconKind::Texas)
+                    .size(IconSize::Small)
+                    .fill(IconColor::Black)
+                    .build(),
                 select_electrolyzer_button: ButtonBuilder::new()
                     .text("Use")
                     .endpoint("/select_electrolyzer")

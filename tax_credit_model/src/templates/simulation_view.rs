@@ -1,5 +1,4 @@
 use askama::Template;
-use serde::{Deserialize, Serialize};
 
 use crate::{
     client::events::ClientEvent,
@@ -12,7 +11,7 @@ use crate::{
 
 use super::list_electrolyzers_template::ElectrolyzerSelectorTemplate;
 
-#[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq)]
+#[derive(Template, Default, Debug)]
 #[template(path = "components/simulation_view.html")]
 pub struct SimulationView {
     generation_range: DateTimeRange,
