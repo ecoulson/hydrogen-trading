@@ -1,11 +1,10 @@
-use askama::Template;
 use rocket::{get, http::Status, State};
 
 use crate::{
-    client::{events::ClientEvent, htmx::HtmxSwap},
     components::{
-        event::EventListenerBuilder,
+        electrolyzer::{ElectrolyzerDetails, ElectrolyzerSelector},
         page::{Page, PageResponse},
+        simulation::SimulationView,
     },
     persistance::{
         electrolyzer::ElectrolyzerClient, simulation::SimulationClient,
@@ -13,23 +12,11 @@ use crate::{
     },
     responders::{htmx_responder::HtmxHeadersBuilder, user_context::UserContext},
     schema::{
-        electrolyzer::{ElectrolyzerDetails, ElectrolyzerDetailsBuilder},
-        simulation_schema::SimulationId,
+        simulation_schema::{SimulationId, SimulationPage},
         time::DateTimeRange,
         user::User,
     },
-    templates::{
-        list_electrolyzers_template::ElectrolyzerSelectorTemplate,
-        simulation_view::{SimulationView, SimulationViewBuilder},
-    },
 };
-
-#[derive(Template, Default, Debug)]
-#[template(path = "pages/simulation.html")]
-pub struct SimulationPage {
-    simulation_view: SimulationView,
-    electrolyzer_details: ElectrolyzerDetails,
-}
 
 #[get("/simulation/<simulation_id>")]
 pub fn simulation_handler(
@@ -63,26 +50,14 @@ pub fn simulation_handler(
     Page::page(
         HtmxHeadersBuilder::new().set_cookie_if(cookie).build(),
         SimulationPage {
-            electrolyzer_details: ElectrolyzerDetailsBuilder::new()
-                .electrolyzer(electrolyzer)
-                .selected()
-                .build(),
-            simulation_view: SimulationViewBuilder::new()
-                .generation_range(DateTimeRange {
+            electrolyzer_details: ElectrolyzerDetails::render_selected(electrolyzer),
+            simulation_view: SimulationView::render(
+                DateTimeRange {
                     start: String::from("2023-01-01T00:00"),
                     end: String::from("2023-07-31T23:59"),
-                })
-                .electrolyzer_selector(ElectrolyzerSelectorTemplate {
-                    electrolyzers,
-                    selected_id: electrolyzer_id,
-                    select_electrolyzer_listener: EventListenerBuilder::new()
-                        .event(ClientEvent::SelectElectrolyzer)
-                        .endpoint("/electrolyzer_selector")
-                        .target("#electrolyzer-selector")
-                        .swap(HtmxSwap::OuterHtml)
-                        .build(),
-                })
-                .build(),
+                },
+                ElectrolyzerSelector::render(electrolyzer_id, electrolyzers),
+            ),
         },
     )
 }

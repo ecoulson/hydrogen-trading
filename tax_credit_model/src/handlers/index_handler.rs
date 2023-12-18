@@ -1,31 +1,17 @@
-use askama::Template;
 use rocket::{get, State};
 
 use crate::{
-    client::events::ClientEvent,
     components::{
-        button::{ButtonBuilder, ButtonVariant},
-        event::EventListenerBuilder,
+        electrolyzer::ElectrolyzerList,
         page::{Page, PageResponse},
+        simulation::SimulationList,
     },
     persistance::{
         electrolyzer::ElectrolyzerClient, simulation::SimulationClient, user::UserClient,
     },
     responders::{htmx_responder::HtmxHeadersBuilder, user_context::UserContext},
-    schema::user::User,
-    templates::list_electrolyzers_template::{
-        ElectrolyzerSearchResultsBuilder, ListElectrolyzersTemplate,
-    },
+    schema::{index::IndexResponse, user::User},
 };
-
-use super::list_simulation_handler::ListSimulationResponse;
-
-#[derive(Template, Debug)]
-#[template(path = "pages/index.html")]
-pub struct IndexResponse {
-    electrolyzer_list: ListElectrolyzersTemplate,
-    simulation_list: ListSimulationResponse,
-}
 
 #[get("/")]
 pub fn index_handler(
@@ -44,35 +30,8 @@ pub fn index_handler(
     Page::page(
         HtmxHeadersBuilder::new().set_cookie_if(cookie).build(),
         IndexResponse {
-            electrolyzer_list: ListElectrolyzersTemplate {
-                search_results: ElectrolyzerSearchResultsBuilder::new()
-                    .electrolyzers(electrolyzer_client.list_electrolyzers()?)
-                    .build(),
-                list_simulation_listener: EventListenerBuilder::new()
-                    .event(ClientEvent::ListSimulations)
-                    .target("#sidebar")
-                    .endpoint("/list_electrolyzers")
-                    .build(),
-                select_simulation_listener: EventListenerBuilder::new()
-                    .event(ClientEvent::SelectSimulation)
-                    .target("#sidebar")
-                    .endpoint("/get_selected_electrolyzer")
-                    .build(),
-                create_electrolyzer_button: ButtonBuilder::new()
-                    .variant(ButtonVariant::Primary)
-                    .endpoint("/create_electrolyzer_form")
-                    .target("#sidebar")
-                    .text("Create Electrolyzer")
-                    .build(),
-            },
-            simulation_list: ListSimulationResponse {
-                simulations: simulation_client.list_simulations()?,
-                create_electrolyzer_listener: EventListenerBuilder::new()
-                    .event(ClientEvent::CreateElectrolyzer)
-                    .endpoint("initialize_simulation")
-                    .target("#dataplane")
-                    .build(),
-            },
+            electrolyzer_list: ElectrolyzerList::render(electrolyzer_client.list_electrolyzers()?),
+            simulation_list: SimulationList::render(simulation_client.list_simulations()?),
         },
     )
 }

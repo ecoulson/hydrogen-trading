@@ -2,13 +2,15 @@ use rocket::{form::Form, post, State};
 
 use crate::{
     client::events::ClientEvent,
-    components::component::{Component, ComponentResponse},
+    components::{
+        component::{Component, ComponentResponse},
+        electrolyzer::ElectrolyzerDetails,
+    },
     persistance::electrolyzer::ElectrolyzerClient,
     responders::htmx_responder::HtmxHeadersBuilder,
     schema::{
         electrolyzer::{
-            ConstantProduction, CreateElectrolyzerRequest, Electrolyzer, ElectrolyzerDetails,
-            ElectrolyzerDetailsBuilder, ProductionType,
+            ConstantProduction, CreateElectrolyzerRequest, Electrolyzer, ProductionType,
         },
         errors::BannerError,
     },
@@ -47,10 +49,7 @@ pub fn create_electrolyzer_handler(
             HtmxHeadersBuilder::new()
                 .trigger(ClientEvent::CreateElectrolyzer)
                 .build(),
-            ElectrolyzerDetailsBuilder::new()
-                .electrolyzer(electrolyzer)
-                .selected()
-                .build(),
+            ElectrolyzerDetails::render_selected(electrolyzer),
         );
     }
 
@@ -58,8 +57,6 @@ pub fn create_electrolyzer_handler(
         HtmxHeadersBuilder::new()
             .trigger(ClientEvent::CreateElectrolyzer)
             .build(),
-        ElectrolyzerDetailsBuilder::new()
-            .electrolyzer(electrolyzer)
-            .build(),
+        ElectrolyzerDetails::render_unselected(electrolyzer),
     )
 }

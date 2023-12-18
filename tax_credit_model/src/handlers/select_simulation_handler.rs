@@ -1,10 +1,11 @@
 use rocket::{form::Form, post, FromForm, State};
 
 use crate::{
-    client::{events::ClientEvent, htmx::HtmxSwap},
+    client::events::ClientEvent,
     components::{
         component::{Component, ComponentResponse},
-        event::EventListenerBuilder,
+        electrolyzer::ElectrolyzerSelector,
+        simulation::SimulationView,
     },
     persistance::{
         electrolyzer::ElectrolyzerClient, simulation::SimulationClient,
@@ -13,10 +14,6 @@ use crate::{
     responders::{client_context::ClientContext, htmx_responder::HtmxHeadersBuilder},
     schema::{
         errors::BannerError, simulation_schema::SimulationId, time::DateTimeRange, user::User,
-    },
-    templates::{
-        list_electrolyzers_template::ElectrolyzerSelectorTemplate,
-        simulation_view::{SimulationView, SimulationViewBuilder},
     },
 };
 
@@ -47,21 +44,12 @@ pub fn select_simulation_handler(
             .replace_url(&location.build_url())
             .trigger(ClientEvent::SelectSimulation)
             .build(),
-        SimulationViewBuilder::new()
-            .generation_range(DateTimeRange {
+        SimulationView::render(
+            DateTimeRange {
                 start: String::from("2023-01-01T00:00"),
                 end: String::from("2023-07-31T23:59"),
-            })
-            .electrolyzer_selector(ElectrolyzerSelectorTemplate {
-                electrolyzers,
-                selected_id: simulation.electrolyzer_id,
-                select_electrolyzer_listener: EventListenerBuilder::new()
-                    .event(ClientEvent::SelectElectrolyzer)
-                    .endpoint("/electrolyzer_selector")
-                    .target("#electrolyzer-selector")
-                    .swap(HtmxSwap::OuterHtml)
-                    .build(),
-            })
-            .build(),
+            },
+            ElectrolyzerSelector::render(simulation.electrolyzer_id, electrolyzers),
+        ),
     )
 }

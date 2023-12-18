@@ -1,0 +1,5 @@
+<form class="w-full max-w-75 py-4 px-4 bg-gray-200 hover:bg-gray-300 cursor-pointer rounded-md " hx-trigger="click"
+    hx-post="/select_simulation" hx-target="#dataplane" hx-swap="innerHTML">
+    {{ id_input|safe }}
+    <span>Simulation {{ id }}</span>
+</form>

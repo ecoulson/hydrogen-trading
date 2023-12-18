@@ -1,13 +1,15 @@
 use rocket::{post, State};
 
 use crate::{
-    components::component::{Component, ComponentResponse},
+    components::{
+        component::{Component, ComponentResponse},
+        electrolyzer::ElectrolyzerDetails,
+    },
     persistance::{
         electrolyzer::ElectrolyzerClient, simulation::SimulationClient,
         simulation_selection::SimulationSelectionClient,
     },
     schema::{
-        electrolyzer::{ElectrolyzerDetails, ElectrolyzerDetailsBuilder},
         errors::BannerError,
         user::User,
     },
@@ -24,10 +26,5 @@ pub fn get_selected_electrolyzer_handler(
     let simulation = simulation_client.get_simulation_state(&simulation_id)?;
     let electrolyzer = electrolyzer_client.get_electrolyzer(simulation.electrolyzer_id)?;
 
-    Component::basic(
-        ElectrolyzerDetailsBuilder::new()
-            .electrolyzer(electrolyzer)
-            .selected()
-            .build(),
-    )
+    Component::basic(ElectrolyzerDetails::render_selected(electrolyzer))
 }

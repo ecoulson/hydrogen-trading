@@ -1,21 +1,16 @@
 use rocket::{form::Form, post, FromForm, State};
 
 use crate::{
-    components::component::{Component, ComponentResponse},
+    components::{
+        component::{Component, ComponentResponse},
+        electrolyzer::ElectrolyzerSearchResults,
+    },
     persistance::{
         electrolyzer::ElectrolyzerClient, simulation::SimulationClient,
         simulation_selection::SimulationSelectionClient,
     },
-    schema::{errors::BannerError, user::User},
-    templates::list_electrolyzers_template::{
-        ElectrolyzerSearchResults, ElectrolyzerSearchResultsBuilder,
-    },
+    schema::{errors::BannerError, user::User, electrolyzer::SearchElectrolyzersRequest},
 };
-
-#[derive(FromForm)]
-pub struct SearchElectrolyzersRequest {
-    query: String,
-}
 
 #[post("/search_electrolyzers", data = "<request>")]
 pub fn search_electrolyzers_handler(
@@ -26,26 +21,15 @@ pub fn search_electrolyzers_handler(
     simulation_selection_client: &State<Box<dyn SimulationSelectionClient>>,
 ) -> ComponentResponse<ElectrolyzerSearchResults, BannerError> {
     let simulation_id = simulation_selection_client.current_selection(user.id())?;
-
-    if simulation_id.is_none() {
-        return Component::basic(ElectrolyzerSearchResultsBuilder::new().build());
-    }
-
     let simulation = simulation_client.get_simulation_state(&simulation_id.unwrap())?;
-
-    if request.query.trim().is_empty() {
-        return Component::basic(
-            ElectrolyzerSearchResultsBuilder::new()
-                .electrolyzers(electrolyzer_client.list_electrolyzers()?)
-                .selected_id(simulation.electrolyzer_id)
-                .build(),
-        );
-    }
-
-    let filtered_electrolyzers = electrolyzer_client
+    let results = electrolyzer_client
         .list_electrolyzers()?
         .into_iter()
         .filter(|electrolyzer| {
+            if request.query.trim().is_empty() {
+                return true;
+            }
+
             electrolyzer
                 .name
                 .to_lowercase()
@@ -53,10 +37,12 @@ pub fn search_electrolyzers_handler(
         })
         .collect();
 
-    Component::basic(
-        ElectrolyzerSearchResultsBuilder::new()
-            .selected_id(simulation.electrolyzer_id)
-            .electrolyzers(filtered_electrolyzers)
-            .build(),
-    )
+    if simulation_id.is_none() {
+        return Component::basic(ElectrolyzerSearchResults::render(results));
+    }
+
+    Component::basic(ElectrolyzerSearchResults::render_selected(
+        simulation.electrolyzer_id,
+        results,
+    ))
 }

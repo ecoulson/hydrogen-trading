@@ -1,10 +1,10 @@
 use rocket::{form::Form, post, State};
 
 use crate::{
-    client::{events::ClientEvent, htmx::HtmxSwap},
     components::{
         component::{Component, ComponentResponse},
-        event::EventListenerBuilder,
+        electrolyzer::ElectrolyzerSelector,
+        simulation::SimulationView,
     },
     logic::simulation::{simulate, SimulationState},
     persistance::{
@@ -14,13 +14,9 @@ use crate::{
     responders::{client_context::ClientContext, htmx_responder::HtmxHeadersBuilder},
     schema::{
         errors::BannerError,
-        simulation_schema::{ExecuteSimulationRequest, ExecuteSimulationResponse},
+        simulation_schema::{ExecuteSimulationRequest, SimulationResultView},
         time::DateTimeRange,
         user::User,
-    },
-    templates::{
-        list_electrolyzers_template::ElectrolyzerSelectorTemplate,
-        simulation_view::SimulationViewBuilder,
     },
 };
 
@@ -33,7 +29,7 @@ pub fn execute_simulation(
     electrolyzer_client: &State<Box<dyn ElectrolyzerClient>>,
     simulation_client: &State<Box<dyn SimulationClient>>,
     simulation_selection_client: &State<Box<dyn SimulationSelectionClient>>,
-) -> ComponentResponse<ExecuteSimulationResponse, BannerError> {
+) -> ComponentResponse<SimulationResultView, BannerError> {
     let mut client_context = client_context;
     let electrolyzer = electrolyzer_client.get_electrolyzer(request.electrolyzer_id)?;
     let power_grid = power_grid_fetcher.get_power_grid()?;
@@ -50,30 +46,24 @@ pub fn execute_simulation(
         HtmxHeadersBuilder::new()
             .replace_url(&location.build_url())
             .build(),
-        ExecuteSimulationResponse {
-            simulation_view: SimulationViewBuilder::new()
-                .generation_range(DateTimeRange {
+        SimulationResultView::render(
+            SimulationView::render(
+                DateTimeRange {
                     start: String::from("2023-01-01T00:00"),
                     end: String::from("2023-07-31T23:59"),
-                })
-                .electrolyzer_selector(ElectrolyzerSelectorTemplate {
-                    electrolyzers: electrolyzer_client.list_electrolyzers()?,
-                    selected_id: electrolyzer.id,
-                    select_electrolyzer_listener: EventListenerBuilder::new()
-                        .event(ClientEvent::SelectElectrolyzer)
-                        .endpoint("/electrolyzer_selector")
-                        .target("#electrolyzer-selector")
-                        .swap(HtmxSwap::OuterHtml)
-                        .build(),
-                })
-                .build(),
-            simulation_result: simulate(
+                },
+                ElectrolyzerSelector::render(
+                    electrolyzer.id,
+                    electrolyzer_client.list_electrolyzers()?,
+                ),
+            ),
+            simulate(
                 current_simulation_id,
                 &power_grid,
                 &electrolyzer,
                 &request.simulation_time_range,
                 simulation_client.inner(),
             )?,
-        },
+        ),
     )
 }

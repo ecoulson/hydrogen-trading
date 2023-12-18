@@ -1,0 +1,6 @@
+{% match variant %}
+{% when InputVariant::Default %}
+<input hx-post="{{ endpoint }}" hx-trigger="{{ trigger }}" hx-target="{{ target }}" placeholder="{{ placeholder }}" class="border w-full" name="{{ name }}" value="{{ value }}" />
+{% when InputVariant::Hidden %}
+<input name="{{ name }}" hidden value="{{ value }}" />
+{% endmatch %}

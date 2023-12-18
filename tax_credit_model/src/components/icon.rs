@@ -75,49 +75,19 @@ impl Display for IconSize {
 #[derive(Template, Debug, Default, PartialEq)]
 #[template(path = "components/icon.html")]
 pub struct Icon {
-    fill: IconFill,
-    stroke: IconStroke,
-    size: IconSize,
-    kind: IconKind,
+    pub fill: IconFill,
+    pub stroke: IconStroke,
+    pub size: IconSize,
+    pub kind: IconKind,
 }
 
-#[derive(Debug)]
-pub struct IconBuilder {
-    icon: Icon,
-}
-
-impl IconBuilder {
-    pub fn new() -> Self {
+impl Icon {
+    pub fn render_filled(kind: IconKind, size: IconSize, color: IconColor) -> Self {
         Self {
-            icon: Icon::default(),
+            kind,
+            size,
+            fill: IconFill::Fill(color),
+            stroke: IconStroke::None,
         }
-    }
-
-    pub fn fill(mut self, fill: IconColor) -> Self {
-        self.icon.fill = IconFill::Fill(fill);
-
-        self
-    }
-
-    pub fn size(mut self, size: IconSize) -> Self {
-        self.icon.size = size;
-
-        self
-    }
-
-    pub fn stroke(mut self, stroke: IconColor) -> Self {
-        self.icon.stroke = IconStroke::Stroke(stroke);
-
-        self
-    }
-
-    pub fn kind(mut self, kind: IconKind) -> Self {
-        self.icon.kind = kind;
-
-        self
-    }
-
-    pub fn build(self) -> Icon {
-        self.icon
     }
 }

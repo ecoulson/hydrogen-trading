@@ -1,0 +1,20 @@
+<form class="py-2 px-4 bg-gray-200 hover:bg-gray-300 cursor-pointer rounded-md flex items-center gap-x-4"
+    hx-trigger="click" hx-post="/get_electrolyzer" hx-target="#sidebar" hx-swap="innerHTML">
+    {{ id_input|safe }}
+    <span>{{ index }}</span>
+    <div class="w-10 h-10">
+        {{ state_icon|safe }}
+    </div>
+    <div class="flex flex-col">
+        <span>{{ electrolyzer.name }}</span>
+        <span class="text-sm text-gray-600">
+            {{ electrolyzer.city }}, {{ electrolyzer.state }}
+        </span>
+    </div>
+    <div class="grow"></div>
+    {% match state %}
+    {% when ElectrolyzerSearchResultItemState::Unselected %}
+    {{ select_electrolyzer_button|safe }}
+    {% when ElectrolyzerSearchResultItemState::Selected %}
+    {% endmatch %}
+</form>

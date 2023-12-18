@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
+    components::input::Input,
     persistance::simulation::SimulationClient,
     schema::{
         electrolyzer::{Electrolyzer, ElectrolyzerId},
@@ -138,7 +139,10 @@ pub fn simulate(
         emissions: produce_emissions_graph(&state)?,
         hydrogen_productions: TimeSeriesChartResponse {
             id: format!("hydrogen-produced-{}", &simulation_id),
-            endpoint: format!("/fetch_hydrogen_production/{simulation_id}"),
+            endpoint_input: Input::render_hidden(
+                &format!("/fetch_hydrogen_production/{simulation_id}"),
+                "endpoint",
+            ),
             chart: TimeSeriesChart {
                 title: String::from("Hydrogen Production Over Time"),
                 labels: Labels {
@@ -167,7 +171,10 @@ pub fn simulate(
         },
         energy_costs: TimeSeriesChartResponse {
             id: format!("energy-costs-{}", &simulation_id),
-            endpoint: format!("/fetch_energy_costs/{simulation_id}"),
+            endpoint_input: Input::render_hidden(
+                &format!("/fetch_energy_costs/{simulation_id}"),
+                "endpoint",
+            ),
             chart: TimeSeriesChart {
                 title: String::from("Energy Costs Over Time"),
                 labels: Labels {
@@ -211,7 +218,7 @@ pub fn simulate(
 fn produce_emissions_graph(state: &SimulationState) -> Result<TimeSeriesChartResponse> {
     Ok(TimeSeriesChartResponse {
         id: format!("emissions-{}", state.id),
-        endpoint: format!("/fetch_emissions/{}", state.id),
+        endpoint_input: Input::render_hidden(&format!("/fetch_emissions/{}", state.id), "endpoint"),
         chart: TimeSeriesChart {
             title: String::from("Emissions Over Time"),
             labels: Labels {

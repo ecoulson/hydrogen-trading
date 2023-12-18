@@ -12,4 +12,3 @@ pub mod persistance;
 pub mod responders;
 pub mod schema;
 pub mod server;
-pub mod templates;

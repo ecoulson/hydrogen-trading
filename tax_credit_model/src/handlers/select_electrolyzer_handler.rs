@@ -1,24 +1,18 @@
-use rocket::{form::Form, post, FromForm, State};
+use rocket::{form::Form, post, State};
 
 use crate::{
     client::events::ClientEvent,
-    components::component::{Component, ComponentResponse},
+    components::{
+        component::{Component, ComponentResponse},
+        electrolyzer::ElectrolyzerDetails,
+    },
     persistance::{
         electrolyzer::ElectrolyzerClient, simulation::SimulationClient,
         simulation_selection::SimulationSelectionClient,
     },
     responders::htmx_responder::HtmxHeadersBuilder,
-    schema::{
-        electrolyzer::{ElectrolyzerDetails, ElectrolyzerDetailsBuilder, ElectrolyzerId},
-        errors::BannerError,
-        user::User,
-    },
+    schema::{electrolyzer::SelectElectrolyzerHandlerRequest, errors::BannerError, user::User},
 };
-
-#[derive(FromForm, Debug, Default)]
-pub struct SelectElectrolyzerHandlerRequest {
-    electrolyzer_id: ElectrolyzerId,
-}
 
 #[post("/select_electrolyzer", data = "<request>")]
 pub fn select_electrolyzer_handler(
@@ -38,9 +32,6 @@ pub fn select_electrolyzer_handler(
         HtmxHeadersBuilder::new()
             .trigger(ClientEvent::SelectElectrolyzer)
             .build(),
-        ElectrolyzerDetailsBuilder::new()
-            .electrolyzer(electrolyzer)
-            .selected()
-            .build(),
+        ElectrolyzerDetails::render_selected(electrolyzer),
     )
 }

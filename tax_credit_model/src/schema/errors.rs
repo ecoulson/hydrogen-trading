@@ -2,7 +2,7 @@ use askama::Template;
 use rocket::http::Status;
 
 use crate::{
-    components::icon::{Icon, IconBuilder, IconColor, IconKind, IconSize},
+    components::icon::{Icon, IconColor, IconKind, IconSize},
     responders::htmx_responder::{HtmxHeadersBuilder, HtmxTemplate},
 };
 
@@ -82,11 +82,7 @@ impl BannerError {
     pub fn new(message: &str) -> Self {
         Self {
             message: String::from(message),
-            close_icon: IconBuilder::new()
-                .fill(IconColor::Black)
-                .kind(IconKind::Close)
-                .size(IconSize::Small)
-                .build(),
+            close_icon: Icon::render_filled(IconKind::Close, IconSize::Small, IconColor::Black),
         }
     }
 

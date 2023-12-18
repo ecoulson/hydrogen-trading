@@ -7,7 +7,7 @@ use tax_credit_model_server::{
     schema::{
         electrolyzer::{ConstantProduction, Electrolyzer},
         simulation_schema::{
-            EnergySourcePortfolio, ExecuteSimulationRequest, ExecuteSimulationResponse,
+            EnergySourcePortfolio, ExecuteSimulationRequest, SimulationResultView,
             GenerationMetric,
         },
         time::{DateTimeRange, TimeRange, Timestamp},
@@ -31,7 +31,7 @@ async fn test_simulate_for_simple_model() {
     };
     let mut time_range = TimeRange::default();
     time_range.end.seconds = 3600;
-    let mut expected_response = ExecuteSimulationResponse::default();
+    let mut expected_response = SimulationResultView::default();
     expected_response
         .simulation_result
         .tax_credit_summary

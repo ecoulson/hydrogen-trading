@@ -4,7 +4,7 @@ use askama::Template;
 use rocket::FromForm;
 use serde::{Deserialize, Serialize};
 
-use crate::templates::simulation_view::SimulationView;
+use crate::components::{electrolyzer::ElectrolyzerDetails, simulation::SimulationView};
 
 use super::{
     electrolyzer::ElectrolyzerId,
@@ -34,9 +34,18 @@ impl ExecuteSimulationRequest {
 
 #[derive(Template, Default, Debug)]
 #[template(path = "components/simulation_result.html")]
-pub struct ExecuteSimulationResponse {
+pub struct SimulationResultView {
     pub simulation_result: SimulationResult,
     pub simulation_view: SimulationView,
+}
+
+impl SimulationResultView {
+    pub fn render(simulation_view: SimulationView, simulation_result: SimulationResult) -> Self {
+        Self {
+            simulation_view,
+            simulation_result,
+        }
+    }
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
@@ -62,7 +71,7 @@ pub struct TaxCreditSummary {
     pub credit_hours_none: f64,
 }
 
-#[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
+#[derive(Default, Debug)]
 pub struct SimulationResult {
     pub hourly_histogram: HistogramResponse,
     pub tax_credit_summary: TaxCreditSummary,
@@ -295,4 +304,11 @@ pub struct EnergyTransaction {
     pub timestamp: Timestamp,
     pub price_usd: f64,
     pub portfolio: EnergySourcePortfolio,
+}
+
+#[derive(Template, Default, Debug)]
+#[template(path = "pages/simulation.html")]
+pub struct SimulationPage {
+    pub simulation_view: SimulationView,
+    pub electrolyzer_details: ElectrolyzerDetails,
 }

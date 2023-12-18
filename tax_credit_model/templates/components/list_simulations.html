@@ -8,11 +8,7 @@
 {% else %}
 <div class="flex flex-col items-center gap-y-4 w-full py-2 px-4">
     {% for simulation in simulations %}
-    <form class="w-full max-w-75 py-4 px-4 bg-gray-200 hover:bg-gray-300 cursor-pointer rounded-md " hx-trigger="click"
-        hx-post="/select_simulation" hx-target="#dataplane" hx-swap="innerHTML">
-        <input name="simulation_id" hidden value="{{ simulation.id }}" />
-        <span>Simulation {{ simulation.id }}</span>
-    </form>
+    {{ simulation|safe }}
     {% endfor %}
 </div>
 {% endif %}

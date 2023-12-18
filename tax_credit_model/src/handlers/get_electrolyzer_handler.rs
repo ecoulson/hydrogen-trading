@@ -1,25 +1,16 @@
-use rocket::{form::Form, post, FromForm, State};
+use rocket::{form::Form, post, State};
 
 use crate::{
     components::{
-        button::ButtonBuilder,
         component::{Component, ComponentResponse},
+        electrolyzer::ElectrolyzerDetails,
     },
     persistance::{
         electrolyzer::ElectrolyzerClient, simulation::SimulationClient,
         simulation_selection::SimulationSelectionClient,
     },
-    schema::{
-        electrolyzer::{ElectrolyzerDetails, ElectrolyzerDetailsBuilder, ElectrolyzerId},
-        errors::BannerError,
-        user::User,
-    },
+    schema::{electrolyzer::GetElectrolyzerRequest, errors::BannerError, user::User},
 };
-
-#[derive(FromForm)]
-pub struct GetElectrolyzerRequest {
-    pub electrolyzer_id: ElectrolyzerId,
-}
 
 #[post("/get_electrolyzer", data = "<request>")]
 pub fn get_electrolyzer_handler(
@@ -33,35 +24,14 @@ pub fn get_electrolyzer_handler(
     let simulation_id = simulation_selection_client.current_selection(user.id())?;
 
     if simulation_id.is_none() {
-        return Component::basic(
-            ElectrolyzerDetailsBuilder::new()
-                .electrolyzer(electrolyzer)
-                .select_electrolyzer_button(
-                    ButtonBuilder::new()
-                        .endpoint("/select_electrolyzer")
-                        .target("#sidebar")
-                        .disabled()
-                        .text("Use")
-                        .build(),
-                )
-                .build(),
-        );
+        return Component::basic(ElectrolyzerDetails::render_default(electrolyzer));
     }
 
     let simulation = simulation_client.get_simulation_state(&simulation_id.unwrap())?;
 
     if request.electrolyzer_id == simulation.electrolyzer_id {
-        return Component::basic(
-            ElectrolyzerDetailsBuilder::new()
-                .electrolyzer(electrolyzer)
-                .selected()
-                .build(),
-        );
+        return Component::basic(ElectrolyzerDetails::render_selected(electrolyzer));
     }
 
-    Component::basic(
-        ElectrolyzerDetailsBuilder::new()
-            .electrolyzer(electrolyzer)
-            .build(),
-    )
+    Component::basic(ElectrolyzerDetails::render_unselected(electrolyzer))
 }

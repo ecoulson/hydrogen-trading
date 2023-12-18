@@ -1,7 +1,7 @@
 use rocket::{form::Form, post, State};
 
 use crate::{
-    components::component::ComponentResponse,
+    components::{component::ComponentResponse, simulation::SimulationView},
     logic::simulation::SimulationState,
     persistance::{
         electrolyzer::ElectrolyzerClient, simulation::SimulationClient,
@@ -9,7 +9,6 @@ use crate::{
     },
     responders::client_context::ClientContext,
     schema::{errors::BannerError, user::User},
-    templates::simulation_view::SimulationView,
 };
 
 use super::select_simulation_handler::{select_simulation_handler, SelectSimulationRequest};

@@ -1,6 +1,8 @@
 use askama::Template;
 use serde::{Deserialize, Serialize};
 
+use crate::components::input::Input;
+
 use super::histogram::Labels;
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
@@ -41,12 +43,12 @@ pub struct TimeSeriesEntry {
     pub value: f64,
 }
 
-#[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
+#[derive(Template, Default, Debug)]
 #[template(path = "components/time_series_chart.html")]
 pub struct TimeSeriesChartResponse {
     pub id: String,
-    pub endpoint: String,
-    pub chart: TimeSeriesChart
+    pub endpoint_input: Input,
+    pub chart: TimeSeriesChart,
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]

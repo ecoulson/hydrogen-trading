@@ -4,41 +4,29 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, PartialEq, Serialize, Deserialize, Default, Clone)]
 pub enum BadgeVariant {
     #[default]
-    Primary,
-    Secondary,
+    Default,
+    Info,
 }
 
 #[derive(Template, Debug, PartialEq, Serialize, Deserialize, Default, Clone)]
 #[template(path = "components/badge.html")]
 pub struct Badge {
-    variant: BadgeVariant,
-    text: String,
+    pub variant: BadgeVariant,
+    pub text: String,
 }
 
-pub struct BadgeBuilder {
-    badge: Badge,
-}
-
-impl BadgeBuilder {
-    pub fn new() -> Self {
-        Self {
-            badge: Badge::default(),
+impl Badge {
+    pub fn render(text: &str) -> Badge {
+        Badge {
+            variant: BadgeVariant::Default,
+            text: String::from(text),
         }
     }
 
-    pub fn variant(mut self, variant: BadgeVariant) -> Self {
-        self.badge.variant = variant;
-
-        self
-    }
-
-    pub fn text(mut self, text: &str) -> Self {
-        self.badge.text = String::from(text);
-
-        self
-    }
-
-    pub fn build(self) -> Badge {
-        self.badge
+    pub fn render_info(text: &str) -> Badge {
+        Badge {
+            variant: BadgeVariant::Info,
+            text: String::from(text),
+        }
     }
 }
