@@ -1,22 +1,22 @@
 use askama::Template;
 use serde::{Deserialize, Serialize};
 
-use crate::client::{events::ClientEvent, htmx::HtmxSwap};
+use crate::{client::{events::ClientEvent, htmx::HtmxSwap}, schema::endpoints::Endpoint};
 
 #[derive(Template, Deserialize, Serialize, Default, Debug, PartialEq)]
 #[template(path = "components/event_listener.html")]
 pub struct EventListener {
     event: ClientEvent,
     target: String,
-    endpoint: String,
+    endpoint: Endpoint,
     swap: HtmxSwap,
 }
 
 impl EventListener {
-    pub fn render(event: ClientEvent, endpoint: &str, target: &str, swap: HtmxSwap) -> Self {
+    pub fn render(event: ClientEvent, endpoint: Endpoint, target: &str, swap: HtmxSwap) -> Self {
         EventListener {
             event,
-            endpoint: String::from(endpoint),
+            endpoint,
             target: String::from(target),
             swap,
         }

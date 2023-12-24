@@ -4,7 +4,7 @@ use crate::{
     schema::{
         ercot::{ErcotFuelMix, ErcotRTMPrice, SettlementPointLocation},
         errors::{Error, Result},
-        simulation_schema::{EnergySourcePortfolio, GenerationMetric},
+        simulation::{EnergySourcePortfolio, GenerationMetric},
         time::Timestamp,
     },
 };

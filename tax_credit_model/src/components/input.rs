@@ -1,5 +1,7 @@
 use askama::Template;
 
+use crate::schema::endpoints::Endpoint;
+
 #[derive(Debug, Default)]
 pub enum InputVariant {
     #[default]
@@ -14,7 +16,7 @@ pub struct Input {
     value: String,
     name: String,
     placeholder: String,
-    endpoint: String,
+    endpoint: Endpoint,
     trigger: String,
     target: String,
 }
@@ -26,22 +28,21 @@ impl Input {
             name: String::from(name),
             variant: InputVariant::Hidden,
             placeholder: String::new(),
-            endpoint: String::new(),
+            endpoint: Endpoint::default(),
             trigger: String::new(),
             target: String::new(),
         }
     }
 
-    pub fn render_search(name: &str, endpoint:&str,  placeholder: &str, target: &str) -> Self {
+    pub fn render_search(name: &str, endpoint: Endpoint, placeholder: &str, target: &str) -> Self {
         Self {
             value: String::new(),
             name: String::from(name),
             variant: InputVariant::Default,
             placeholder: String::from(placeholder),
-            endpoint: String::from(endpoint),
+            endpoint,
             trigger: String::from("keyup changed delay:500ms"),
             target: String::from(target),
         }
     }
 }
-

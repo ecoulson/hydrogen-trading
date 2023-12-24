@@ -1,9 +1,9 @@
 pub mod electrolyzer;
+pub mod endpoints;
 pub mod ercot;
 pub mod errors;
 pub mod histogram;
-pub mod simulation_schema;
+pub mod simulation;
 pub mod time;
 pub mod time_series;
 pub mod user;
-pub mod index;

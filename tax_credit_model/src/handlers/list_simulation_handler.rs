@@ -4,11 +4,12 @@ use crate::{
     client::events::ClientEvent,
     components::{
         component::{Component, ComponentResponse},
+        error::BannerError,
         simulation::SimulationList,
     },
     persistance::{simulation::SimulationClient, simulation_selection::SimulationSelectionClient},
     responders::{client_context::ClientContext, htmx_responder::HtmxHeadersBuilder},
-    schema::{errors::BannerError, user::User},
+    schema::user::User,
 };
 
 #[post("/list_simulations")]
@@ -21,7 +22,7 @@ pub fn list_simulation_handler(
     let mut client_context = client_context;
     let location = client_context.mut_location();
     location.set_path("");
-    simulation_selection_client.unselect(user.id())?;
+    simulation_selection_client.unselect(&user.id)?;
 
     Component::component(
         HtmxHeadersBuilder::new()

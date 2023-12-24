@@ -3,7 +3,11 @@ use askama::Template;
 use crate::{
     client::{events::ClientEvent, htmx::HtmxSwap},
     logic::simulation::SimulationState,
-    schema::{simulation_schema::SimulationId, time::DateTimeRange},
+    schema::{
+        endpoints::Endpoint,
+        simulation::{SimulationId, SimulationResult},
+        time::DateTimeRange,
+    },
 };
 
 use super::{
@@ -22,13 +26,14 @@ impl SimulationList {
         let list_items = simulations.iter().map(|simulation| SimulationListItem {
             id: simulation.id,
             id_input: Input::render_hidden(&simulation.id.to_string(), "simulation_id"),
+            endpoint: Endpoint::SelectSimulation,
         });
 
         SimulationList {
             simulations: list_items.collect(),
             create_electrolyzer_listener: EventListener::render(
                 ClientEvent::CreateElectrolyzer,
-                "/initialize_simulation",
+                Endpoint::InitializeSimulation,
                 "#dataplane",
                 HtmxSwap::default(),
             ),
@@ -39,6 +44,7 @@ impl SimulationList {
 #[derive(Template, Debug, Default)]
 #[template(path = "components/simulation_list_item.html")]
 pub struct SimulationListItem {
+    endpoint: Endpoint,
     id: SimulationId,
     id_input: Input,
 }
@@ -61,7 +67,7 @@ impl SimulationView {
         SimulationView {
             create_electrolyzer_listener: EventListener::render(
                 ClientEvent::CreateElectrolyzer,
-                "/get_selected_simulation",
+                Endpoint::GetSelectedSimulation,
                 "#dataplane",
                 HtmxSwap::default(),
             ),
@@ -69,14 +75,30 @@ impl SimulationView {
             electrolyzer_selector,
             list_simulation_button: Button::render_outline(
                 "View Runs",
-                "/list_simulations",
+                Endpoint::ListSimulations,
                 "#dataplane",
             ),
             simulate_button: Button::render_secondary(
                 "Simulate",
-                "/execute_simulation",
+                Endpoint::ExecuteSimulation,
                 "#simulation-result",
             ),
+        }
+    }
+}
+
+#[derive(Template, Default, Debug)]
+#[template(path = "components/simulation_result.html")]
+pub struct SimulationResultView {
+    pub simulation_result: SimulationResult,
+    pub simulation_view: SimulationView,
+}
+
+impl SimulationResultView {
+    pub fn render(simulation_view: SimulationView, simulation_result: SimulationResult) -> Self {
+        Self {
+            simulation_view,
+            simulation_result,
         }
     }
 }

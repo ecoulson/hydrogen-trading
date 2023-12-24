@@ -1,14 +1,14 @@
 use crate::utils::temp_dir::TempDirectory;
 
 use tax_credit_model_server::{
+    components::electrolyzer::ElectrolyzerDetails,
     persistance::{
         electrolyzer::InMemoryElectrolyzerPersistanceClient,
         generation::DiskGenerationPersistanceClient, grid::InMemoryGridClient,
         simulation::InMemorySimulationClient,
+        simulation_selection::InMemorySimulationSelectionClient, user::InMemoryUserClient,
     },
-    schema::electrolyzer::{
-        ConstantProduction, CreateElectrolyzerRequest, ElectrolyzerDetails,
-    },
+    schema::electrolyzer::{ConstantProduction, CreateElectrolyzerRequest},
     server::Dependencies,
 };
 use utils::{test_env::TestEnv, test_server::Method};
@@ -22,8 +22,10 @@ async fn create_electrolyzer_successfully() {
     let dependencies = Dependencies {
         electrolyzer_client: Box::new(InMemoryElectrolyzerPersistanceClient::new()),
         grid_client: Box::new(InMemoryGridClient::new()),
+        user_client: Box::new(InMemoryUserClient::new()),
         simulation_client: Box::new(InMemorySimulationClient::new()),
         generation_client: Box::new(DiskGenerationPersistanceClient::new(&path).unwrap()),
+        simulation_selection_client: Box::new(InMemorySimulationSelectionClient::new()),
     };
     let mut request = CreateElectrolyzerRequest::default();
     request.production_method.conversion_rate_constant = Some(0.5);

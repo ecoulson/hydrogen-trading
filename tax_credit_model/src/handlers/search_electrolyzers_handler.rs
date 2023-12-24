@@ -1,15 +1,15 @@
-use rocket::{form::Form, post, FromForm, State};
+use rocket::{form::Form, post, State};
 
 use crate::{
     components::{
         component::{Component, ComponentResponse},
-        electrolyzer::ElectrolyzerSearchResults,
+        electrolyzer::ElectrolyzerSearchResults, error::BannerError,
     },
     persistance::{
         electrolyzer::ElectrolyzerClient, simulation::SimulationClient,
         simulation_selection::SimulationSelectionClient,
     },
-    schema::{errors::BannerError, user::User, electrolyzer::SearchElectrolyzersRequest},
+    schema::{electrolyzer::SearchElectrolyzersRequest, user::User},
 };
 
 #[post("/search_electrolyzers", data = "<request>")]
@@ -20,7 +20,7 @@ pub fn search_electrolyzers_handler(
     simulation_client: &State<Box<dyn SimulationClient>>,
     simulation_selection_client: &State<Box<dyn SimulationSelectionClient>>,
 ) -> ComponentResponse<ElectrolyzerSearchResults, BannerError> {
-    let simulation_id = simulation_selection_client.current_selection(user.id())?;
+    let simulation_id = simulation_selection_client.current_selection(&user.id)?;
     let simulation = simulation_client.get_simulation_state(&simulation_id.unwrap())?;
     let results = electrolyzer_client
         .list_electrolyzers()?

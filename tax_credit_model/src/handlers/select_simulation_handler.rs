@@ -5,6 +5,7 @@ use crate::{
     components::{
         component::{Component, ComponentResponse},
         electrolyzer::ElectrolyzerSelector,
+        error::BannerError,
         simulation::SimulationView,
     },
     persistance::{
@@ -12,9 +13,7 @@ use crate::{
         simulation_selection::SimulationSelectionClient,
     },
     responders::{client_context::ClientContext, htmx_responder::HtmxHeadersBuilder},
-    schema::{
-        errors::BannerError, simulation_schema::SimulationId, time::DateTimeRange, user::User,
-    },
+    schema::{simulation::SimulationId, time::DateTimeRange, user::User},
 };
 
 #[derive(Debug, FromForm)]
@@ -36,7 +35,7 @@ pub fn select_simulation_handler(
     let electrolyzers = electrolyzer_client.list_electrolyzers()?;
     let next_url = &format!("simulation/{}", simulation.id);
     let location = client_context.mut_location();
-    simulation_selection.select(user.id().clone(), request.simulation_id)?;
+    simulation_selection.select(user.id, request.simulation_id)?;
     location.set_path(&next_url);
 
     Component::component(

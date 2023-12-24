@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use super::{errors::Error, simulation_schema::EnergySource, time::Timestamp};
+use super::{errors::Error, simulation::EnergySource, time::Timestamp};
 
 #[derive(Default, Debug, PartialEq, Clone, Copy)]
 pub enum Settlement {

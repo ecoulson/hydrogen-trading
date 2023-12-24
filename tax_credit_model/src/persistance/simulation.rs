@@ -5,7 +5,7 @@ use crate::{
     logic::simulation::SimulationState,
     schema::{
         errors::{Error, Result},
-        simulation_schema::SimulationId,
+        simulation::SimulationId,
     },
 };
 

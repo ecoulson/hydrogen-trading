@@ -4,12 +4,13 @@ use crate::{
     components::{
         component::{Component, ComponentResponse},
         electrolyzer::ElectrolyzerList,
+        error::BannerError,
     },
     persistance::{
         electrolyzer::ElectrolyzerClient, simulation::SimulationClient,
         simulation_selection::SimulationSelectionClient,
     },
-    schema::{errors::BannerError, user::User},
+    schema::user::User,
 };
 
 #[post("/list_electrolyzers")]
@@ -20,7 +21,7 @@ pub fn list_electrolyzers_handler(
     simulation_selection_client: &State<Box<dyn SimulationSelectionClient>>,
 ) -> ComponentResponse<ElectrolyzerList, BannerError> {
     let electrolyzers = electrolyzer_client.list_electrolyzers()?;
-    let simulation_id = simulation_selection_client.current_selection(user.id())?;
+    let simulation_id = simulation_selection_client.current_selection(&user.id)?;
 
     if simulation_id.is_none() {
         return Component::basic(ElectrolyzerList::render(electrolyzers));

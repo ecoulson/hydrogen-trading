@@ -3,19 +3,18 @@ use rocket::{get, http::Status, State};
 use crate::{
     components::{
         electrolyzer::{ElectrolyzerDetails, ElectrolyzerSelector},
-        page::{Page, PageResponse},
         simulation::SimulationView,
+    },
+    pages::{
+        page::{Page, PageResponse},
+        simulation::SimulationPage,
     },
     persistance::{
         electrolyzer::ElectrolyzerClient, simulation::SimulationClient,
         simulation_selection::SimulationSelectionClient, user::UserClient,
     },
     responders::{htmx_responder::HtmxHeadersBuilder, user_context::UserContext},
-    schema::{
-        simulation_schema::{SimulationId, SimulationPage},
-        time::DateTimeRange,
-        user::User,
-    },
+    schema::{simulation::SimulationId, time::DateTimeRange, user::User},
 };
 
 #[get("/simulation/<simulation_id>")]
@@ -32,7 +31,7 @@ pub fn simulation_handler(
 
     if user_context.is_logged_out() {
         let user = user_client.create_user(&User::default())?;
-        cookie = Some(format!("user_id={}", user.id()));
+        cookie = Some(format!("user_id={}", user.id));
         user_context.set_user(user);
     }
 
@@ -45,7 +44,7 @@ pub fn simulation_handler(
         .ok_or_else(|| Status::NotFound)?
         .clone();
     let electrolyzer_id = electrolyzer.id.clone();
-    simulation_selection_client.select(user.id().clone(), simulation_id)?;
+    simulation_selection_client.select(user.id, simulation_id)?;
 
     Page::page(
         HtmxHeadersBuilder::new().set_cookie_if(cookie).build(),

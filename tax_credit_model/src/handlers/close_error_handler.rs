@@ -1,8 +1,8 @@
 use rocket::post;
 
 use crate::{
+    components::error::BannerError,
     responders::htmx_responder::{HtmxHeadersBuilder, HtmxTemplate},
-    schema::errors::BannerError,
 };
 
 #[post("/close_error")]

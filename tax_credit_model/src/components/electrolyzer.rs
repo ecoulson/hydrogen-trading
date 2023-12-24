@@ -2,7 +2,10 @@ use askama::Template;
 
 use crate::{
     client::{events::ClientEvent, htmx::HtmxSwap},
-    schema::electrolyzer::{Electrolyzer, ElectrolyzerDetailsState, ElectrolyzerId},
+    schema::{
+        electrolyzer::{Electrolyzer, ElectrolyzerDetailsState, ElectrolyzerId},
+        endpoints::Endpoint,
+    },
 };
 
 use super::{
@@ -16,6 +19,7 @@ use super::{
 #[derive(Template, Default, Debug)]
 #[template(path = "components/create_electrolyzer.html")]
 pub struct CreateElectrolyzerForm {
+    endpoint: Endpoint,
     create_electrolyzer_button: Button,
     conversion_rate_badge: Badge,
     opex_badge: Badge,
@@ -30,6 +34,7 @@ pub struct CreateElectrolyzerForm {
 impl CreateElectrolyzerForm {
     pub fn render() -> Self {
         Self {
+            endpoint: Endpoint::ListElectrolyzers,
             opex_badge: Badge::render("$ / Hour"),
             capex_badge: Badge::render("$"),
             capacity_badge: Badge::render("MW"),
@@ -39,7 +44,7 @@ impl CreateElectrolyzerForm {
             conversion_rate_badge: Badge::render("kg / MW"),
             create_electrolyzer_button: Button::render(
                 "Create Electrolyzer",
-                "/create_electrolyzer",
+                Endpoint::CreateElectrolyzer,
                 "#sidebar",
             ),
             left_arrow_icon: Icon::render_filled(
@@ -54,21 +59,22 @@ impl CreateElectrolyzerForm {
 #[derive(Template, Default, Debug)]
 #[template(path = "components/electrolyzer_details.html")]
 pub struct ElectrolyzerDetails {
-    electrolyzer: Electrolyzer,
-    state: ElectrolyzerDetailsState,
-    list_simulations_listener: EventListener,
-    select_simulation_listener: EventListener,
-    state_icon: Icon,
-    select_electrolyzer_button: Button,
-    conversion_rate_badge: Badge,
-    opex_badge: Badge,
-    capex_badge: Badge,
-    capacity_badge: Badge,
-    degradation_rate_badge: Badge,
-    replacement_threshold_badge: Badge,
-    replacement_cost_badge: Badge,
-    left_arrow_icon: Icon,
-    electrolyzer_id_input: Input,
+    pub electrolyzer: Electrolyzer,
+    pub state: ElectrolyzerDetailsState,
+    pub list_simulations_listener: EventListener,
+    pub select_simulation_listener: EventListener,
+    pub state_icon: Icon,
+    pub select_electrolyzer_button: Button,
+    pub conversion_rate_badge: Badge,
+    pub opex_badge: Badge,
+    pub capex_badge: Badge,
+    pub capacity_badge: Badge,
+    pub degradation_rate_badge: Badge,
+    pub replacement_threshold_badge: Badge,
+    pub replacement_cost_badge: Badge,
+    pub left_arrow_icon: Icon,
+    pub electrolyzer_id_input: Input,
+    pub endpoint: Endpoint,
 }
 
 impl ElectrolyzerDetails {
@@ -97,22 +103,27 @@ impl ElectrolyzerDetails {
         let id = &electrolyzer.id.to_string();
 
         ElectrolyzerDetails {
+            endpoint: Endpoint::ListElectrolyzers,
             list_simulations_listener: EventListener::render(
                 ClientEvent::ListSimulations,
-                "/list_electrolyzers",
+                Endpoint::ListElectrolyzers,
                 "#sidebar",
                 HtmxSwap::InnerHtml,
             ),
             select_simulation_listener: EventListener::render(
                 ClientEvent::SelectSimulation,
-                "/get_selected_electrolyzer",
+                Endpoint::GetSelectedElectrolyzer,
                 "#sidebar",
                 HtmxSwap::InnerHtml,
             ),
             electrolyzer,
             state,
             state_icon: Icon::render_filled(IconKind::Texas, IconSize::Small, IconColor::Black),
-            select_electrolyzer_button: Button::render("Use", "/select_electrolyzer", "#sidebar"),
+            select_electrolyzer_button: Button::render(
+                "Use",
+                Endpoint::SelectElectrolyzer,
+                "#sidebar",
+            ),
             opex_badge: Badge::render("$ / hour"),
             capex_badge: Badge::render("$"),
             capacity_badge: Badge::render("MW"),
@@ -133,6 +144,7 @@ impl ElectrolyzerDetails {
 #[derive(Template, Default, Debug)]
 #[template(path = "components/electrolyzer_selector.html")]
 pub struct ElectrolyzerSelector {
+    pub endpoint: Endpoint,
     pub selected_id: ElectrolyzerId,
     pub electrolyzers: Vec<Electrolyzer>,
     pub select_electrolyzer_listener: EventListener,
@@ -141,11 +153,12 @@ pub struct ElectrolyzerSelector {
 impl ElectrolyzerSelector {
     pub fn render(selected_id: ElectrolyzerId, electrolyzers: Vec<Electrolyzer>) -> Self {
         Self {
+            endpoint: Endpoint::SelectElectrolyzer,
             selected_id,
             electrolyzers,
             select_electrolyzer_listener: EventListener::render(
                 ClientEvent::SelectElectrolyzer,
-                "/electrolyzer_selector",
+                Endpoint::ElectrolyzerSelector,
                 "#electrolyzer-selector",
                 HtmxSwap::OuterHtml,
             ),
@@ -169,24 +182,24 @@ impl ElectrolyzerList {
             search_results: ElectrolyzerSearchResults::render(electrolyzers),
             select_simulation_listener: EventListener::render(
                 ClientEvent::SelectSimulation,
-                "/get_selected_electrolyzer",
+                Endpoint::GetSelectedElectrolyzer,
                 "#sidebar",
                 HtmxSwap::InnerHtml,
             ),
             list_simulation_listener: EventListener::render(
                 ClientEvent::ListSimulations,
-                "/list_electrolyzers",
+                Endpoint::ListElectrolyzers,
                 "#sidebar",
                 HtmxSwap::InnerHtml,
             ),
             create_electrolyzer_button: Button::render(
                 "Create Electrolyzer",
-                "/create_electrolyzer_form",
+                Endpoint::GetCreateElectrolyzerForm,
                 "#sidebar",
             ),
             search_bar: Input::render_search(
                 "query",
-                "/search_electrolyzers",
+                Endpoint::SearchElectrolyzers,
                 "Search for electrolyzers",
                 "#electrolyzer-search-results",
             ),
@@ -198,24 +211,24 @@ impl ElectrolyzerList {
             search_results: ElectrolyzerSearchResults::render_selected(selected_id, electrolyzers),
             select_simulation_listener: EventListener::render(
                 ClientEvent::SelectSimulation,
-                "/get_selected_electrolyzer",
+                Endpoint::GetSelectedElectrolyzer,
                 "#sidebar",
                 HtmxSwap::InnerHtml,
             ),
             list_simulation_listener: EventListener::render(
                 ClientEvent::ListSimulations,
-                "/list_electrolyzers",
+                Endpoint::ListElectrolyzers,
                 "#sidebar",
                 HtmxSwap::InnerHtml,
             ),
             create_electrolyzer_button: Button::render(
                 "Create Electrolyzer",
-                "/create_electrolyzer_form",
+                Endpoint::GetCreateElectrolyzerForm,
                 "#sidebar",
             ),
             search_bar: Input::render_search(
                 "query",
-                "/search_electrolyzers",
+                Endpoint::SearchElectrolyzers,
                 "Search for electrolyzers",
                 "#electrolyzer-search-results",
             ),
@@ -286,6 +299,7 @@ pub struct ElectrolyzerSearchResultItem {
     pub electrolyzer: Electrolyzer,
     pub select_electrolyzer_button: Button,
     pub state_icon: Icon,
+    pub endpoint: Endpoint,
 }
 
 impl ElectrolyzerSearchResultItem {
@@ -301,10 +315,11 @@ impl ElectrolyzerSearchResultItem {
             state,
             select_electrolyzer_button: Button::render_outline(
                 "Select",
-                "/select_electrolyzer",
+                Endpoint::SelectElectrolyzer,
                 "#sidebar",
             ),
             state_icon: Icon::render_filled(IconKind::Texas, IconSize::Small, IconColor::Black),
+            endpoint: Endpoint::GetElectrolyzer,
         }
     }
 }

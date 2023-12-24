@@ -7,6 +7,7 @@ pub mod file_systems;
 pub mod handlers;
 pub mod jobs;
 pub mod logic;
+pub mod pages;
 pub mod parsers;
 pub mod persistance;
 pub mod responders;

@@ -4,6 +4,7 @@ use crate::{
     components::{
         component::{Component, ComponentResponse},
         electrolyzer::ElectrolyzerSelector,
+        error::BannerError,
         simulation::SimulationView,
     },
     logic::simulation::SimulationState,
@@ -12,7 +13,7 @@ use crate::{
         simulation_selection::SimulationSelectionClient,
     },
     responders::htmx_responder::HtmxHeadersBuilder,
-    schema::{errors::BannerError, time::DateTimeRange, user::User},
+    schema::{time::DateTimeRange, user::User},
 };
 
 #[post("/get_selected_simulation")]
@@ -30,7 +31,7 @@ pub fn get_selected_simulation_handler(
 
     let mut simulation_state = SimulationState::default();
     simulation_state.electrolyzer_id = electrolyzers[0].id;
-    let simulation_id = simulation_selection_client.expect_current_selection(user.id())?;
+    let simulation_id = simulation_selection_client.expect_current_selection(&user.id)?;
     let simulation_state = simulation_client.get_simulation_state(&simulation_id)?;
 
     Component::component(

@@ -10,7 +10,7 @@ use crate::{
     },
     schema::{
         errors::{Error, Result},
-        simulation_schema::GenerationMetric,
+        simulation::GenerationMetric,
     },
 };
 

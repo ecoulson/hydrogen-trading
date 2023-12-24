@@ -41,7 +41,7 @@ impl UserClient for InMemoryUserClient {
         *self
             .user_by_id
             .lock()?
-            .get_mut(user.id())
+            .get_mut(&user.id)
             .ok_or_else(|| Error::not_found("User not found"))? = user.clone();
 
         Ok(user.clone())
@@ -50,12 +50,12 @@ impl UserClient for InMemoryUserClient {
     fn create_user(&self, user: &User) -> Result<User> {
         let mut user = user.clone();
         let mut id = self.id.lock()?;
-        user.set_id(&id);
+        user.id = *id;
         *id += 1;
 
         self.user_by_id
             .lock()?
-            .insert(user.id().clone(), user.clone());
+            .insert(user.id, user.clone());
 
         Ok(user)
     }

@@ -5,13 +5,14 @@ use crate::{
     components::{
         component::{Component, ComponentResponse},
         electrolyzer::ElectrolyzerDetails,
+        error::BannerError,
     },
     persistance::{
         electrolyzer::ElectrolyzerClient, simulation::SimulationClient,
         simulation_selection::SimulationSelectionClient,
     },
     responders::htmx_responder::HtmxHeadersBuilder,
-    schema::{electrolyzer::SelectElectrolyzerHandlerRequest, errors::BannerError, user::User},
+    schema::{electrolyzer::SelectElectrolyzerHandlerRequest, user::User},
 };
 
 #[post("/select_electrolyzer", data = "<request>")]
@@ -22,7 +23,7 @@ pub fn select_electrolyzer_handler(
     user: User,
     simulation_selection_client: &State<Box<dyn SimulationSelectionClient>>,
 ) -> ComponentResponse<ElectrolyzerDetails, BannerError> {
-    let simulation_id = simulation_selection_client.expect_current_selection(user.id())?;
+    let simulation_id = simulation_selection_client.expect_current_selection(&user.id)?;
     let mut state = simulation_client.get_simulation_state(&simulation_id)?;
     let electrolyzer = electrolyzer_client.get_electrolyzer(request.electrolyzer_id)?;
     state.electrolyzer_id = electrolyzer.id;

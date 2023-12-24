@@ -1,14 +1,14 @@
 use rocket::{form::Form, post, State};
 
 use crate::{
-    components::{component::ComponentResponse, simulation::SimulationView},
+    components::{component::ComponentResponse, error::BannerError, simulation::SimulationView},
     logic::simulation::SimulationState,
     persistance::{
         electrolyzer::ElectrolyzerClient, simulation::SimulationClient,
         simulation_selection::SimulationSelectionClient,
     },
     responders::client_context::ClientContext,
-    schema::{errors::BannerError, user::User},
+    schema::user::User,
 };
 
 use super::select_simulation_handler::{select_simulation_handler, SelectSimulationRequest};

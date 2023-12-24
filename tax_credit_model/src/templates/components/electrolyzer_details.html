@@ -4,7 +4,7 @@
     {{ electrolyzer_id_input|safe }}
     <div class="p-4 flex items-center w-full">
         <div class="flex items-center px-2 mr-2 cursor-pointer rounded-full hover:bg-gray-300 h-8 w-8"
-            hx-post="/list_electrolyzers" hx-trigger="click" hx-target="#sidebar" hx-swap="innerHTML">
+            hx-post="{{ endpoint }}" hx-trigger="click" hx-target="#sidebar" hx-swap="innerHTML">
             {{ left_arrow_icon|safe }}
         </div>
         <div class="flex gap-x-4 w-full items-center">

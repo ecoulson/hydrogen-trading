@@ -1,7 +1,7 @@
 <div
     class="error-message bg-gray-700 text-white w-96 m-2 px-4 py-2 shadow-md text-center flex justify-between items-center">
     <p>{{ message }}</p>
-    <div hx-target="closest .error-message" hx-post="/close_error"
+    <div hx-target="closest .error-message" hx-post="{{ endpoint }}"
         class="px-2 cursor-pointer w-10 h-10 fill-white hover:fill-blue-400">
         {{ close_icon|safe }}
     </div>

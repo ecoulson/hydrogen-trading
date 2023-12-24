@@ -5,14 +5,12 @@ use crate::{
     components::{
         component::{Component, ComponentResponse},
         electrolyzer::ElectrolyzerDetails,
+        error::BannerError,
     },
     persistance::electrolyzer::ElectrolyzerClient,
     responders::htmx_responder::HtmxHeadersBuilder,
-    schema::{
-        electrolyzer::{
-            ConstantProduction, CreateElectrolyzerRequest, Electrolyzer, ProductionType,
-        },
-        errors::BannerError,
+    schema::electrolyzer::{
+        ConstantProduction, CreateElectrolyzerRequest, Electrolyzer, ProductionType,
     },
 };
 

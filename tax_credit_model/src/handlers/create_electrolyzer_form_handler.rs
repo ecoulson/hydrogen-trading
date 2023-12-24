@@ -1,11 +1,9 @@
 use rocket::post;
 
-use crate::{
-    components::{
-        component::{Component, ComponentResponse},
-        electrolyzer::CreateElectrolyzerForm,
-    },
-    schema::errors::BannerError,
+use crate::components::{
+    component::{Component, ComponentResponse},
+    electrolyzer::CreateElectrolyzerForm,
+    error::BannerError,
 };
 
 #[post("/create_electrolyzer_form")]

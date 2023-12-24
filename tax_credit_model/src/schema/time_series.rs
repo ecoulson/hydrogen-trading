@@ -1,9 +1,6 @@
-use askama::Template;
 use serde::{Deserialize, Serialize};
 
-use crate::components::input::Input;
-
-use super::histogram::Labels;
+use super::{errors::Result, histogram::Labels, time::Timestamp};
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
 pub enum ChartColor {
@@ -36,6 +33,19 @@ pub struct TimeSeries {
     pub data_points: Vec<TimeSeriesEntry>,
 }
 
+impl TimeSeries {
+    pub fn render<T, F>(label: &str, color: ChartColor, data: Vec<T>, operation: F) -> Result<Self>
+    where
+        F: Fn(&T) -> Result<TimeSeriesEntry>,
+    {
+        Ok(Self {
+            label: String::from(label),
+            color,
+            data_points: data.iter().map(|element| operation(element)).collect::<Result<Vec<TimeSeriesEntry>>>()?
+        })
+    }
+}
+
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
 pub struct TimeSeriesEntry {
     pub date: String,
@@ -43,12 +53,14 @@ pub struct TimeSeriesEntry {
     pub value: f64,
 }
 
-#[derive(Template, Default, Debug)]
-#[template(path = "components/time_series_chart.html")]
-pub struct TimeSeriesChartResponse {
-    pub id: String,
-    pub endpoint_input: Input,
-    pub chart: TimeSeriesChart,
+impl TimeSeriesEntry {
+    pub fn render(value: f64, date: &Timestamp, color: ChartColor) -> Result<Self> {
+        Ok(Self {
+            value,
+            date: date.to_utc_date_time()?.to_rfc3339(),
+            color,
+        })
+    }
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, PartialEq, Clone)]
@@ -56,4 +68,14 @@ pub struct TimeSeriesChart {
     pub title: String,
     pub labels: Labels,
     pub datasets: Vec<TimeSeries>,
+}
+
+impl TimeSeriesChart {
+    pub fn render(title: &str, labels: Labels, datasets: Vec<TimeSeries>) -> Self {
+        Self {
+            title: String::from(title),
+            labels,
+            datasets,
+        }
+    }
 }

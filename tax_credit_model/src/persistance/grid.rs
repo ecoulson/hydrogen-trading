@@ -4,7 +4,7 @@ use crate::{
     concurrency::mutex::Mutex,
     schema::{
         errors::{Error, Result},
-        simulation_schema::{GenerationMetric, PowerGrid, PowerPlant, PowerPlantId},
+        simulation::{GenerationMetric, PowerGrid, PowerPlant, PowerPlantId},
     },
 };
 

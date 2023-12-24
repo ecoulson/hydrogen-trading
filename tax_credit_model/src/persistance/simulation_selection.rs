@@ -4,7 +4,7 @@ use crate::{
     concurrency::mutex::Mutex,
     schema::{
         errors::{Error, Result},
-        simulation_schema::SimulationId,
+        simulation::SimulationId,
         user::UserId,
     },
 };

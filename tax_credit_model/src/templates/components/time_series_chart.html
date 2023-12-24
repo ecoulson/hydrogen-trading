@@ -1,6 +1,9 @@
 <div class="w-full h-96 relative flex justify-center flex-col">
     <form class="px-4 py-2">
-        {{ endpoint_input|safe }}
+        {{ endpoint|safe }}
+        {% for field in parameters %}
+        {{ field|safe }}
+        {% endfor %}
         <span>Granularity</span>
         <span>Time Range</span>
         <span>Next Time Range</span>

@@ -4,12 +4,13 @@ use crate::{
     components::{
         component::{Component, ComponentResponse},
         electrolyzer::ElectrolyzerDetails,
+        error::BannerError,
     },
     persistance::{
         electrolyzer::ElectrolyzerClient, simulation::SimulationClient,
         simulation_selection::SimulationSelectionClient,
     },
-    schema::{electrolyzer::GetElectrolyzerRequest, errors::BannerError, user::User},
+    schema::{electrolyzer::GetElectrolyzerRequest, user::User},
 };
 
 #[post("/get_electrolyzer", data = "<request>")]
@@ -21,7 +22,7 @@ pub fn get_electrolyzer_handler(
     simulation_selection_client: &State<Box<dyn SimulationSelectionClient>>,
 ) -> ComponentResponse<ElectrolyzerDetails, BannerError> {
     let electrolyzer = electrolyzer_client.get_electrolyzer(request.electrolyzer_id)?;
-    let simulation_id = simulation_selection_client.current_selection(user.id())?;
+    let simulation_id = simulation_selection_client.current_selection(&user.id)?;
 
     if simulation_id.is_none() {
         return Component::basic(ElectrolyzerDetails::render_default(electrolyzer));

@@ -1,21 +1,22 @@
 use std::collections::HashMap;
 
 use crate::{
-    components::input::Input,
+    components::{
+        histogram::HistogramResponse, input::Input, time_series::TimeSeriesChartResponse,
+    },
     persistance::simulation::SimulationClient,
     schema::{
         electrolyzer::{Electrolyzer, ElectrolyzerId},
+        endpoints::Endpoint,
         errors::{Error, Result},
-        histogram::{Histogram, HistogramDataset, HistogramResponse, Labels},
-        simulation_schema::{
+        histogram::{Histogram, HistogramDataset, Labels},
+        simulation::{
             EmissionEvent, EnergySourcePortfolio, EnergyTransaction, HydrogenProductionEvent,
             PowerGrid, PowerPlant, SimulationId, SimulationResult, TaxCredit45V, TaxCredit45VTier,
             TaxCreditSummary,
         },
         time::{DateTimeRange, Timestamp},
-        time_series::{
-            ChartColor, TimeSeries, TimeSeriesChart, TimeSeriesChartResponse, TimeSeriesEntry,
-        },
+        time_series::{ChartColor, TimeSeries, TimeSeriesChart, TimeSeriesEntry},
     },
 };
 use chrono::{Datelike, Duration, Timelike};
@@ -122,11 +123,11 @@ pub fn simulate(
             })
             .iter()
             .map(|(key, value)| {
-                Ok(TimeSeriesEntry {
-                    color: ChartColor::Blue,
-                    date: key.to_utc_date_time()?.to_rfc3339(),
-                    value: *value,
-                })
+                TimeSeriesEntry::render(
+                    *value,
+                    key,
+                    ChartColor::Blue,
+                )
             })
             .collect::<Result<Vec<TimeSeriesEntry>>>()?,
     };
@@ -137,118 +138,84 @@ pub fn simulate(
     Ok(SimulationResult {
         tax_credit_summary: state.tax_credit_summary.clone(),
         emissions: produce_emissions_graph(&state)?,
-        hydrogen_productions: TimeSeriesChartResponse {
-            id: format!("hydrogen-produced-{}", &simulation_id),
-            endpoint_input: Input::render_hidden(
-                &format!("/fetch_hydrogen_production/{simulation_id}"),
-                "endpoint",
+        hydrogen_productions: TimeSeriesChartResponse::render(
+            TimeSeriesChart::render(
+                "Hydrogen Production Over Time",
+                Labels::render("Simulation Date", "kg (H2O)"),
+                vec![TimeSeries::render(
+                    "Energy Cost",
+                    ChartColor::Blue,
+                    state.hydrogen_productions,
+                    |production| {
+                        TimeSeriesEntry::render(
+                            production.kg_hydrogen,
+                            &production.production_timestamp,
+                            ChartColor::Blue,
+                        )
+                    },
+                )?],
             ),
-            chart: TimeSeriesChart {
-                title: String::from("Hydrogen Production Over Time"),
-                labels: Labels {
-                    x: String::from("Simulation Date"),
-                    y: String::from("kg (H2O)"),
-                },
-                datasets: vec![TimeSeries {
-                    color: ChartColor::Blue,
-                    label: String::from("Energy Cost"),
-                    data_points: state
-                        .hydrogen_productions
-                        .iter()
-                        .map(|production| {
-                            Ok(TimeSeriesEntry {
-                                color: ChartColor::Blue,
-                                date: production
-                                    .production_timestamp
-                                    .to_utc_date_time()?
-                                    .to_rfc3339(),
-                                value: production.kg_hydrogen,
-                            })
-                        })
-                        .collect::<Result<Vec<TimeSeriesEntry>>>()?,
-                }],
-            },
-        },
-        energy_costs: TimeSeriesChartResponse {
-            id: format!("energy-costs-{}", &simulation_id),
-            endpoint_input: Input::render_hidden(
-                &format!("/fetch_energy_costs/{simulation_id}"),
-                "endpoint",
+            Endpoint::FetchHydrogenProduction,
+            HashMap::from([("simulation_id", simulation_id.to_string())]),
+        ),
+        energy_costs: TimeSeriesChartResponse::render(
+            TimeSeriesChart::render(
+                "Energy Costs Over Time",
+                Labels::render("Simulation Date", "USD ($)"),
+                vec![energy_costs_time_series],
             ),
-            chart: TimeSeriesChart {
-                title: String::from("Energy Costs Over Time"),
-                labels: Labels {
-                    x: String::from("Simulation Date"),
-                    y: String::from("USD ($)"),
-                },
-                datasets: vec![energy_costs_time_series],
-            },
-        },
-        hourly_histogram: HistogramResponse {
-            id: format!("hourly-histograms-{}", &simulation_id),
-            endpoint: format!("/fetch_hourly_histogram/{simulation_id}"),
-            chart: Histogram {
-                keys: vec![
-                    String::from("0%"),
-                    String::from("20%"),
-                    String::from("25%"),
-                    String::from("33%"),
-                    String::from("100%"),
-                ],
-                title: String::from("Hourly Tax Credits"),
-                label: Labels {
-                    x: String::from("Tax Credit Level"),
-                    y: String::from("Hours"),
-                },
-                datasets: vec![HistogramDataset {
-                    label: String::from("Credit Breakdown"),
-                    data_points: vec![
+            Endpoint::FetchEnergyCosts,
+            HashMap::from([("simulation_id", simulation_id.to_string())]),
+        ),
+        hourly_histogram: HistogramResponse::render(
+            Endpoint::FetchHourlyHistogram,
+            HashMap::from([("simulation_id", simulation_id.to_string())]),
+            Histogram::render(
+                "Hourly Tax Credits",
+                Labels::render("Tax Credit Level", "Hours"),
+                vec!["0%", "20%", "25%", "33%", "100%"],
+                vec![HistogramDataset::render( 
+                    "Credit Breakdown",
+                    vec![
                         state.tax_credit_summary.credit_hours_none,
                         state.tax_credit_summary.credit_hours_20,
                         state.tax_credit_summary.credit_hours_25,
                         state.tax_credit_summary.credit_hours_33,
                         state.tax_credit_summary.credit_hours_full,
                     ],
-                }],
-            },
-        },
+                )],
+            ),
+        ),
     })
 }
 
 fn produce_emissions_graph(state: &SimulationState) -> Result<TimeSeriesChartResponse> {
-    Ok(TimeSeriesChartResponse {
-        id: format!("emissions-{}", state.id),
-        endpoint_input: Input::render_hidden(&format!("/fetch_emissions/{}", state.id), "endpoint"),
-        chart: TimeSeriesChart {
-            title: String::from("Emissions Over Time"),
-            labels: Labels {
-                x: String::from("Simulation Date"),
-                y: String::from("kg (CO2)"),
-            },
-            datasets: vec![TimeSeries {
-                data_points: state
-                    .emissions
-                    .iter()
-                    .zip(&state.tax_credit)
-                    .map(|(emission, tax_credit)| {
-                        Ok(TimeSeriesEntry {
-                            date: emission.emission_timestamp.to_utc_date_time()?.to_rfc3339(),
-                            value: emission.amount_emitted_kg,
-                            color: match tax_credit.tier {
-                                TaxCredit45VTier::Max => ChartColor::Green,
-                                TaxCredit45VTier::Tier1 => ChartColor::Chartreuse,
-                                TaxCredit45VTier::Tier2 => ChartColor::Yellow,
-                                TaxCredit45VTier::Tier3 => ChartColor::Orange,
-                                TaxCredit45VTier::None => ChartColor::Red,
-                            },
-                        })
-                    })
-                    .collect::<crate::schema::errors::Result<Vec<TimeSeriesEntry>>>()?,
-                color: ChartColor::Blue,
-                label: String::from("CO2 Emissions"),
-            }],
-        },
-    })
+    Ok(TimeSeriesChartResponse::render(
+        TimeSeriesChart::render(
+            "Emissions Over Time",
+            Labels::render("Simulation Date", "kg (CO2)"),
+            vec![TimeSeries::render(
+                "CO2 Emissions",
+                ChartColor::Blue,
+                state.emissions.iter().zip(&state.tax_credit).collect(),
+                |(emission, tax_credit)| {
+                    TimeSeriesEntry::render(
+                        emission.amount_emitted_kg,
+                        &emission.emission_timestamp,
+                        match tax_credit.tier {
+                            TaxCredit45VTier::Max => ChartColor::Green,
+                            TaxCredit45VTier::Tier1 => ChartColor::Chartreuse,
+                            TaxCredit45VTier::Tier2 => ChartColor::Yellow,
+                            TaxCredit45VTier::Tier3 => ChartColor::Orange,
+                            TaxCredit45VTier::None => ChartColor::Red,
+                        },
+                    )
+                },
+            )?],
+        ),
+        Endpoint::FetchEmissions,
+        HashMap::from([("simulation_id", state.id.to_string())]),
+    ))
 }
 
 fn make_optimal_transactions(
@@ -371,7 +338,7 @@ mod test {
 
     use crate::schema::{
         electrolyzer::{ConstantProduction, Electrolyzer, ProductionType},
-        simulation_schema::{
+        simulation::{
             EmissionEvent, EnergySourcePortfolio, EnergyTransaction, GenerationMetric,
             HydrogenProductionEvent, PowerGrid, PowerPlant, TaxCredit45V, TaxCredit45VTier,
         },

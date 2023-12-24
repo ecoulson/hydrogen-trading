@@ -1,0 +1,12 @@
+<div class="w-full h-96 relative flex justify-center flex-col">
+    <canvas id="{{ id }}"></canvas>
+    <form>
+        {{ endpoint|safe }}
+        {% for field in parameters %}
+        {{ field|safe }}
+        {% endfor %}
+    </form>
+    <script>
+        createHistogram("{{id}}", {{chart| json | safe}});
+    </script>
+</div>

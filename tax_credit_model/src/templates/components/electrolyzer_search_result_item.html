@@ -1,5 +1,5 @@
 <form class="py-2 px-4 bg-gray-200 hover:bg-gray-300 cursor-pointer rounded-md flex items-center gap-x-4"
-    hx-trigger="click" hx-post="/get_electrolyzer" hx-target="#sidebar" hx-swap="innerHTML">
+    hx-trigger="click" hx-post="{{ endpoint }}" hx-target="#sidebar" hx-swap="innerHTML">
     {{ id_input|safe }}
     <span>{{ index }}</span>
     <div class="w-10 h-10">

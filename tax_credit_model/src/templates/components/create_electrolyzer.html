@@ -1,5 +1,5 @@
 <form class="w-full h-full flex flex-col">
-    <div class="sticky bg-gray-100 z-10 top-0 p-4 cursor-pointer flex items-center" hx-post="/list_electrolyzers"
+    <div class="sticky bg-gray-100 z-10 top-0 p-4 cursor-pointer flex items-center" hx-post="{{ endpoint }}"
         hx-trigger="click" hx-target="#sidebar" hx-swap="innerHTML">
         <div class="flex items-center px-2 mr-2 cursor-pointer rounded-full hover:bg-gray-300 h-8 w-8">
             {{ left_arrow_icon|safe }}

@@ -1,17 +1,14 @@
 use std::str::FromStr;
 
-use askama::Template;
 use rocket::FromForm;
 use serde::{Deserialize, Serialize};
 
-use crate::components::{electrolyzer::ElectrolyzerDetails, simulation::SimulationView};
+use crate::components::{histogram::HistogramResponse, time_series::TimeSeriesChartResponse};
 
 use super::{
     electrolyzer::ElectrolyzerId,
     errors::{Error, Result},
-    histogram::HistogramResponse,
     time::{DateTimeRange, Timestamp},
-    time_series::TimeSeriesChartResponse,
 };
 
 pub type SimulationId = usize;
@@ -28,22 +25,6 @@ impl ExecuteSimulationRequest {
         Self {
             electrolyzer_id,
             simulation_time_range,
-        }
-    }
-}
-
-#[derive(Template, Default, Debug)]
-#[template(path = "components/simulation_result.html")]
-pub struct SimulationResultView {
-    pub simulation_result: SimulationResult,
-    pub simulation_view: SimulationView,
-}
-
-impl SimulationResultView {
-    pub fn render(simulation_view: SimulationView, simulation_result: SimulationResult) -> Self {
-        Self {
-            simulation_view,
-            simulation_result,
         }
     }
 }
@@ -304,11 +285,4 @@ pub struct EnergyTransaction {
     pub timestamp: Timestamp,
     pub price_usd: f64,
     pub portfolio: EnergySourcePortfolio,
-}
-
-#[derive(Template, Default, Debug)]
-#[template(path = "pages/simulation.html")]
-pub struct SimulationPage {
-    pub simulation_view: SimulationView,
-    pub electrolyzer_details: ElectrolyzerDetails,
 }

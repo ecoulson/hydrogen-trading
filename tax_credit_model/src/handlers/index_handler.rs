@@ -1,16 +1,16 @@
 use rocket::{get, State};
 
 use crate::{
-    components::{
-        electrolyzer::ElectrolyzerList,
+    components::{electrolyzer::ElectrolyzerList, simulation::SimulationList},
+    pages::{
+        index::IndexResponse,
         page::{Page, PageResponse},
-        simulation::SimulationList,
     },
     persistance::{
         electrolyzer::ElectrolyzerClient, simulation::SimulationClient, user::UserClient,
     },
     responders::{htmx_responder::HtmxHeadersBuilder, user_context::UserContext},
-    schema::{index::IndexResponse, user::User},
+    schema::user::User,
 };
 
 #[get("/")]
@@ -24,7 +24,7 @@ pub fn index_handler(
 
     if user_context.is_logged_out() {
         let user = user_client.create_user(&User::default())?;
-        cookie = Some(format!("user_id={}", user.id()));
+        cookie = Some(format!("user_id={}", user.id));
     }
 
     Page::page(
