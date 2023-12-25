@@ -9,11 +9,11 @@ use crate::{
     },
     logic::simulation::{simulate, SimulationState},
     persistance::{
-        electrolyzer::ElectrolyzerClient, grid::GridClient, simulation::SimulationClient,
-        simulation_selection::SimulationSelectionClient,
+        electrolyzer::ElectrolyzerClient, generation::GenerationClient, grid::GridClient,
+        simulation::SimulationClient, simulation_selection::SimulationSelectionClient,
     },
     responders::{client_context::ClientContext, htmx_responder::HtmxHeadersBuilder},
-    schema::{simulation::ExecuteSimulationRequest, time::DateTimeRange, user::User},
+    schema::{simulation::ExecuteSimulationRequest, user::User},
 };
 
 #[post("/execute_simulation", data = "<request>")]
@@ -25,6 +25,7 @@ pub fn execute_simulation(
     electrolyzer_client: &State<Box<dyn ElectrolyzerClient>>,
     simulation_client: &State<Box<dyn SimulationClient>>,
     simulation_selection_client: &State<Box<dyn SimulationSelectionClient>>,
+    generation_client: &State<Box<dyn GenerationClient>>,
 ) -> ComponentResponse<SimulationResultView, BannerError> {
     let mut client_context = client_context;
     let electrolyzer = electrolyzer_client.get_electrolyzer(request.electrolyzer_id)?;
@@ -35,6 +36,7 @@ pub fn execute_simulation(
     let next_simulation = simulation_client.create_simulation_state(&next_simulation)?;
     let next_url = &format!("simulation/{}", next_simulation.id);
     let location = client_context.mut_location();
+    let generation_range = generation_client.get_generation_range()?;
     location.set_path(&next_url);
     simulation_selection_client.select(user.id, next_simulation.id)?;
 
@@ -44,10 +46,7 @@ pub fn execute_simulation(
             .build(),
         SimulationResultView::render(
             SimulationView::render(
-                DateTimeRange {
-                    start: String::from("2023-01-01T00:00"),
-                    end: String::from("2023-07-31T23:59"),
-                },
+                generation_range,
                 ElectrolyzerSelector::render(
                     electrolyzer.id,
                     electrolyzer_client.list_electrolyzers()?,

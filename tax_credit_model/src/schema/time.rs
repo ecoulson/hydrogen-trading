@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use chrono::{DateTime, NaiveDateTime, TimeZone, Utc};
 use rocket::FromForm;
 use serde::{Deserialize, Serialize};
@@ -19,6 +21,24 @@ impl Timestamp {
         Utc.timestamp_opt(self.seconds, self.nanos)
             .single()
             .ok_or_else(|| Error::invalid_argument("Invalid timestamp"))
+    }
+}
+
+impl Ord for Timestamp {
+    fn cmp(&self, other: &Self) -> Ordering {
+        let seconds_order = self.seconds.cmp(&other.seconds);
+        let nanos_order = self.nanos.cmp(&other.nanos);
+
+        match seconds_order {
+            Ordering::Equal => nanos_order,
+            _ => seconds_order,
+        }
+    }
+}
+
+impl PartialOrd for Timestamp {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
     }
 }
 
@@ -47,6 +67,15 @@ impl From<NaiveDateTime> for Timestamp {
 pub struct TimeRange {
     pub start: Timestamp,
     pub end: Timestamp,
+}
+
+impl TimeRange {
+    pub fn to_datetime(&self) -> Result<DateTimeRange> {
+        Ok(DateTimeRange {
+            start: self.start.to_utc_date_time()?.to_rfc3339(),
+            end: self.end.to_utc_date_time()?.to_rfc3339(),
+        })
+    }
 }
 
 #[derive(FromForm, Deserialize, Serialize, Default, Debug, PartialEq, Eq)]

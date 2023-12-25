@@ -11,10 +11,12 @@ use crate::{
     schema::{
         errors::{Error, Result},
         simulation::GenerationMetric,
+        time::{DateTimeRange, TimeRange},
     },
 };
 
 pub trait GenerationClient: Send + Sync {
+    fn get_generation_range(&self) -> Result<DateTimeRange>;
     fn list_generations(&self) -> Result<Vec<GenerationMetric>>;
     fn create_generation(&self, generation_metric: &GenerationMetric) -> Result<GenerationMetric>;
     fn remove_all_generations(&self) -> Result<()>;
@@ -74,5 +76,29 @@ impl GenerationClient for DiskGenerationPersistanceClient {
         empty_file.write_file(&vec![])?;
 
         Ok(())
+    }
+
+    fn get_generation_range(&self) -> Result<DateTimeRange> {
+        let generations = self.list_generations()?;
+        let time_range;
+
+        if let Some(generation) = generations.first() {
+            time_range = TimeRange {
+                start: generation.time_generated,
+                end: generation.time_generated,
+            };
+        } else {
+            return Err(Error::not_found("No generations were found"));
+        }
+
+        Ok(generations
+            .iter()
+            .fold(time_range, |mut time_range, generation| {
+                time_range.end = std::cmp::max(time_range.end, generation.time_generated);
+                time_range.start = std::cmp::min(time_range.start, generation.time_generated);
+
+                time_range
+            })
+            .to_datetime()?)
     }
 }

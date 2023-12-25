@@ -1,9 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    components::{
-        histogram::HistogramResponse, input::Input, time_series::TimeSeriesChartResponse,
-    },
+    components::{histogram::HistogramResponse, time_series::TimeSeriesChartResponse},
     persistance::simulation::SimulationClient,
     schema::{
         electrolyzer::{Electrolyzer, ElectrolyzerId},
@@ -122,13 +120,7 @@ pub fn simulate(
                 aggregation
             })
             .iter()
-            .map(|(key, value)| {
-                TimeSeriesEntry::render(
-                    *value,
-                    key,
-                    ChartColor::Blue,
-                )
-            })
+            .map(|(key, value)| TimeSeriesEntry::render(*value, key, ChartColor::Blue))
             .collect::<Result<Vec<TimeSeriesEntry>>>()?,
     };
     energy_costs_time_series
@@ -174,7 +166,7 @@ pub fn simulate(
                 "Hourly Tax Credits",
                 Labels::render("Tax Credit Level", "Hours"),
                 vec!["0%", "20%", "25%", "33%", "100%"],
-                vec![HistogramDataset::render( 
+                vec![HistogramDataset::render(
                     "Credit Breakdown",
                     vec![
                         state.tax_credit_summary.credit_hours_none,
