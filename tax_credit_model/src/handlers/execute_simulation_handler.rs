@@ -28,6 +28,7 @@ pub fn execute_simulation(
     generation_client: &State<Box<dyn GenerationClient>>,
 ) -> ComponentResponse<SimulationResultView, BannerError> {
     let mut client_context = client_context;
+    let generation_range = generation_client.get_generation_range()?;
     let electrolyzer = electrolyzer_client.get_electrolyzer(request.electrolyzer_id)?;
     let power_grid = power_grid_fetcher.get_power_grid()?;
     let current_simulation_id = simulation_selection_client.expect_current_selection(&user.id)?;
@@ -36,7 +37,6 @@ pub fn execute_simulation(
     let next_simulation = simulation_client.create_simulation_state(&next_simulation)?;
     let next_url = &format!("simulation/{}", next_simulation.id);
     let location = client_context.mut_location();
-    let generation_range = generation_client.get_generation_range()?;
     location.set_path(&next_url);
     simulation_selection_client.select(user.id, next_simulation.id)?;
 

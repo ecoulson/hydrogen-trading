@@ -69,9 +69,15 @@ impl SimulationClient for InMemorySimulationClient {
     }
 
     fn list_simulations(&self) -> Result<Vec<SimulationState>> {
-        Ok(Mutex::lock(&self.simulation_store)?
+        let mut list: Vec<SimulationState> = Mutex::lock(&self.simulation_store)?
             .iter()
             .map(|(_, state)| state.clone())
-            .collect())
+            .collect();
+
+        list.sort_by(|a, b| {
+            b.id.cmp(&a.id)
+        });
+
+        Ok(list)
     }
 }
